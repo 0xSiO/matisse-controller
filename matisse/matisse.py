@@ -10,7 +10,7 @@ class Matisse:
         resource_manager = visa.ResourceManager()
         try:
             self.instrument = resource_manager.open_resource(self.DEVICE_ID)
-            self.query("ERROR:CLEAR")  # start with a clean slate
+            self.query('ERROR:CLEAR')  # start with a clean slate
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
@@ -25,8 +25,8 @@ class Matisse:
         :return: the response from the Matisse to the given command
         """
         result: str = self.instrument.query(command).strip()
-        if result.startswith("!ERROR") and raise_on_error:
-            raise RuntimeError("Error executing command. ", self.query("ERROR:CODE?"))
+        if result.startswith('!ERROR') and raise_on_error:
+            raise RuntimeError("Error executing Matisse command '" + command + "' " + self.query('ERROR:CODE?'))
         if numeric_result:
             result: float = float(result.split()[1])
         return result
