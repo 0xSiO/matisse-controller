@@ -30,3 +30,12 @@ class Matisse:
         elif numeric_result:
             result: float = float(result.split()[1])
         return result
+
+    def bifi_wavelength(self) -> float:
+        """Get the current position of the birefringent filter in terms of a wavelength, in nanometers."""
+        return self.query('MOTBI:WL?', numeric_result=True)
+
+    def wavemeter_wavelength(self) -> float:
+        """Get the current wavelength of the laser in nanometers as read from the wavemeter."""
+        # TODO: initialize IO connection to wavemeter
+        raise NotImplementedError
