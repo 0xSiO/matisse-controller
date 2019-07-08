@@ -23,7 +23,11 @@ class Matisse:
         :param raise_on_error: whether to raise a Python error if Matisse error occurs
         :return: the response from the Matisse to the given command
         """
-        result: str = self.instrument.query(command).strip()
+        try:
+            result: str = self.instrument.query(command).strip()
+        except VisaIOError as ioerr:
+            raise IOError("Couldn't execute command. Check Matisse is on and connected via USB.") from ioerr
+
         if result.startswith('!ERROR'):
             if raise_on_error:
                 err_codes = self.query('ERROR:CODE?')
