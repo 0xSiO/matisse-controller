@@ -25,8 +25,9 @@ class Matisse:
         :return: the response from the Matisse to the given command
         """
         result: str = self.instrument.query(command).strip()
-        if result.startswith('!ERROR') and raise_on_error:
-            raise RuntimeError("Error executing Matisse command '" + command + "' " + self.query('ERROR:CODE?'))
-        if numeric_result:
+        if result.startswith('!ERROR'):
+            if raise_on_error:
+                raise RuntimeError("Error executing Matisse command '" + command + "' " + self.query('ERROR:CODE?'))
+        elif numeric_result:
             result: float = float(result.split()[1])
         return result
