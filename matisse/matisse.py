@@ -60,6 +60,7 @@ class Matisse:
         return self.query(f"SCAN:NOW {val}")
 
     def stabilize_on(self, tolerance, delay=0.5):
+        """Stabilize the wavelength of the laser with respect to the wavemeter measurement."""
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
             warn('Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
@@ -68,4 +69,5 @@ class Matisse:
             print(f"Stabilizing laser at {self.bifi_wavelength()} nm...")
 
     def stabilize_off(self):
+        """Disable stabilization loop."""
         self.stabilization_thread.queue.put('stop')
