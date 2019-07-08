@@ -16,12 +16,11 @@ class Matisse:
 
     def query(self, command='', numeric_result=False, raise_on_error=True):
         """
-        Send a command to the Matisse and return the response, optionally converting to a floating-point value.
-        Will optionally raise Python error if a Matisse error occurs.
+        Send a command to the Matisse and return the response.
 
         :param command: the command to send
         :param numeric_result: whether to convert the second portion of the result to a float
-        :param raise_on_error: whether to raise Matisse errors in Python runtime
+        :param raise_on_error: whether to raise a Python error if Matisse error occurs
         :return: the response from the Matisse to the given command
         """
         result: str = self.instrument.query(command).strip()
