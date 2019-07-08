@@ -1,12 +1,11 @@
 import threading
 import time
 
-from matisse import Matisse
 from queue import Queue
 
 
 class StabilizationThread(threading.Thread):
-    def __init__(self, matisse: Matisse, tolerance, delay, queue: Queue):
+    def __init__(self, matisse, tolerance, delay, queue: Queue):
         """
         Initialize stabilization thread with parameters for stabilization loop.
 
