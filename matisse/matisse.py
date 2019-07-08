@@ -64,7 +64,7 @@ class Matisse:
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
             warn('Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
-            self.stabilization_thread = StabilizationThread(self, tolerance, delay, queue.Queue())
+            self.stabilization_thread = StabilizationThread(self, tolerance, delay, queue.Queue(maxsize=1))
             self.stabilization_thread.start()
             print(f"Stabilizing laser at {self.bifi_wavelength()} nm...")
 
