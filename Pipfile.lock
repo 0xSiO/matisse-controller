@@ -1,0 +1,29 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "1415a251efd5c73deb7fe4e3e400dbef80254c13accae34464be352a03c49246"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "3.7"
+        },
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "pyvisa": {
+            "hashes": [
+                "sha256:01ec355a97b9cd3897c019ec0c8e76a1f4e0dbce2a89b869794f5dcce4ed06e5",
+                "sha256:d387dd215928bcc40f4ac21f1f344ca7a511ec3e8078f76876fa717174dbb993"
+            ],
+            "index": "pypi",
+            "version": "==1.9.1"
+        }
+    },
+    "develop": {}
+}
