@@ -1,0 +1,18 @@
+Requirements: NI VISA software, Python 3, pyvisa 1.9.1
+
+The Matisse device ID is constant under visa.ResourceManager().list_resources()
+Always USB0::0x17E7::0x0102::07-40-01::INSTR at least on my machine :/ Have to confirm this for other computers
+
+PyVisa-Py doesn't work on Linux, and the proprietary VISA libraries are a nightmare to install, don't bother
+
+Average execution time of various commands:
+Grabbing DC diode power: ~0.5 ms
+Grabbing BiFi motor pos: ~3.3 ms
+Grabbing BiFi wavelength: ~4.4 ms
+Grabbing TE motor pos: ~3.8 ms
+Grabbing refcell pos (SCAN:NOW?): ~0.5 ms
+Note: SCAN:DEVICE? returns 2, which is the ID of the refcell piezo. This is expected.
+
+An error will lock all commands :(
+Have to use ERROR:CLEAR to continue querying.
+Error display syntax: "!ERROR N" where N is the number of errors on the stack
