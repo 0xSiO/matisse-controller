@@ -26,7 +26,9 @@ class Matisse:
         result: str = self.instrument.query(command).strip()
         if result.startswith('!ERROR'):
             if raise_on_error:
-                raise RuntimeError("Error executing Matisse command '" + command + "' " + self.query('ERROR:CODE?'))
+                err_codes = self.query('ERROR:CODE?')
+                self.query('ERROR:CLEAR')
+                raise RuntimeError("Error executing Matisse command '" + command + "' " + err_codes)
         elif numeric_result:
             result: float = float(result.split()[1])
         return result
