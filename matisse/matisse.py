@@ -1,5 +1,9 @@
 import visa
+import queue
+
+from .stabilization_thread import StabilizationThread
 from pyvisa import VisaIOError
+from warnings import warn
 
 
 class Matisse:
@@ -10,6 +14,7 @@ class Matisse:
         resource_manager = visa.ResourceManager()
         try:
             self.instrument = resource_manager.open_resource(self.DEVICE_ID)
+            self.stabilization_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
@@ -45,3 +50,14 @@ class Matisse:
         """Get the current wavelength of the laser in nanometers as read from the wavemeter."""
         # TODO: initialize IO connection to wavemeter
         raise NotImplementedError
+
+    def stabilize_on(self, tolerance, delay=0.5):
+        if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
+            warn('Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
+        else:
+            self.stabilization_thread = StabilizationThread(self, tolerance, delay, queue.Queue())
+            self.stabilization_thread.start()
+            print(f"Stabilizing laser at {self.bifi_wavelength()} nm...")
+
+    def stabilize_off(self):
+        self.stabilization_thread.queue.put('stop')
