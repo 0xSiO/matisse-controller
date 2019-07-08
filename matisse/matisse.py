@@ -6,7 +6,7 @@ class Matisse:
     DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
 
     def __init__(self):
-        """Initialize VISA resource manager and connect to Matisse."""
+        """Initialize VISA resource manager, connect to Matisse, clear any errors."""
         resource_manager = visa.ResourceManager()
         try:
             self.instrument = resource_manager.open_resource(self.DEVICE_ID)
