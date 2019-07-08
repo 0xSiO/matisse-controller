@@ -51,6 +51,14 @@ class Matisse:
         # TODO: initialize IO connection to wavemeter
         raise NotImplementedError
 
+    def get_refcell_pos(self) -> float:
+        """Get the current position of the reference cell as a float value in [0, 1]"""
+        return self.query('SCAN:NOW?', numeric_result=True)
+
+    def set_refcell_pos(self, val: float):
+        """Set the current position of the reference cell as a float value in [0, 1]"""
+        return self.query(f"SCAN:NOW {val}")
+
     def stabilize_on(self, tolerance, delay=0.5):
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
             warn('Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
