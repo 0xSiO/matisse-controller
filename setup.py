@@ -5,4 +5,5 @@ setup(name='matisse_controller',
       url='http://github.com/lucis-fluxum/matisse_controller',
       author='Luc Street',
       license='MIT',
-      packages=find_packages())
+      packages=find_packages(),
+      install_requires=['pyvisa'])
