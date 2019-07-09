@@ -59,6 +59,30 @@ class Matisse:
         """Set the current position of the reference cell as a float value in [0, 1]"""
         return self.query(f"SCAN:NOW {val}")
 
+    def lock_slow_piezo(self):
+        self.query('SLOWPIEZO:CONTROLSTATUS RUN')
+
+    def unlock_slow_piezo(self):
+        self.query('SLOWPIEZO:CONTROLSTATUS STOP')
+
+    def lock_fast_piezo(self):
+        self.query('FASTPIEZO:CONTROLSTATUS RUN')
+
+    def unlock_fast_piezo(self):
+        self.query('FASTPIEZO:CONTROLSTATUS STOP')
+
+    def lock_thin_etalon(self):
+        self.query('THINETALON:CONTROLSTATUS RUN')
+
+    def unlock_thin_etalon(self):
+        self.query('THINETALON:CONTROLSTATUS STOP')
+
+    def lock_piezo_etalon(self):
+        self.query('PIEZOETALON:CONTROLSTATUS RUN')
+
+    def unlock_piezo_etalon(self):
+        self.query('PIEZOETALON:CONTROLSTATUS STOP')
+
     def stabilize_on(self, tolerance, delay=0.5):
         """Stabilize the wavelength of the laser with respect to the wavemeter measurement."""
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
@@ -70,6 +94,7 @@ class Matisse:
 
     def stabilize_off(self):
         """Disable stabilization loop."""
+        # TODO: Double check this condition actually works
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
             self.stabilization_thread.queue.put('stop')
             print('Stopping stabilization thread... ', end='')
