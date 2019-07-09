@@ -94,9 +94,9 @@ class Matisse:
 
     def stabilize_off(self):
         """Disable stabilization loop."""
-        # TODO: Double check this condition actually works
+        # TODO: Double check this code actually works
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
-            self.stabilization_thread.queue.put('stop')
+            self.stabilization_thread.messages.put('stop')
             print('Stopping stabilization thread... ', end='')
             self.stabilization_thread.join()
             print('Done.')
