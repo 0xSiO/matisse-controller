@@ -7,11 +7,12 @@ from queue import Queue
 class StabilizationThread(threading.Thread):
     CORRECTION_STEP = 0.001
 
-    def __init__(self, matisse, tolerance, delay, messages: Queue):
+    def __init__(self, matisse, tolerance: float, delay: float, messages: Queue):
         """
         Initialize stabilization thread with parameters for stabilization loop.
 
         :param matisse: instance of Matisse to which we should send commands
+        :type matisse: matisse.Matisse
         :param tolerance: the maximum allowed drift in measured wavelength from BiFi wavelength
         :param delay: the time to wait between each stabilization loop
         :param messages: a message queue for this thread
