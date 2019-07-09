@@ -29,7 +29,7 @@ class StabilizationThread(threading.Thread):
 
         Exits if anything is pushed to the message queue.
         """
-        # TODO: Decide whether to keep locking code here to move to Matisse class
+        # TODO: Decide whether to keep locking code here or move to Matisse class
         self.matisse.lock_thin_etalon()
         self.matisse.lock_piezo_etalon()
         self.matisse.lock_slow_piezo()
@@ -50,8 +50,8 @@ class StabilizationThread(threading.Thread):
                     print(f"Wavelength within tolerance. Drift is {drift}")
                 time.sleep(self.delay)
             else:
-                self.matisse.unlock_thin_etalon()
-                self.matisse.unlock_piezo_etalon()
-                self.matisse.unlock_slow_piezo()
                 self.matisse.unlock_fast_piezo()
+                self.matisse.unlock_slow_piezo()
+                self.matisse.unlock_piezo_etalon()
+                self.matisse.unlock_thin_etalon()
                 return
