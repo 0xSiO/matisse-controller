@@ -5,6 +5,8 @@ from queue import Queue
 
 
 class StabilizationThread(threading.Thread):
+    CORRECTION_STEP = 0.001
+
     def __init__(self, matisse, tolerance, delay, queue: Queue):
         """
         Initialize stabilization thread with parameters for stabilization loop.
@@ -33,12 +35,12 @@ class StabilizationThread(threading.Thread):
                 if abs(drift) > self.tolerance:
                     if drift < 0:
                         # measured wavelength is too high
-                        print("Wavelength too high, decreasing. Drift is " + str(drift))
+                        print(f"Wavelength too high, decreasing. Drift is {drift}")
                     else:
                         # measured wavelength is too low
-                        print("Wavelength too low, increasing. Drift is " + str(drift))
+                        print(f"Wavelength too low, increasing. Drift is {drift}")
                 else:
-                    print("Wavelength within tolerance. Drift is " + str(drift))
+                    print(f"Wavelength within tolerance. Drift is {drift}")
                 time.sleep(self.delay)
             else:
                 return
