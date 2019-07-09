@@ -16,3 +16,6 @@ Note: SCAN:DEVICE? returns 2, which is the ID of the refcell piezo. This is expe
 An error will lock all commands :(
 Have to use ERROR:CLEAR to continue querying.
 Error display syntax: "!ERROR N" where N is the number of errors on the stack
+
+Trying to run/stop the control loops for slow/fast piezos multiple times in a row is fine, no errors.
+When stabilizing the laser, the reference cell, slow piezo, fast piezo, and piezo etalon all change.

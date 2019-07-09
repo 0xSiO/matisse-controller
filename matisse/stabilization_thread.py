@@ -29,11 +29,17 @@ class StabilizationThread(threading.Thread):
 
         Exits if anything is pushed to the message queue.
         """
+        # TODO: Decide whether to keep locking code here to move to Matisse class
+        self.matisse.lock_thin_etalon()
+        self.matisse.lock_piezo_etalon()
+        self.matisse.lock_slow_piezo()
+        self.matisse.lock_fast_piezo()
         print(f"Stabilizing laser at {self.matisse.bifi_wavelength()} nm...")
         while True:
             if self.messages.empty():
                 drift = self.matisse.bifi_wavelength() - self.matisse.wavemeter_wavelength()
                 if abs(drift) > self.tolerance:
+                    # TODO: Try doing a SCAN:STATUS RUN instead of setting motor position directly?
                     if drift < 0:
                         # measured wavelength is too high
                         print(f"Wavelength too high, decreasing. Drift is {drift}")
@@ -44,4 +50,8 @@ class StabilizationThread(threading.Thread):
                     print(f"Wavelength within tolerance. Drift is {drift}")
                 time.sleep(self.delay)
             else:
+                self.matisse.unlock_thin_etalon()
+                self.matisse.unlock_piezo_etalon()
+                self.matisse.unlock_slow_piezo()
+                self.matisse.unlock_fast_piezo()
                 return
