@@ -19,3 +19,5 @@ Error display syntax: "!ERROR N" where N is the number of errors on the stack
 
 Trying to run/stop the control loops for slow/fast piezos multiple times in a row is fine, no errors.
 When stabilizing the laser, the reference cell, slow piezo, fast piezo, and piezo etalon all change.
+The reference cell limits for the scan are usually left alone, and the up/down directions specified in the commander
+software indicate where the reference cell mirror is going, continuing the scan until it hits one of those limits.
