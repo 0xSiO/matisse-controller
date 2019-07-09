@@ -5,8 +5,6 @@ from queue import Queue
 
 
 class StabilizationThread(threading.Thread):
-    CORRECTION_STEP = 0.001
-
     def __init__(self, matisse, tolerance: float, delay: float, messages: Queue):
         """
         Initialize stabilization thread with parameters for stabilization loop.
