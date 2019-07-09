@@ -26,6 +26,7 @@ class StabilizationThread(threading.Thread):
 
         Exits if anything is pushed to the message queue.
         """
+        print(f"Stabilizing laser at {self.matisse.bifi_wavelength()} nm...")
         while True:
             if self.queue.empty():
                 drift = self.matisse.bifi_wavelength() - self.matisse.wavemeter_wavelength()

@@ -7,6 +7,7 @@ from warnings import warn
 
 
 class Matisse:
+    # TODO: Make this configurable?
     DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
 
     def __init__(self):
@@ -49,7 +50,9 @@ class Matisse:
     def wavemeter_wavelength(self) -> float:
         """Get the current wavelength of the laser in nanometers as read from the wavemeter."""
         # TODO: initialize IO connection to wavemeter
-        raise NotImplementedError
+        #raise NotImplementedError
+        from random import random
+        return self.bifi_wavelength() + random() - 0.5 # temporary random value for demonstration purposes
 
     def get_refcell_pos(self) -> float:
         """Get the current position of the reference cell as a float value in [0, 1]"""
@@ -66,8 +69,13 @@ class Matisse:
         else:
             self.stabilization_thread = StabilizationThread(self, tolerance, delay, queue.Queue(maxsize=1))
             self.stabilization_thread.start()
-            print(f"Stabilizing laser at {self.bifi_wavelength()} nm...")
 
     def stabilize_off(self):
         """Disable stabilization loop."""
-        self.stabilization_thread.queue.put('stop')
+        if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
+            self.stabilization_thread.queue.put('stop')
+            print('Stopping stabilization thread... ', end='')
+            self.stabilization_thread.join()
+            print('Done.')
+        else:
+            warn('Stabilization thread is not running.')
