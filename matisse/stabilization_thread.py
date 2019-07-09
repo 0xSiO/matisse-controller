@@ -38,6 +38,8 @@ class StabilizationThread(threading.Thread):
                 drift = self.matisse.bifi_wavelength() - self.matisse.wavemeter_wavelength()
                 if abs(drift) > self.tolerance:
                     # TODO: Try doing a SCAN:STATUS RUN instead of setting motor position directly?
+                    # Need to know: how does direction correspond to wavelength changes?
+                    # How to initiate scan in a particular direction? Check SCAN:MODE? for each direction
                     if drift < 0:
                         # measured wavelength is too high
                         print(f"Wavelength too high, decreasing. Drift is {drift}")
