@@ -1,8 +1,6 @@
-import visa
-import queue
-
 from .stabilization_thread import StabilizationThread
-from pyvisa import VisaIOError
+from pyvisa import ResourceManager, VisaIOError
+from queue import Queue
 from warnings import warn
 
 
@@ -12,9 +10,8 @@ class Matisse:
 
     def __init__(self):
         """Initialize VISA resource manager, connect to Matisse, clear any errors."""
-        resource_manager = visa.ResourceManager()
         try:
-            self.instrument = resource_manager.open_resource(self.DEVICE_ID)
+            self.instrument = ResourceManager().open_resource(self.DEVICE_ID)
             self.stabilization_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
         except VisaIOError as ioerr:
@@ -50,9 +47,9 @@ class Matisse:
     def wavemeter_wavelength(self) -> float:
         """Get the current wavelength of the laser in nanometers as read from the wavemeter."""
         # TODO: initialize IO connection to wavemeter
-        #raise NotImplementedError
+        # raise NotImplementedError
         from random import random
-        return self.bifi_wavelength() + random() - 0.5 # temporary random value for demonstration purposes
+        return self.bifi_wavelength() + random() - 0.5  # temporary random value for demonstration purposes
 
     def get_refcell_pos(self) -> float:
         """Get the current position of the reference cell as a float value in [0, 1]"""
@@ -68,7 +65,7 @@ class Matisse:
             warn('Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
-            self.stabilization_thread = StabilizationThread(self, tolerance, delay, queue.Queue(maxsize=1))
+            self.stabilization_thread = StabilizationThread(self, tolerance, delay, Queue(maxsize=1))
             self.stabilization_thread.start()
 
     def stabilize_off(self):
