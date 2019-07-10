@@ -2,8 +2,10 @@ from serial import Serial
 
 
 class Wavemeter:
-    def __init__(self, port_name: str):
-        self.serial = Serial(port_name)
+    SERIAL_PORT = 'COM4'
+
+    def __init__(self):
+        self.serial = Serial(self.SERIAL_PORT)
 
     def open(self):
         self.serial.open()
@@ -11,7 +13,13 @@ class Wavemeter:
     def close(self):
         self.serial.close()
 
-    def query(self, command):
+    def query(self, command: str):
         if not self.serial.is_open:
             self.open()
-        # run command, return result
+        # Ensure a newline is at the end
+        command = command.strip() + '\n'
+        self.serial.write(command.encode())
+        return self.serial.read_all().strip().decode()
+
+    def get_wavelength(self):
+        return float(self.query('VAL?').split(',')[1])

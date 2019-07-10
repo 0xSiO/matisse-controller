@@ -39,3 +39,8 @@ the local maximum of the parabola that is closest to the correct wavelength. Plo
 Wavemeter is read via serial port connection. Since I don't have a serial port I'll have to look at the existing MATLAB
 code that's currently used to read the wavelength and hope for the best. Maybe try testing out Python -> serial commands
 on the Fianium laser.
+
+Reading from wavemeter: use VAL? command, value appear to be the last 8 bytes of the response.
+IDN?: b'*IDN$ Coherent Inc,WaveMaster,W0364,A1.1V1.6\r\n'
+Error format: b'ERR$ 01\r\n'
+Value format: b'VAL$ 59445457, 737.776\r\n'
