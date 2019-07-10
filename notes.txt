@@ -35,3 +35,7 @@ Distance to shift: about 1/5 the distance between current minimum and next local
 the local maximum of the parabola that is closest to the correct wavelength. Plot this data and selection as well.
 
 3. Lock slow piezo, thin etalon, piezo etalon, then fast piezo
+
+Wavemeter is read via serial port connection. Since I don't have a serial port I'll have to look at the existing MATLAB
+code that's currently used to read the wavelength and hope for the best. Maybe try testing out Python -> serial commands
+on the Fianium laser.
