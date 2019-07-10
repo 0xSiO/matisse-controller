@@ -7,6 +7,7 @@ verify_ssl = true
 
 [packages]
 pyvisa = "*"
+pyserial = "*"
 
 [requires]
 python_version = "3.7"
