@@ -5,7 +5,7 @@ from queue import Queue
 
 
 class StabilizationThread(threading.Thread):
-    def __init__(self, matisse, tolerance: float, delay: float, messages: Queue):
+    def __init__(self, matisse, wavelength: float, tolerance: float, delay: float, messages: Queue):
         """
         Initialize stabilization thread with parameters for stabilization loop.
 
@@ -15,8 +15,9 @@ class StabilizationThread(threading.Thread):
         :param delay: the time to wait between each stabilization loop
         :param messages: a message queue for this thread
         """
-        super().__init__()
+        super().__init__(daemon=True)
         self.matisse = matisse
+        self.desired_wavelength = wavelength
         self.tolerance = tolerance
         self.delay = delay
         self.messages = messages
@@ -27,22 +28,27 @@ class StabilizationThread(threading.Thread):
 
         Exits if anything is pushed to the message queue.
         """
-        self.matisse.query('SCAN:STATUS RUN')
         while True:
             if self.messages.empty():
-                drift = self.matisse.bifi_wavelength() - self.matisse.wavemeter_wavelength()
+                drift = self.desired_wavelength - self.matisse.wavemeter_wavelength()
                 if abs(drift) > self.tolerance:
                     if drift < 0:
                         # measured wavelength is too high
-                        print(f"Wavelength too high, decreasing. Drift is {drift}")
-                        self.matisse.query('SCAN:MODE 1')
+                        print(f"Too high, decreasing. Drift is {drift}, RefCell pos {self.matisse.query('SCAN:NOW?', numeric_result=True)}")
+                        next_pos = self.matisse.query('SCAN:NOW?', numeric_result=True) - 0.001
+                        # TODO: Don't just check the refcell limit, check all the piezos and correct if needed
+                        if next_pos > 0.05:
+                            # self.matisse.query(f"SCAN:NOW {next_pos}")
+                            pass
                     else:
                         # measured wavelength is too low
-                        print(f"Wavelength too low, increasing.  Drift is {drift}")
-                        self.matisse.query('SCAN:MODE 0')
+                        print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self.matisse.query('SCAN:NOW?', numeric_result=True)}")
+                        next_pos = self.matisse.query('SCAN:NOW?', numeric_result=True) + 0.001
+                        if next_pos < 0.7:
+                            # self.matisse.query(f"SCAN:NOW {next_pos}")
+                            pass
                 else:
-                    print(f"Wavelength within tolerance.     Drift is {drift}")
+                    print(f"Within tolerance.      Drift is {drift}, RefCell pos {self.matisse.query('SCAN:NOW?', numeric_result=True)}")
                 time.sleep(self.delay)
             else:
-                self.matisse.query('SCAN:STATUS STOP')
                 return
