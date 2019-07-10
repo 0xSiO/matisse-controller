@@ -25,22 +25,23 @@ software indicate where the reference cell mirror is going, continuing the scan 
 SCAN:MODE? -> up = 0, down = 1. up = increase wavelength, down = decrease wavelength
 We can set the scan mode while a scan is running without any issues.
 
-For locking the laser:
-
-1. Do a TE scan. Find the minimum closest to the correct wavelength. Shift a little to the left
-or right of that minimum and set the corresponding 'flank' value. Plot the data and selection from this scan.
-Distance to shift: about 1/5 the distance between current minimum and next local maximum
-
-2. Do a BiFi scan. This gives a step function from the TE reflex and upside-down parabolas from the diode power. Pick
-the local maximum of the parabola that is closest to the correct wavelength. Plot this data and selection as well.
-
-3. Lock slow piezo, thin etalon, piezo etalon, then fast piezo
+Detailed process for setting wavelength:
+1. Set approx. wavelength using BiFi.
+2. Scan the BiFi back and forth and measure the total laser power at each point. Power looks like upside-down parabolas.
+3. Find all local maxima of the laser power data. Move the BiFi to the maximum that's closest to the desired wavelength.
+4. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
+5. Find all local minima of the reflex data. Move the TE to the minimum that's closest to the desired wavelength. Maybe
+   use a binary search?
+6. Shift the TE to the left or right a little bit. We want to be on the "flank" of the chosen parabola. Distance to
+   shift: about 1/5 the distance between current minimum and next local maximum.
+7. Adjust the piezo etalon until desired wavelength is reached.
+8. Lock slow piezo, thin etalon, piezo etalon, then fast piezo. Stabilize at the desired wavelength.
 
 Wavemeter is read via serial port connection. Since I don't have a serial port I'll have to look at the existing MATLAB
 code that's currently used to read the wavelength and hope for the best. Maybe try testing out Python -> serial commands
 on the Fianium laser.
 
-Reading from wavemeter: use VAL? command, value appear to be the last 8 bytes of the response.
+Reading from wavemeter: use VAL? command, value is the last 8 bytes of the response. Split it at the comma.
 IDN?: b'*IDN$ Coherent Inc,WaveMaster,W0364,A1.1V1.6\r\n'
 Error format: b'ERR$ 01\r\n'
 Value format: b'VAL$ 59445457, 737.776\r\n'
@@ -48,6 +49,7 @@ Value format: b'VAL$ 59445457, 737.776\r\n'
 Adjusting the refcell will simultaneously change positions of other piezos (notably the slow piezo and piezo etalon).
 Other piezos appear to travel opposite the direction of the refcell.
 For larger drifts on stabilization scan the refcell is not great, so jump over another mode using the TE piezo.
+
 If you reach the limits of any piezo while adjusting the wavelength:
   - For SMALL corrections:
     - To increase wavelength: set slow piezo and piezo etalon to large values, set refcell to small value. This
