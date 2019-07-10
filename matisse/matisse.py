@@ -17,7 +17,7 @@ class Matisse:
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
-    def query(self, command='', numeric_result=False, raise_on_error=True):
+    def query(self, command: str, numeric_result=False, raise_on_error=True):
         """
         Send a command to the Matisse and return the response.
 
