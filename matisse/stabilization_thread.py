@@ -38,6 +38,7 @@ class StabilizationThread(threading.Thread):
                         next_pos = self.matisse.query('SCAN:NOW?', numeric_result=True) - 0.001
                         # TODO: Don't just check the refcell limit, check all the piezos and correct if needed
                         if next_pos > 0.05:
+                            # TODO: Use Matisse#set_refcell_pos
                             # self.matisse.query(f"SCAN:NOW {next_pos}")
                             pass
                     else:

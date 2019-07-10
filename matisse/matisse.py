@@ -8,16 +8,23 @@ from warnings import warn
 class Matisse:
     # TODO: Make this configurable?
     DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
+    # How far to each side should we scan the BiFi?
+    BIREFRINGENT_SCAN_LIMIT = 4000
 
     def __init__(self):
         """Initialize VISA resource manager, connect to Matisse, clear any errors."""
         try:
             self.instrument = ResourceManager().open_resource(self.DEVICE_ID)
+            self.target_wavelength = None
             self.stabilization_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.wavemeter = WaveMaster()
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
+
+    # TODO: Make this the definitive control mechanism to start the wavelength selection process
+    def set_wavelength(self, wavelength: float):
+        self.target_wavelength = wavelength
 
     def query(self, command: str, numeric_result=False, raise_on_error=True):
         """
@@ -45,6 +52,12 @@ class Matisse:
     def wavemeter_wavelength(self) -> float:
         """Get the current wavelength of the laser in nanometers as read from the wavemeter."""
         return self.wavemeter.get_wavelength()
+
+    def birefringent_filter_scan(self):
+        current_bifi_pos = self.query('MOTBI:POS?', numeric_result=True)
+        lower_limit = current_bifi_pos - self.BIREFRINGENT_SCAN_LIMIT
+        upper_limit = current_bifi_pos + self.BIREFRINGENT_SCAN_LIMIT
+        # TODO: Scan the motor and grab diode power data
 
     def get_refcell_pos(self) -> float:
         """Get the current position of the reference cell as a float value in [0, 1]"""
