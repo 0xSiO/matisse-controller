@@ -83,6 +83,13 @@ class Matisse:
     def unlock_piezo_etalon(self):
         self.query('PIEZOETALON:CONTROLSTATUS STOP')
 
+    def assert_locked(self):
+        assert ('RUN' in self.query('SLOWPIEZO:CONTROLSTATUS?')
+                and 'RUN' in self.query('THINETALON:CONTROLSTATUS?')
+                and 'RUN' in self.query('PIEZOETALON:CONTROLSTATUS?')
+                and 'RUN' in self.query('FASTPIEZO:CONTROLSTATUS?')), \
+            'Unable to obtain laser lock. Manual correction needed.'
+
     def stabilize_on(self, tolerance, delay=0.5):
         """Stabilize the wavelength of the laser with respect to the wavemeter measurement."""
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
@@ -90,15 +97,28 @@ class Matisse:
         else:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
             self.stabilization_thread = StabilizationThread(self, tolerance, delay, Queue(maxsize=1))
+            # Lock the laser and begin stabilization
+            print('Locking laser...')
+            self.lock_slow_piezo()
+            self.lock_thin_etalon()
+            self.lock_piezo_etalon()
+            self.lock_fast_piezo()
+            self.assert_locked()
+            # TODO: Note the wavelength given by the user to stabilize.
+            print(f"Stabilizing laser...")
             self.stabilization_thread.start()
 
     def stabilize_off(self):
         """Disable stabilization loop."""
-        # TODO: Double check this code actually works
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
             self.stabilization_thread.messages.put('stop')
-            print('Stopping stabilization thread... ', end='')
+            print('Stopping stabilization thread...')
             self.stabilization_thread.join()
+            print('Unlocking laser...')
+            self.unlock_fast_piezo()
+            self.unlock_piezo_etalon()
+            self.unlock_thin_etalon()
+            self.unlock_slow_piezo()
             print('Done.')
         else:
             warn('Stabilization thread is not running.')

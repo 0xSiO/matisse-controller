@@ -27,31 +27,22 @@ class StabilizationThread(threading.Thread):
 
         Exits if anything is pushed to the message queue.
         """
-        # TODO: Decide whether to keep locking code here or move to Matisse class
-        self.matisse.lock_thin_etalon()
-        self.matisse.lock_piezo_etalon()
-        self.matisse.lock_slow_piezo()
-        self.matisse.lock_fast_piezo()
-        print(f"Stabilizing laser at {self.matisse.bifi_wavelength()} nm...")
+        self.matisse.query('SCAN:STATUS RUN')
         while True:
             if self.messages.empty():
                 drift = self.matisse.bifi_wavelength() - self.matisse.wavemeter_wavelength()
                 if abs(drift) > self.tolerance:
-                    # TODO: Try doing a SCAN:STATUS RUN instead of setting motor position directly?
-                    # Need to know: how does direction correspond to wavelength changes?
-                    # How to initiate scan in a particular direction? Check SCAN:MODE? for each direction
                     if drift < 0:
                         # measured wavelength is too high
                         print(f"Wavelength too high, decreasing. Drift is {drift}")
+                        self.matisse.query('SCAN:MODE 1')
                     else:
                         # measured wavelength is too low
-                        print(f"Wavelength too low, increasing. Drift is {drift}")
+                        print(f"Wavelength too low, increasing.  Drift is {drift}")
+                        self.matisse.query('SCAN:MODE 0')
                 else:
-                    print(f"Wavelength within tolerance. Drift is {drift}")
+                    print(f"Wavelength within tolerance.     Drift is {drift}")
                 time.sleep(self.delay)
             else:
-                self.matisse.unlock_fast_piezo()
-                self.matisse.unlock_slow_piezo()
-                self.matisse.unlock_piezo_etalon()
-                self.matisse.unlock_thin_etalon()
+                self.matisse.query('SCAN:STATUS STOP')
                 return

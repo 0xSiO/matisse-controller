@@ -21,3 +21,17 @@ Trying to run/stop the control loops for slow/fast piezos multiple times in a ro
 When stabilizing the laser, the reference cell, slow piezo, fast piezo, and piezo etalon all change.
 The reference cell limits for the scan are usually left alone, and the up/down directions specified in the commander
 software indicate where the reference cell mirror is going, continuing the scan until it hits one of those limits.
+
+SCAN:MODE? -> up = 0, down = 1. up = increase wavelength, down = decrease wavelength
+We can set the scan mode while a scan is running without any issues.
+
+For locking the laser:
+
+1. Do a TE scan. Find the minimum closest to the correct wavelength. Shift a little to the left
+or right of that minimum and set the corresponding 'flank' value. Plot the data and selection from this scan.
+Distance to shift: about 1/5 the distance between current minimum and next local maximum
+
+2. Do a BiFi scan. This gives a step function from the TE reflex and upside-down parabolas from the diode power. Pick
+the local maximum of the parabola that is closest to the correct wavelength. Plot this data and selection as well.
+
+3. Lock slow piezo, thin etalon, piezo etalon, then fast piezo
