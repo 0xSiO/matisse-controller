@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1415a251efd5c73deb7fe4e3e400dbef80254c13accae34464be352a03c49246"
+            "sha256": "f1faec060f96c06ce29105bf48b1e43b08c80c4dd99e0640b4bcff07109ba0a3"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,14 @@
         ]
     },
     "default": {
+        "pyserial": {
+            "hashes": [
+                "sha256:6e2d401fdee0eab996cf734e67773a0143b932772ca8b42451440cfed942c627",
+                "sha256:e0770fadba80c31013896c7e6ef703f72e7834965954a78e71a3049488d4d7d8"
+            ],
+            "index": "pypi",
+            "version": "==3.4"
+        },
         "pyvisa": {
             "hashes": [
                 "sha256:01ec355a97b9cd3897c019ec0c8e76a1f4e0dbce2a89b869794f5dcce4ed06e5",
