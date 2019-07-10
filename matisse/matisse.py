@@ -10,6 +10,8 @@ class Matisse:
     DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
     # How far to each side should we scan the BiFi?
     BIREFRINGENT_SCAN_LIMIT = 4000
+    # How far apart should each point be spaced when measuring the diode power?
+    BIREFRINGENT_SCAN_STEP = 40
 
     def __init__(self):
         """Initialize VISA resource manager, connect to Matisse, clear any errors."""
@@ -54,10 +56,19 @@ class Matisse:
         return self.wavemeter.get_wavelength()
 
     def birefringent_filter_scan(self):
-        current_bifi_pos = self.query('MOTBI:POS?', numeric_result=True)
-        lower_limit = current_bifi_pos - self.BIREFRINGENT_SCAN_LIMIT
-        upper_limit = current_bifi_pos + self.BIREFRINGENT_SCAN_LIMIT
-        # TODO: Scan the motor and grab diode power data
+        center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
+        lower_limit = center_pos - self.BIREFRINGENT_SCAN_LIMIT
+        upper_limit = center_pos + self.BIREFRINGENT_SCAN_LIMIT
+        assert (0 < lower_limit < self.query('MOTBI:MAX?', numeric_result=True) and
+                0 < upper_limit < self.query('MOTBI:MAX?', numeric_result=True) and
+                lower_limit < upper_limit)
+        positions = range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP)
+        powers = []
+        # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
+        for pos in positions:
+            self.query(f"MOTBI:POS {pos}")
+            powers.append(self.query('DPOW:DC?', numeric_result=True))
+        # TODO: Analyze power data, select local maximum closest to target wavelength
 
     def get_refcell_pos(self) -> float:
         """Get the current position of the reference cell as a float value in [0, 1]"""
