@@ -45,7 +45,8 @@ IDN?: b'*IDN$ Coherent Inc,WaveMaster,W0364,A1.1V1.6\r\n'
 Error format: b'ERR$ 01\r\n'
 Value format: b'VAL$ 59445457, 737.776\r\n'
 
-Adjusting the refcell will simultaneously change positions of other piezos (notably the slow piezo and piezo etalon)
+Adjusting the refcell will simultaneously change positions of other piezos (notably the slow piezo and piezo etalon).
+Other piezos appear to travel opposite the direction of the refcell.
 For larger drifts on stabilization scan the refcell is not great, so jump over another mode using the TE piezo.
 If you reach the limits of any piezo while adjusting the wavelength:
   - For SMALL corrections:
