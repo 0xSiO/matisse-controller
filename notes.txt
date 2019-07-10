@@ -44,3 +44,15 @@ Reading from wavemeter: use VAL? command, value appear to be the last 8 bytes of
 IDN?: b'*IDN$ Coherent Inc,WaveMaster,W0364,A1.1V1.6\r\n'
 Error format: b'ERR$ 01\r\n'
 Value format: b'VAL$ 59445457, 737.776\r\n'
+
+Adjusting the refcell will simultaneously change positions of other piezos (notably the slow piezo and piezo etalon)
+For larger drifts on stabilization scan the refcell is not great, so jump over another mode using the TE piezo.
+If you reach the limits of any piezo while adjusting the wavelength:
+  - For SMALL corrections:
+    - To increase wavelength: set slow piezo and piezo etalon to large values, set refcell to small value. This
+      shouldn't change the wavelength very much. Then you can increase the refcell more.
+    - If the drift is still too high after this adjustment, consider the case for larger corrections instead or ask for
+      manual correction from the user
+  - For LARGER corrections:
+    - For larger corrections, you're going to need to adjust the TE piezo. Might be better to just repeat the whole
+      wavelength-setting process here.

@@ -1,4 +1,5 @@
 from .stabilization_thread import StabilizationThread
+from wavemaster import WaveMaster
 from pyvisa import ResourceManager, VisaIOError
 from queue import Queue
 from warnings import warn
@@ -14,6 +15,7 @@ class Matisse:
             self.instrument = ResourceManager().open_resource(self.DEVICE_ID)
             self.stabilization_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
+            self.wavemeter = WaveMaster()
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
@@ -40,16 +42,9 @@ class Matisse:
             result: float = float(result.split()[1])
         return result
 
-    def bifi_wavelength(self) -> float:
-        """Get the current position of the birefringent filter in terms of a wavelength, in nanometers."""
-        return self.query('MOTBI:WL?', numeric_result=True)
-
     def wavemeter_wavelength(self) -> float:
         """Get the current wavelength of the laser in nanometers as read from the wavemeter."""
-        # TODO: initialize IO connection to wavemeter
-        # raise NotImplementedError
-        from random import random
-        return self.bifi_wavelength() + random() - 0.5  # temporary random value for demonstration purposes
+        return self.wavemeter.get_wavelength()
 
     def get_refcell_pos(self) -> float:
         """Get the current position of the reference cell as a float value in [0, 1]"""
@@ -90,13 +85,13 @@ class Matisse:
                 and 'RUN' in self.query('FASTPIEZO:CONTROLSTATUS?')), \
             'Unable to obtain laser lock. Manual correction needed.'
 
-    def stabilize_on(self, tolerance, delay=0.5):
+    def stabilize_on(self, wavelength, tolerance, delay=0.5):
         """Stabilize the wavelength of the laser with respect to the wavemeter measurement."""
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
             warn('Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
-            self.stabilization_thread = StabilizationThread(self, tolerance, delay, Queue(maxsize=1))
+            self.stabilization_thread = StabilizationThread(self, wavelength, tolerance, delay, Queue(maxsize=1))
             # Lock the laser and begin stabilization
             print('Locking laser...')
             self.lock_slow_piezo()
