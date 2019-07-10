@@ -59,9 +59,9 @@ class Matisse:
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
         lower_limit = center_pos - self.BIREFRINGENT_SCAN_LIMIT
         upper_limit = center_pos + self.BIREFRINGENT_SCAN_LIMIT
-        assert (0 < lower_limit < self.query('MOTBI:MAX?', numeric_result=True) and
-                0 < upper_limit < self.query('MOTBI:MAX?', numeric_result=True) and
-                lower_limit < upper_limit)
+        max_pos = self.query('MOTBI:MAX?', numeric_result=True)
+        assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
+            f"Conditions for BiFi scan invalid. Motor position must be at least {self.BIREFRINGENT_SCAN_LIMIT}"
         positions = range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP)
         powers = []
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
@@ -124,7 +124,7 @@ class Matisse:
             self.lock_fast_piezo()
             self.assert_locked()
             # TODO: Note the wavelength given by the user to stabilize.
-            print(f"Stabilizing laser...")
+            print(f"Stabilizing laser at {wavelength} nm...")
             self.stabilization_thread.start()
 
     def stabilize_off(self):
