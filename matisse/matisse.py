@@ -196,8 +196,7 @@ class Matisse:
             warn('Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
-            self.stabilization_thread = StabilizationThread(self, self.target_wavelength, tolerance, delay,
-                                                            Queue(maxsize=1))
+            self.stabilization_thread = StabilizationThread(self, tolerance, delay, Queue(maxsize=1))
             # Lock the laser and begin stabilization
             print('Locking laser...')
             self.lock_slow_piezo()

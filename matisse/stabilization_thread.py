@@ -5,7 +5,7 @@ from queue import Queue
 
 
 class StabilizationThread(threading.Thread):
-    def __init__(self, matisse, wavelength: float, tolerance: float, delay: float, messages: Queue):
+    def __init__(self, matisse, tolerance: float, delay: float, messages: Queue):
         """
         Initialize stabilization thread with parameters for stabilization loop.
 
@@ -17,7 +17,6 @@ class StabilizationThread(threading.Thread):
         """
         super().__init__(daemon=True)
         self._matisse = matisse
-        self._desired_wavelength = wavelength
         self._tolerance = tolerance
         self._delay = delay
         self._messages = messages
@@ -26,11 +25,11 @@ class StabilizationThread(threading.Thread):
         """
         Try to keep the measured wavelength within the given tolerance by adjusting the reference cell.
 
-        Exits if anything is pushed to the message queue.
+        Exit if anything is pushed to the message queue.
         """
         while True:
             if self._messages.empty():
-                drift = self._desired_wavelength - self._matisse.wavemeter_wavelength()
+                drift = self._matisse.target_wavelength - self._matisse.wavemeter_wavelength()
                 if abs(drift) > self._tolerance:
                     if drift < 0:
                         # measured wavelength is too high
