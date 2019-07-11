@@ -6,4 +6,4 @@ setup(name='matisse_controller',
       author='Luc Street',
       license='MIT',
       packages=find_packages(),
-      install_requires=['pyvisa'])
+      install_requires=['pyvisa', 'pyserial', 'scipy', 'matplotlib'])
