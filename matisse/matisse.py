@@ -1,4 +1,5 @@
 from .stabilization_thread import StabilizationThread
+from .scans_plot import ScansPlot
 from wavemaster import WaveMaster
 from pyvisa import ResourceManager, VisaIOError
 from queue import Queue
@@ -9,9 +10,11 @@ class Matisse:
     # TODO: Make this configurable?
     DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
     # How far to each side should we scan the BiFi?
-    BIREFRINGENT_SCAN_LIMIT = 4000
+    BIREFRINGENT_SCAN_LIMIT = 600
     # How far apart should each point be spaced when measuring the diode power?
-    BIREFRINGENT_SCAN_STEP = 40
+    BIREFRINGENT_SCAN_STEP = 2
+    THIN_ETALON_SCAN_LIMIT = 2000
+    THIN_ETALON_SCAN_STEP = 5
 
     def __init__(self):
         """Initialize VISA resource manager, connect to Matisse, clear any errors."""
@@ -21,6 +24,7 @@ class Matisse:
             self.stabilization_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.wavemeter = WaveMaster()
+            self.scans_plot = ScansPlot()
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
@@ -59,16 +63,35 @@ class Matisse:
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
         lower_limit = center_pos - self.BIREFRINGENT_SCAN_LIMIT
         upper_limit = center_pos + self.BIREFRINGENT_SCAN_LIMIT
-        max_pos = self.query('MOTBI:MAX?', numeric_result=True)
+        max_pos = int(self.query('MOTBI:MAX?', numeric_result=True))
         assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
             f"Conditions for BiFi scan invalid. Motor position must be at least {self.BIREFRINGENT_SCAN_LIMIT}"
         positions = range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP)
-        powers = []
+        voltages = []
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
             self.query(f"MOTBI:POS {pos}")
-            powers.append(self.query('DPOW:DC?', numeric_result=True))
+            voltages.append(self.query('DPOW:DC?', numeric_result=True))
         # TODO: Analyze power data, select local maximum closest to target wavelength
+        self.scans_plot.plot_birefringent_scan(positions, voltages)
+        self.query(f"MOTBI:POS {center_pos}")
+
+    def thin_etalon_scan(self):
+        center_pos = int(self.query('MOTTE:POS?', numeric_result=True))
+        lower_limit = center_pos - self.THIN_ETALON_SCAN_LIMIT
+        upper_limit = center_pos + self.THIN_ETALON_SCAN_LIMIT
+        max_pos = int(self.query('MOTTE:MAX?', numeric_result=True))
+        assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
+            f"Conditions for thin etalon scan invalid. Motor position must be at least {self.THIN_ETALON_SCAN_LIMIT}"
+        positions = range(lower_limit, upper_limit, self.THIN_ETALON_SCAN_STEP)
+        voltages = []
+        # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
+        for pos in positions:
+            self.query(f"MOTTE:POS {pos}")
+            voltages.append(self.query('TE:DC?', numeric_result=True))
+        # TODO: Analyze power data, select local minimum closest to target wavelength and nudge over a bit
+        self.scans_plot.plot_thin_etalon_scan(positions, voltages)
+        self.query(f"MOTTE:POS {center_pos}")
 
     def get_refcell_pos(self) -> float:
         """Get the current position of the reference cell as a float value in [0, 1]"""
