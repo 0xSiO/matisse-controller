@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 
 class ScansPlot:
     def __init__(self):
-        self.birefringent_scan_plot: Axes = plt.subplot(3, 1, 1)
-        self.thin_etalon_scan_plot: Axes = plt.subplot(3, 1, 2)
-        self.piezo_etalon_scan_plot: Axes = plt.subplot(3, 1, 3)
+        self.birefringent_scan_plot: Axes = plt.subplot(2, 1, 1)
+        self.thin_etalon_scan_plot: Axes = plt.subplot(2, 1, 2)
 
     def plot_birefringent_scan(self, positions, voltages):
         bsp = self.birefringent_scan_plot

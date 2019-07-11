@@ -59,3 +59,9 @@ If you reach the limits of any piezo while adjusting the wavelength:
   - For LARGER corrections:
     - For larger corrections, you're going to need to adjust the TE piezo. Might be better to just repeat the whole
       wavelength-setting process here.
+
+Piezo etalon value to set is PZETL:BASE, the baseline of the modulation waveform. This is the value set by the slider in
+Matisse Commander.
+
+Today I got 'VAL$ 67325238,NO SIGNAL' in response to 'VAL?' from the WaveMaster, though it was working a couple minutes
+beforehand. Hmm...
