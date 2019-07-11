@@ -93,6 +93,10 @@ class Matisse:
         self.scans_plot.plot_thin_etalon_scan(positions, voltages)
         self.query(f"MOTTE:POS {center_pos}")
 
+    def optimize_piezo_etalon(self):
+        # TODO: Just use a binary search method to pick the right value?
+        raise NotImplementedError
+
     def get_refcell_pos(self) -> float:
         """Get the current position of the reference cell as a float value in [0, 1]"""
         return self.query('SCAN:NOW?', numeric_result=True)
