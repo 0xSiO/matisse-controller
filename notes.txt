@@ -64,4 +64,12 @@ Piezo etalon value to set is PZETL:BASE, the baseline of the modulation waveform
 Matisse Commander.
 
 Today I got 'VAL$ 67325238,NO SIGNAL' in response to 'VAL?' from the WaveMaster, though it was working a couple minutes
-beforehand. Hmm...
+beforehand. Turns out you need to actually turn on the Matisse before you can use it.
+
+Doing a birefringent filter scan and a thin etalon scan trigger the error lights on the Matisse :(
+Sending individual movement commands works fine, but as soon as I try looping through a large list of positions it stops
+working. Might be a timing issue? The voltage data I'm reading as I scan is just noise in one position.
+
+The manual says there is some communication overhead in talking to the motor, so the commands need a bit of time to
+execute. Look at the error code set by the motor controller to confirm this is the case. The motor will ignore commands
+while it's busy, which is what I suspect is happening.

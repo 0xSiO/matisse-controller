@@ -14,6 +14,8 @@ class ScansPlot:
         bsp.set_xlabel('Position')
         bsp.set_ylabel('Voltage (V)')
         bsp.plot(positions, voltages)
+        print(positions)
+        print(voltages)
 
     def plot_thin_etalon_scan(self, positions, voltages):
         tep = self.thin_etalon_scan_plot
@@ -22,3 +24,5 @@ class ScansPlot:
         tep.set_xlabel('Position')
         tep.set_ylabel('Voltage (V)')
         tep.plot(positions, voltages)
+        print(positions)
+        print(voltages)

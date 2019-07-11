@@ -10,7 +10,7 @@ class Matisse:
     # TODO: Make this configurable?
     DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
     # How far to each side should we scan the BiFi?
-    BIREFRINGENT_SCAN_LIMIT = 600
+    BIREFRINGENT_SCAN_LIMIT = 300
     # How far apart should each point be spaced when measuring the diode power?
     BIREFRINGENT_SCAN_STEP = 2
     THIN_ETALON_SCAN_LIMIT = 2000
