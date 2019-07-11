@@ -17,7 +17,11 @@ class Matisse:
     THIN_ETALON_SCAN_STEP = 5
 
     def __init__(self):
-        """Initialize VISA resource manager, connect to Matisse, clear any errors."""
+        """
+        Initialize VISA resource manager, connect to Matisse, clear any errors.
+
+        Additionally, connect to the wavemeter and open up a plot to display results of BiFi/TE scans.
+        """
         try:
             # TODO: Add access modifiers on all these instance variables
             self.instrument = ResourceManager().open_resource(self.DEVICE_ID)
@@ -31,11 +35,35 @@ class Matisse:
 
     # TODO: Make this the definitive control mechanism to start the wavelength selection process
     def set_wavelength(self, wavelength: float):
+        """
+        Configure the Matisse to output a given wavelength.
+
+        This is the process I'll follow:
+        1. Set approx. wavelength using BiFi. This is good to about +-1 nm.
+        2. Scan the BiFi back and forth and measure the total laser power at each point. Power looks like upside-down
+           parabolas.
+        3. Find all local maxima of the laser power data. Move the BiFi to the maximum that's closest to the desired
+           wavelength.
+        4. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
+        5. Find all local minima of the reflex data. Move the TE to the minimum that's closest to the desired
+           wavelength.
+        6. Shift the TE to the left or right a little bit. We want to be on the "flank" of the chosen parabola.
+        7. Adjust the piezo etalon until desired wavelength is reached.
+
+        :param wavelength: the desired wavelength
+        """
         self.target_wavelength = wavelength
 
     def query(self, command: str, numeric_result=False, raise_on_error=True):
         """
         Send a command to the Matisse and return the response.
+
+        Note that some commands (like setting the position of a stepper motor) take additional time to execute, so do
+        not assume the command has finished executing just because the query returns "OK".
+
+        This doesn't raise errors if the error occurred in the controller for a specific component of the Matisse, like
+        the birefringent filter motor, for example. That motor has a separate status register with error information
+        that can be queried and cleared separately.
 
         :param command: the command to send
         :param numeric_result: whether to convert the second portion of the result to a float
@@ -57,10 +85,15 @@ class Matisse:
         return result
 
     def wavemeter_wavelength(self) -> float:
-        """Get the current wavelength of the laser in nanometers as read from the wavemeter."""
+        """:return: the wavelength (in nanometers) as measured by the wavemeter"""
         return self.wavemeter.get_wavelength()
 
     def birefringent_filter_scan(self):
+        """
+        Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.
+
+        Additionally, plot the power data and motor position selection.
+        """
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
         lower_limit = center_pos - self.BIREFRINGENT_SCAN_LIMIT
         upper_limit = center_pos + self.BIREFRINGENT_SCAN_LIMIT
@@ -78,6 +111,12 @@ class Matisse:
         self.query(f"MOTBI:POS {center_pos}")
 
     def thin_etalon_scan(self):
+        """
+        Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
+
+        Nudges the motor position a little bit away from the minimum to ensure good locking later.
+        Additionally, plot the reflex data and motor position selection.
+        """
         center_pos = int(self.query('MOTTE:POS?', numeric_result=True))
         lower_limit = center_pos - self.THIN_ETALON_SCAN_LIMIT
         upper_limit = center_pos + self.THIN_ETALON_SCAN_LIMIT
@@ -99,7 +138,7 @@ class Matisse:
         raise NotImplementedError
 
     def get_refcell_pos(self) -> float:
-        """Get the current position of the reference cell as a float value in [0, 1]"""
+        """:return: the current position of the reference cell as a float value in [0, 1]"""
         return self.query('SCAN:NOW?', numeric_result=True)
 
     def set_refcell_pos(self, val: float):
@@ -132,19 +171,33 @@ class Matisse:
         self.query('PIEZOETALON:CONTROLSTATUS STOP')
 
     def assert_locked(self):
+        """
+        Assert that the slow piezo, thin etalon, piezo etalon, and fast piezo all have their control loops enabled.
+
+        Throw an error if this condition is not met.
+        """
         assert ('RUN' in self.query('SLOWPIEZO:CONTROLSTATUS?')
                 and 'RUN' in self.query('THINETALON:CONTROLSTATUS?')
                 and 'RUN' in self.query('PIEZOETALON:CONTROLSTATUS?')
                 and 'RUN' in self.query('FASTPIEZO:CONTROLSTATUS?')), \
             'Unable to obtain laser lock. Manual correction needed.'
 
-    def stabilize_on(self, wavelength, tolerance, delay=0.5):
-        """Stabilize the wavelength of the laser with respect to the wavemeter measurement."""
+    def stabilize_on(self, tolerance=0.002, delay=0.5):
+        """
+        Lock the laser and enable stabilization using the reference cell to keep the wavelength constant.
+
+        Starts a StabilizationThread as a daemon for this purpose. To stop stabilizing and unlock the laser, call
+        stabilize_off.
+
+        :param tolerance: how much drift you can tolerate in the wavelength, in nanometers
+        :param delay: how many seconds to wait in between each correction of the reference cell
+        """
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
             warn('Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
-            self.stabilization_thread = StabilizationThread(self, wavelength, tolerance, delay, Queue(maxsize=1))
+            self.stabilization_thread = StabilizationThread(self, self.target_wavelength, tolerance, delay,
+                                                            Queue(maxsize=1))
             # Lock the laser and begin stabilization
             print('Locking laser...')
             self.lock_slow_piezo()
@@ -153,11 +206,11 @@ class Matisse:
             self.lock_fast_piezo()
             self.assert_locked()
             # TODO: Note the wavelength given by the user to stabilize.
-            print(f"Stabilizing laser at {wavelength} nm...")
+            print(f"Stabilizing laser at {self.target_wavelength} nm...")
             self.stabilization_thread.start()
 
     def stabilize_off(self):
-        """Disable stabilization loop."""
+        """Disable stabilization loop and unlock the laser. This stops the StabilizationThread."""
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
             self.stabilization_thread.messages.put('stop')
             print('Stopping stabilization thread...')
