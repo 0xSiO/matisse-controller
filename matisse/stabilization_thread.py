@@ -21,7 +21,7 @@ class StabilizationThread(threading.Thread):
         self._delay = delay
         self._messages = messages
 
-    def run(self) -> None:
+    def run(self):
         """
         Try to keep the measured wavelength within the given tolerance by adjusting the reference cell.
 
