@@ -19,6 +19,7 @@ class Matisse:
     def __init__(self):
         """Initialize VISA resource manager, connect to Matisse, clear any errors."""
         try:
+            # TODO: Add access modifiers on all these instance variables
             self.instrument = ResourceManager().open_resource(self.DEVICE_ID)
             self.target_wavelength = None
             self.stabilization_thread = None
@@ -105,6 +106,7 @@ class Matisse:
         """Set the current position of the reference cell as a float value in [0, 1]"""
         return self.query(f"SCAN:NOW {val}")
 
+    # TODO: Clean up these lock/unlock methods if they're going to remain one-liners
     def lock_slow_piezo(self):
         self.query('SLOWPIEZO:CONTROLSTATUS RUN')
 

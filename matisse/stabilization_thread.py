@@ -16,11 +16,11 @@ class StabilizationThread(threading.Thread):
         :param messages: a message queue for this thread
         """
         super().__init__(daemon=True)
-        self.matisse = matisse
-        self.desired_wavelength = wavelength
-        self.tolerance = tolerance
-        self.delay = delay
-        self.messages = messages
+        self._matisse = matisse
+        self._desired_wavelength = wavelength
+        self._tolerance = tolerance
+        self._delay = delay
+        self._messages = messages
 
     def run(self) -> None:
         """
@@ -29,13 +29,13 @@ class StabilizationThread(threading.Thread):
         Exits if anything is pushed to the message queue.
         """
         while True:
-            if self.messages.empty():
-                drift = self.desired_wavelength - self.matisse.wavemeter_wavelength()
-                if abs(drift) > self.tolerance:
+            if self._messages.empty():
+                drift = self._desired_wavelength - self._matisse.wavemeter_wavelength()
+                if abs(drift) > self._tolerance:
                     if drift < 0:
                         # measured wavelength is too high
-                        print(f"Too high, decreasing. Drift is {drift}, RefCell pos {self.matisse.query('SCAN:NOW?', numeric_result=True)}")
-                        next_pos = self.matisse.query('SCAN:NOW?', numeric_result=True) - 0.001
+                        print(f"Too high, decreasing. Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+                        next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) - 0.001
                         # TODO: Don't just check the refcell limit, check all the piezos and correct if needed
                         if next_pos > 0.05:
                             # TODO: Use Matisse#set_refcell_pos
@@ -43,13 +43,13 @@ class StabilizationThread(threading.Thread):
                             pass
                     else:
                         # measured wavelength is too low
-                        print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self.matisse.query('SCAN:NOW?', numeric_result=True)}")
-                        next_pos = self.matisse.query('SCAN:NOW?', numeric_result=True) + 0.001
+                        print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+                        next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) + 0.001
                         if next_pos < 0.7:
                             # self.matisse.query(f"SCAN:NOW {next_pos}")
                             pass
                 else:
-                    print(f"Within tolerance.      Drift is {drift}, RefCell pos {self.matisse.query('SCAN:NOW?', numeric_result=True)}")
-                time.sleep(self.delay)
+                    print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+                time.sleep(self._delay)
             else:
                 return
