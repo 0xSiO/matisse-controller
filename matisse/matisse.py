@@ -114,14 +114,12 @@ class Matisse:
             self.query(f"MOTBI:POS {pos}")
             voltages = np.append(voltages, self.query('DPOW:DC?', numeric_result=True))
         # TODO: Analyze power data, select local maximum closest to target wavelength
-        self.scans_plot.plot_birefringent_scan(positions, voltages)
         self.query(f"MOTBI:POS {center_pos}")
 
         smoothed_data = savgol_filter(voltages, window_length=31, polyorder=3)
-        self.scans_plot.plot_birefringent_scan(positions, smoothed_data)
+        self.scans_plot.plot_birefringent_scan(positions, voltages, smoothed_data)
         maxima = argrelextrema(smoothed_data, np.greater, order=5)
-        self.scans_plot._birefringent_scan_plot.plot(positions[maxima], smoothed_data[maxima], 'r*')
-        self.scans_plot._birefringent_scan_plot.legend(['Raw', 'Smoothed'], loc='upper left')
+        self.scans_plot.plot_birefringent_maxima(positions[maxima], smoothed_data[maxima])
 
     def bifi_motor_status(self):
         """Return the last 8 bits of the BiFi motor status."""
@@ -150,14 +148,12 @@ class Matisse:
             self.query(f"MOTTE:POS {pos}")
             voltages = np.append(voltages, self.query('TE:DC?', numeric_result=True))
         # TODO: Analyze power data, select local minimum closest to target wavelength and nudge over a bit
-        self.scans_plot.plot_thin_etalon_scan(positions, voltages)
         self.query(f"MOTTE:POS {center_pos}")
 
         smoothed_data = savgol_filter(voltages, window_length=41, polyorder=3)
-        self.scans_plot.plot_thin_etalon_scan(positions, smoothed_data)
+        self.scans_plot.plot_thin_etalon_scan(positions, voltages, smoothed_data)
         minima = argrelextrema(smoothed_data, np.less, order=5)
-        self.scans_plot._thin_etalon_scan_plot.plot(positions[minima], smoothed_data[minima], 'r*')
-        self.scans_plot._thin_etalon_scan_plot.legend(['Raw', 'Smoothed'], loc='upper left')
+        self.scans_plot.plot_thin_etalon_minima(positions[minima], smoothed_data[minima])
 
     def thin_etalon_motor_status(self):
         """Return the last 8 bits of the TE motor status."""
