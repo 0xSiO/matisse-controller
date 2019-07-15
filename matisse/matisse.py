@@ -10,11 +10,13 @@ class Matisse:
     # TODO: Make this configurable?
     DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
     # How far to each side should we scan the BiFi?
-    BIREFRINGENT_SCAN_LIMIT = 300
+    BIREFRINGENT_SCAN_RANGE = 300
     # How far apart should each point be spaced when measuring the diode power?
-    BIREFRINGENT_SCAN_STEP = 2
-    THIN_ETALON_SCAN_LIMIT = 2000
+    BIREFRINGENT_SCAN_STEP = 3
+    THIN_ETALON_SCAN_RANGE = 2000
     THIN_ETALON_SCAN_STEP = 5
+
+    MOTOR_STATUS_IDLE = 0x02
 
     def __init__(self):
         """
@@ -95,20 +97,27 @@ class Matisse:
         Additionally, plot the power data and motor position selection.
         """
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
-        lower_limit = center_pos - self.BIREFRINGENT_SCAN_LIMIT
-        upper_limit = center_pos + self.BIREFRINGENT_SCAN_LIMIT
+        lower_limit = center_pos - self.BIREFRINGENT_SCAN_RANGE
+        upper_limit = center_pos + self.BIREFRINGENT_SCAN_RANGE
         max_pos = int(self.query('MOTBI:MAX?', numeric_result=True))
         assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
-            f"Conditions for BiFi scan invalid. Motor position must be at least {self.BIREFRINGENT_SCAN_LIMIT}"
+            f"Conditions for BiFi scan invalid. Motor position must be at least {self.BIREFRINGENT_SCAN_RANGE}"
         positions = range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP)
         voltages = []
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
+            # Wait for motor to be ready to accept commands
+            while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
+                pass
             self.query(f"MOTBI:POS {pos}")
             voltages.append(self.query('DPOW:DC?', numeric_result=True))
         # TODO: Analyze power data, select local maximum closest to target wavelength
         self.scans_plot.plot_birefringent_scan(positions, voltages)
         self.query(f"MOTBI:POS {center_pos}")
+
+    def bifi_motor_status(self):
+        """Return the last 8 bits of the BiFi motor status."""
+        return int(self.query('MOTBI:STATUS?', numeric_result=True)) & 0b000000011111111
 
     def thin_etalon_scan(self):
         """
@@ -118,20 +127,27 @@ class Matisse:
         Additionally, plot the reflex data and motor position selection.
         """
         center_pos = int(self.query('MOTTE:POS?', numeric_result=True))
-        lower_limit = center_pos - self.THIN_ETALON_SCAN_LIMIT
-        upper_limit = center_pos + self.THIN_ETALON_SCAN_LIMIT
+        lower_limit = center_pos - self.THIN_ETALON_SCAN_RANGE
+        upper_limit = center_pos + self.THIN_ETALON_SCAN_RANGE
         max_pos = int(self.query('MOTTE:MAX?', numeric_result=True))
         assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
-            f"Conditions for thin etalon scan invalid. Motor position must be at least {self.THIN_ETALON_SCAN_LIMIT}"
+            f"Conditions for thin etalon scan invalid. Motor position must be at least {self.THIN_ETALON_SCAN_RANGE}"
         positions = range(lower_limit, upper_limit, self.THIN_ETALON_SCAN_STEP)
         voltages = []
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
+            # Wait for motor to be ready to accept commands
+            while not self.thin_etalon_motor_status() == self.MOTOR_STATUS_IDLE:
+                pass
             self.query(f"MOTTE:POS {pos}")
             voltages.append(self.query('TE:DC?', numeric_result=True))
         # TODO: Analyze power data, select local minimum closest to target wavelength and nudge over a bit
         self.scans_plot.plot_thin_etalon_scan(positions, voltages)
         self.query(f"MOTTE:POS {center_pos}")
+
+    def thin_etalon_motor_status(self):
+        """Return the last 8 bits of the TE motor status."""
+        return int(self.query('MOTTE:STATUS?', numeric_result=True)) & 0b000000011111111
 
     def optimize_piezo_etalon(self):
         # TODO: Just use a binary search method to pick the right value?
