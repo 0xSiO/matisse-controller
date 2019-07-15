@@ -77,3 +77,8 @@ while it's busy, which is what I suspect is happening.
 Error code given by the BiFi motor is 8840 when doing BiFi scan, which indicates "motor is running (command ignored)".
 Idle status is 8194, "system is waiting for command / button pressed"
 While moving motor using 'MOTBI:REL': 8969, "execute relative move command"
+
+When running loop while checking for idle status, I keep getting code 8706, sometimes 514. No change in motor position.
+Got it working, just use the last 8 bits of the motor status to decide whether to send the command, since the first few
+bits change depending on other factors.
+
