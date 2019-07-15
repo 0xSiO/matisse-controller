@@ -10,6 +10,8 @@ pyvisa = "*"
 pyserial = "*"
 scipy = "*"
 matplotlib = "*"
+pyqt5 = "*"
+pyqt5-stubs = "*"
 
 [requires]
 python_version = "3.7"
