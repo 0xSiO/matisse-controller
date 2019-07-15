@@ -103,15 +103,13 @@ class Matisse:
         upper_limit = center_pos + self.BIREFRINGENT_SCAN_RANGE
         max_pos = int(self.query('MOTBI:MAX?', numeric_result=True))
         assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
-            f"Conditions for BiFi scan invalid. Motor position must be at least {self.BIREFRINGENT_SCAN_RANGE}"
+            'Conditions for BiFi scan invalid. Motor position must be between ' + \
+            f"{self.BIREFRINGENT_SCAN_RANGE} and {max_pos - self.BIREFRINGENT_SCAN_RANGE}"
         positions = np.array(range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP))
         voltages = np.array([])
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
-            # Wait for motor to be ready to accept commands
-            while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
-                pass
-            self.query(f"MOTBI:POS {pos}")
+            self.set_bifi_motor_pos(pos)
             voltages = np.append(voltages, self.query('DPOW:DC?', numeric_result=True))
         # TODO: Analyze power data, select local maximum closest to target wavelength
         self.query(f"MOTBI:POS {center_pos}")
@@ -120,6 +118,16 @@ class Matisse:
         self.scans_plot.plot_birefringent_scan(positions, voltages, smoothed_data)
         maxima = argrelextrema(smoothed_data, np.greater, order=5)
         self.scans_plot.plot_birefringent_maxima(positions[maxima], smoothed_data[maxima])
+
+    def set_bifi_motor_pos(self, pos: int):
+        assert (0 < pos < self.query('MOTBI:MAX?', numeric_result=True)), 'Target motor position out of range.'
+        # Wait for motor to be ready to accept commands
+        while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
+            pass
+        self.query(f"MOTBI:POS {pos}")
+        # Wait for motor to finish movement
+        while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
+            pass
 
     def bifi_motor_status(self):
         """Return the last 8 bits of the BiFi motor status."""
@@ -137,23 +145,31 @@ class Matisse:
         upper_limit = center_pos + self.THIN_ETALON_SCAN_RANGE
         max_pos = int(self.query('MOTTE:MAX?', numeric_result=True))
         assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
-            f"Conditions for thin etalon scan invalid. Motor position must be at least {self.THIN_ETALON_SCAN_RANGE}"
+            'Conditions for thin etalon scan invalid. Motor position must be between ' + \
+            f"{self.THIN_ETALON_SCAN_RANGE} and {max_pos - self.THIN_ETALON_SCAN_RANGE}"
         positions = np.array(range(lower_limit, upper_limit, self.THIN_ETALON_SCAN_STEP))
         voltages = np.array([])
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
-            # Wait for motor to be ready to accept commands
-            while not self.thin_etalon_motor_status() == self.MOTOR_STATUS_IDLE:
-                pass
-            self.query(f"MOTTE:POS {pos}")
+            self.set_thin_etalon_motor_pos(pos)
             voltages = np.append(voltages, self.query('TE:DC?', numeric_result=True))
         # TODO: Analyze power data, select local minimum closest to target wavelength and nudge over a bit
-        self.query(f"MOTTE:POS {center_pos}")
+        self.set_thin_etalon_motor_pos(center_pos)
 
         smoothed_data = savgol_filter(voltages, window_length=41, polyorder=3)
         self.scans_plot.plot_thin_etalon_scan(positions, voltages, smoothed_data)
         minima = argrelextrema(smoothed_data, np.less, order=5)
         self.scans_plot.plot_thin_etalon_minima(positions[minima], smoothed_data[minima])
+
+    def set_thin_etalon_motor_pos(self, pos: int):
+        assert (0 < pos < self.query('MOTTE:MAX?', numeric_result=True)), 'Target motor position out of range.'
+        # Wait for motor to be ready to accept commands
+        while not self.thin_etalon_motor_status() == self.MOTOR_STATUS_IDLE:
+            pass
+        self.query(f"MOTTE:POS {pos}")
+        # Wait for motor to finish movement
+        while not self.thin_etalon_motor_status() == self.MOTOR_STATUS_IDLE:
+            pass
 
     def thin_etalon_motor_status(self):
         """Return the last 8 bits of the TE motor status."""
