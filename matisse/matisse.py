@@ -57,6 +57,13 @@ class Matisse:
         :param wavelength: the desired wavelength
         """
         self.target_wavelength = wavelength
+        print(f"Setting BiFi to ~{wavelength} nm... ", end='')
+        self.set_bifi_wavelength(wavelength)
+        print('Done.')
+        self.birefringent_filter_scan()
+        self.thin_etalon_scan()
+        # TODO: piezo etalon
+        print('All done.')
 
     def query(self, command: str, numeric_result=False, raise_on_error=True):
         """
@@ -112,21 +119,47 @@ class Matisse:
         for pos in positions:
             self.set_bifi_motor_pos(pos)
             voltages = np.append(voltages, self.query('DPOW:DC?', numeric_result=True))
-        # TODO: Analyze power data, select local maximum closest to target wavelength
-        self.set_bifi_motor_pos(center_pos)
+        self.set_bifi_motor_pos(center_pos)  # return back to where we started, just in case something goes wrong
         print('Done.')
 
+        print('Analyzing scan data... ', end='')
+        # Smooth out the data and find extrema
         smoothed_data = savgol_filter(voltages, window_length=31, polyorder=3)
-        self.scans_plot.plot_birefringent_scan(positions, voltages, smoothed_data)
         maxima = argrelextrema(smoothed_data, np.greater, order=5)
+
+        # Find the position of the extremum closest to the target wavelength
+        wavelength_differences = np.array([])
+        for pos in positions[maxima]:
+            self.set_bifi_motor_pos(pos)
+            wavelength_differences = np.append(wavelength_differences,
+                                               abs(self.wavemeter_wavelength() - self.target_wavelength))
+        best_pos = positions[maxima][np.argmin(wavelength_differences)]
+        print(wavelength_differences)
+        self.set_bifi_motor_pos(best_pos)
+        print('Done.')
+
+        self.scans_plot.plot_birefringent_scan(positions, voltages, smoothed_data)
+        self.scans_plot.plot_birefringent_selection(best_pos)
         self.scans_plot.plot_birefringent_maxima(positions[maxima], smoothed_data[maxima])
+        self.scans_plot.add_bifi_scan_legend()
 
     def set_bifi_motor_pos(self, pos: int):
-        assert (0 < pos < self.query('MOTBI:MAX?', numeric_result=True)), 'Target motor position out of range.'
+        assert 0 < pos < self.query('MOTBI:MAX?', numeric_result=True), 'Target motor position out of range.'
         # Wait for motor to be ready to accept commands
         while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
             pass
         self.query(f"MOTBI:POS {pos}")
+        # Wait for motor to finish movement
+        while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
+            pass
+
+    def set_bifi_wavelength(self, value: float):
+        # TODO: Figure out min and max values
+        assert 720 < value < 800, 'Target wavelength out of range.'
+        # Wait for motor to be ready to accept commands
+        while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
+            pass
+        self.query(f"MOTBI:WAVELENGTH {value}")
         # Wait for motor to finish movement
         while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
             pass
@@ -151,19 +184,35 @@ class Matisse:
             f"{self.THIN_ETALON_SCAN_RANGE} and {max_pos - self.THIN_ETALON_SCAN_RANGE}"
         positions = np.array(range(lower_limit, upper_limit, self.THIN_ETALON_SCAN_STEP))
         voltages = np.array([])
-        print('Starting TE scan... ', end='')
+        print('Starting thin etalon scan... ', end='')
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
             self.set_thin_etalon_motor_pos(pos)
             voltages = np.append(voltages, self.query('TE:DC?', numeric_result=True))
-        # TODO: Analyze power data, select local minimum closest to target wavelength and nudge over a bit
-        self.set_thin_etalon_motor_pos(center_pos)
+        self.set_thin_etalon_motor_pos(center_pos)  # return back to where we started, just in case something goes wrong
         print('Done.')
 
+        print('Analyzing scan data... ', end='')
+        # Smooth out the data and find extrema
         smoothed_data = savgol_filter(voltages, window_length=41, polyorder=3)
-        self.scans_plot.plot_thin_etalon_scan(positions, voltages, smoothed_data)
         minima = argrelextrema(smoothed_data, np.less, order=5)
+
+        # Find the position of the extremum closest to the target wavelength
+        wavelength_differences = np.array([])
+        for pos in positions[minima]:
+            self.set_thin_etalon_motor_pos(pos)
+            wavelength_differences = np.append(wavelength_differences,
+                                               abs(self.wavemeter_wavelength() - self.target_wavelength))
+        best_pos = positions[minima][np.argmin(wavelength_differences)]
+        print(wavelength_differences)
+        self.set_thin_etalon_motor_pos(best_pos)
+        print('Done.')
+
+        self.scans_plot.plot_thin_etalon_scan(positions, voltages, smoothed_data)
+        self.scans_plot.plot_thin_etalon_selection(best_pos)
         self.scans_plot.plot_thin_etalon_minima(positions[minima], smoothed_data[minima])
+        self.scans_plot.add_thin_etalon_scan_legend()
+        # TODO: Small nudge
 
     def set_thin_etalon_motor_pos(self, pos: int):
         assert (0 < pos < self.query('MOTTE:MAX?', numeric_result=True)), 'Target motor position out of range.'

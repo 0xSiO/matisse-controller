@@ -27,4 +27,7 @@ class WaveMaster:
         return self.serial.readline().strip().decode()
 
     def get_wavelength(self):
-        return float(self.query('VAL?').split(',')[1])
+        value = self.query('VAL?').split(',')[1]
+        while value == 'NO SIGNAL' or value == 'MULTI-LINE':
+            value = self.query('VAL?').split(',')[1]
+        return float(value)
