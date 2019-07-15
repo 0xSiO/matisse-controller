@@ -4,6 +4,8 @@ from wavemaster import WaveMaster
 from pyvisa import ResourceManager, VisaIOError
 from queue import Queue
 from warnings import warn
+from scipy.signal import savgol_filter, argrelextrema
+import numpy as np
 
 
 class Matisse:
@@ -14,7 +16,7 @@ class Matisse:
     # How far apart should each point be spaced when measuring the diode power?
     BIREFRINGENT_SCAN_STEP = 3
     THIN_ETALON_SCAN_RANGE = 2000
-    THIN_ETALON_SCAN_STEP = 5
+    THIN_ETALON_SCAN_STEP = 10
 
     MOTOR_STATUS_IDLE = 0x02
 
@@ -102,18 +104,24 @@ class Matisse:
         max_pos = int(self.query('MOTBI:MAX?', numeric_result=True))
         assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
             f"Conditions for BiFi scan invalid. Motor position must be at least {self.BIREFRINGENT_SCAN_RANGE}"
-        positions = range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP)
-        voltages = []
+        positions = np.array(range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP))
+        voltages = np.array([])
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
             # Wait for motor to be ready to accept commands
             while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
                 pass
             self.query(f"MOTBI:POS {pos}")
-            voltages.append(self.query('DPOW:DC?', numeric_result=True))
+            voltages = np.append(voltages, self.query('DPOW:DC?', numeric_result=True))
         # TODO: Analyze power data, select local maximum closest to target wavelength
         self.scans_plot.plot_birefringent_scan(positions, voltages)
         self.query(f"MOTBI:POS {center_pos}")
+
+        smoothed_data = savgol_filter(voltages, window_length=31, polyorder=3)
+        self.scans_plot.plot_birefringent_scan(positions, smoothed_data)
+        maxima = argrelextrema(smoothed_data, np.greater, order=5)
+        self.scans_plot._birefringent_scan_plot.plot(positions[maxima], smoothed_data[maxima], 'r*')
+        self.scans_plot._birefringent_scan_plot.legend(['Raw', 'Smoothed'], loc='upper left')
 
     def bifi_motor_status(self):
         """Return the last 8 bits of the BiFi motor status."""
@@ -132,18 +140,24 @@ class Matisse:
         max_pos = int(self.query('MOTTE:MAX?', numeric_result=True))
         assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
             f"Conditions for thin etalon scan invalid. Motor position must be at least {self.THIN_ETALON_SCAN_RANGE}"
-        positions = range(lower_limit, upper_limit, self.THIN_ETALON_SCAN_STEP)
-        voltages = []
+        positions = np.array(range(lower_limit, upper_limit, self.THIN_ETALON_SCAN_STEP))
+        voltages = np.array([])
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
             # Wait for motor to be ready to accept commands
             while not self.thin_etalon_motor_status() == self.MOTOR_STATUS_IDLE:
                 pass
             self.query(f"MOTTE:POS {pos}")
-            voltages.append(self.query('TE:DC?', numeric_result=True))
+            voltages = np.append(voltages, self.query('TE:DC?', numeric_result=True))
         # TODO: Analyze power data, select local minimum closest to target wavelength and nudge over a bit
         self.scans_plot.plot_thin_etalon_scan(positions, voltages)
         self.query(f"MOTTE:POS {center_pos}")
+
+        smoothed_data = savgol_filter(voltages, window_length=41, polyorder=3)
+        self.scans_plot.plot_thin_etalon_scan(positions, smoothed_data)
+        minima = argrelextrema(smoothed_data, np.less, order=5)
+        self.scans_plot._thin_etalon_scan_plot.plot(positions[minima], smoothed_data[minima], 'r*')
+        self.scans_plot._thin_etalon_scan_plot.legend(['Raw', 'Smoothed'], loc='upper left')
 
     def thin_etalon_motor_status(self):
         """Return the last 8 bits of the TE motor status."""
