@@ -73,3 +73,7 @@ working. Might be a timing issue? The voltage data I'm reading as I scan is just
 The manual says there is some communication overhead in talking to the motor, so the commands need a bit of time to
 execute. Look at the error code set by the motor controller to confirm this is the case. The motor will ignore commands
 while it's busy, which is what I suspect is happening.
+
+Error code given by the BiFi motor is 8840 when doing BiFi scan, which indicates "motor is running (command ignored)".
+Idle status is 8194, "system is waiting for command / button pressed"
+While moving motor using 'MOTBI:REL': 8969, "execute relative move command"
