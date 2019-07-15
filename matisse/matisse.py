@@ -107,12 +107,14 @@ class Matisse:
             f"{self.BIREFRINGENT_SCAN_RANGE} and {max_pos - self.BIREFRINGENT_SCAN_RANGE}"
         positions = np.array(range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP))
         voltages = np.array([])
+        print('Starting BiFi scan... ', end='')
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
             self.set_bifi_motor_pos(pos)
             voltages = np.append(voltages, self.query('DPOW:DC?', numeric_result=True))
         # TODO: Analyze power data, select local maximum closest to target wavelength
-        self.query(f"MOTBI:POS {center_pos}")
+        self.set_bifi_motor_pos(center_pos)
+        print('Done.')
 
         smoothed_data = savgol_filter(voltages, window_length=31, polyorder=3)
         self.scans_plot.plot_birefringent_scan(positions, voltages, smoothed_data)
@@ -149,12 +151,14 @@ class Matisse:
             f"{self.THIN_ETALON_SCAN_RANGE} and {max_pos - self.THIN_ETALON_SCAN_RANGE}"
         positions = np.array(range(lower_limit, upper_limit, self.THIN_ETALON_SCAN_STEP))
         voltages = np.array([])
+        print('Starting TE scan... ', end='')
         # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
             self.set_thin_etalon_motor_pos(pos)
             voltages = np.append(voltages, self.query('TE:DC?', numeric_result=True))
         # TODO: Analyze power data, select local minimum closest to target wavelength and nudge over a bit
         self.set_thin_etalon_motor_pos(center_pos)
+        print('Done.')
 
         smoothed_data = savgol_filter(voltages, window_length=41, polyorder=3)
         self.scans_plot.plot_thin_etalon_scan(positions, voltages, smoothed_data)
