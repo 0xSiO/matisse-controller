@@ -1,4 +1,9 @@
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QMainWindow, QWidget, QTextEdit
+import sys
+from traceback import format_exception
+
+from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QMessageBox
+
+from .handled_slot import HandledSlot
 
 
 class Gui(QMainWindow):
@@ -27,6 +32,9 @@ class Gui(QMainWindow):
         console_menu = menu_bar.addMenu('Console')
         self.clear_console_action = console_menu.addAction('Clear Log')
         self.clear_console_action.triggered.connect(lambda: self.log_area.clear())
+        self.open_shell_action = console_menu.addAction('Open Python Shell...')
+        self.open_shell_action.triggered.connect(lambda: self.log('Launching Python shell.'))
+        # TODO: Open python shell with access to any relevant objects
 
         set_menu = menu_bar.addMenu('Set')
         self.set_wavelength_action = set_menu.addAction('Wavelength')
@@ -57,10 +65,15 @@ class Gui(QMainWindow):
     def log(self, message, end='\n'):
         self.log_area.setText(self.log_area.toPlainText() + message + end)
 
-    def error_dialog(self, error, message=''):
-        # TODO: Show a dialog with info about the error and an optional message
-        raise NotImplementedError
+    def error_dialog(self):
+        stack = format_exception(*sys.exc_info())
+        stack.pop(1)  # Remove entry for the HandledSlot decorator, for clarity
+        description = stack.pop()  # Grab exception message to use as the description
+        msg_box = QMessageBox(icon=QMessageBox.Critical, text=f"{description}\n{''.join(stack)}")
+        msg_box.setWindowTitle('Error')
+        msg_box.exec()
 
+    @HandledSlot('bool')
     def lock_all(self, lock):
         if lock:
             for action in self.lock_actions:
@@ -71,28 +84,26 @@ class Gui(QMainWindow):
                 action.setChecked(False)
                 action.setEnabled(True)
 
+    @HandledSlot('bool')
     def toggle_slow_piezo_lock(self, lock):
         self.log(f"{'Locking' if lock else 'Unlocking'} slow piezo... ", end='')
-        # TODO: lock it
+        raise NotImplementedError
         self.log('Done.')
 
+    @HandledSlot('bool')
     def toggle_thin_etalon_lock(self, lock):
         self.log(f"{'Locking' if lock else 'Unlocking'} thin etalon... ", end='')
-        # TODO: lock it
+        raise NotImplementedError
         self.log('Done.')
 
+    @HandledSlot('bool')
     def toggle_piezo_etalon_lock(self, lock):
         self.log(f"{'Locking' if lock else 'Unlocking'} piezo etalon... ", end='')
-        # TODO: lock it
+        raise NotImplementedError
         self.log('Done.')
 
+    @HandledSlot('bool')
     def toggle_fast_piezo_lock(self, lock):
         self.log(f"{'Locking' if lock else 'Unlocking'} fast piezo... ", end='')
-        # TODO: lock it
+        raise NotImplementedError
         self.log('Done.')
-
-
-if __name__ == '__main__':
-    app = QApplication([])
-    gui = Gui()
-    app.exec()
