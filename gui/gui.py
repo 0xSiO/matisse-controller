@@ -3,12 +3,14 @@ from traceback import format_exception
 
 from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QMessageBox
 
-from .handled_slot import HandledSlot
+from matisse import Matisse
+from .handled_function import handled_function
 
 
 class Gui(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setup_matisse()
         self.setup_menus()
         self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
                              self.lock_fast_piezo_action]
@@ -25,6 +27,10 @@ class Gui(QMainWindow):
         self.setCentralWidget(container)
         self.resize(600, 200)
         self.show()
+
+    @handled_function
+    def setup_matisse(self):
+        self.matisse = Matisse()
 
     def setup_menus(self):
         menu_bar = self.menuBar()
@@ -73,7 +79,7 @@ class Gui(QMainWindow):
         msg_box.setWindowTitle('Error')
         msg_box.exec()
 
-    @HandledSlot('bool')
+    @handled_function
     def lock_all(self, lock):
         if lock:
             for action in self.lock_actions:
@@ -89,22 +95,22 @@ class Gui(QMainWindow):
                 action.trigger()
                 action.setEnabled(True)
 
-    @HandledSlot('bool')
+    @handled_function
     def toggle_slow_piezo_lock(self, lock):
         self.log(f"{'Locking' if lock else 'Unlocking'} slow piezo.")
         raise NotImplementedError
 
-    @HandledSlot('bool')
+    @handled_function
     def toggle_thin_etalon_lock(self, lock):
         self.log(f"{'Locking' if lock else 'Unlocking'} thin etalon.")
         raise NotImplementedError
 
-    @HandledSlot('bool')
+    @handled_function
     def toggle_piezo_etalon_lock(self, lock):
         self.log(f"{'Locking' if lock else 'Unlocking'} piezo etalon.")
         raise NotImplementedError
 
-    @HandledSlot('bool')
+    @handled_function
     def toggle_fast_piezo_lock(self, lock):
         self.log(f"{'Locking' if lock else 'Unlocking'} fast piezo.")
         raise NotImplementedError
