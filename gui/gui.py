@@ -3,17 +3,19 @@ import subprocess
 import sys
 from traceback import format_exception
 
-from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QMessageBox
+from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QMessageBox, QInputDialog
 
 from matisse import Matisse
 from .handled_function import handled_function
 
 
+# TODO: Splash screen?
 class Gui(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setup_matisse()
         self.setup_menus()
+        self.setup_action_listeners()
         self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
                              self.lock_fast_piezo_action]
 
@@ -40,10 +42,8 @@ class Gui(QMainWindow):
         menu_bar = self.menuBar()
 
         console_menu = menu_bar.addMenu('Console')
-        self.clear_console_action = console_menu.addAction('Clear Log')
-        self.clear_console_action.triggered.connect(lambda: self.log_area.clear())
-        self.open_shell_action = console_menu.addAction('Open Python Shell...')
-        self.open_shell_action.triggered.connect(self.open_idle)
+        self.clear_log_area_action = console_menu.addAction('Clear Log')
+        self.open_idle_action = console_menu.addAction('Open Python Shell...')
 
         set_menu = menu_bar.addMenu('Set')
         self.set_wavelength_action = set_menu.addAction('Wavelength')
@@ -55,43 +55,95 @@ class Gui(QMainWindow):
         self.thin_eta_scan_action = scan_menu.addAction('Thin Etalon')
 
         lock_menu = menu_bar.addMenu('Lock')
-        self.lock_all_action = lock_all_action = lock_menu.addAction('Lock All')
-        lock_all_action.setCheckable(True)
-        lock_all_action.triggered.connect(self.lock_all)
-        self.lock_slow_piezo_action = lock_slow_piezo_action = lock_menu.addAction('Lock Slow Piezo')
-        lock_slow_piezo_action.setCheckable(True)
-        lock_slow_piezo_action.triggered.connect(self.toggle_slow_piezo_lock)
-        self.lock_thin_etalon_action = lock_thin_etalon_action = lock_menu.addAction('Lock Thin Etalon')
-        lock_thin_etalon_action.setCheckable(True)
-        lock_thin_etalon_action.triggered.connect(self.toggle_thin_etalon_lock)
-        self.lock_piezo_etalon_action = lock_piezo_etalon_action = lock_menu.addAction('Lock Piezo Etalon')
-        lock_piezo_etalon_action.setCheckable(True)
-        lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
-        self.lock_fast_piezo_action = lock_fast_piezo_action = lock_menu.addAction('Lock Fast Piezo')
-        lock_fast_piezo_action.setCheckable(True)
-        lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
+        self.lock_all_action = lock_menu.addAction('Lock All')
+        self.lock_all_action.setCheckable(True)
+        self.lock_slow_piezo_action = lock_menu.addAction('Lock Slow Piezo')
+        self.lock_slow_piezo_action.setCheckable(True)
+        self.lock_thin_etalon_action = lock_menu.addAction('Lock Thin Etalon')
+        self.lock_thin_etalon_action.setCheckable(True)
+        self.lock_piezo_etalon_action = lock_menu.addAction('Lock Piezo Etalon')
+        self.lock_piezo_etalon_action.setCheckable(True)
+        self.lock_fast_piezo_action = lock_menu.addAction('Lock Fast Piezo')
+        self.lock_fast_piezo_action.setCheckable(True)
 
+    @handled_function
+    def setup_action_listeners(self):
+        # Console
+        self.clear_log_area_action.triggered.connect(self.clear_log_area)
+        self.open_idle_action.triggered.connect(self.open_idle)
+
+        # Set
+        self.set_wavelength_action.triggered.connect(self.set_wavelength_dialog)
+        self.set_bifi_motor_pos_action.triggered.connect(self.set_bifi_motor_pos_dialog)
+        self.set_thin_eta_motor_pos_action.triggered.connect(self.set_thin_eta_motor_pos_dialog)
+
+        # Scan
+        self.bifi_scan_action.triggered.connect(self.start_bifi_scan)
+        self.thin_eta_scan_action.triggered.connect(self.start_thin_etalon_scan)
+
+        # Lock
+        self.lock_all_action.triggered.connect(self.lock_all)
+        self.lock_slow_piezo_action.triggered.connect(self.toggle_slow_piezo_lock)
+        self.lock_thin_etalon_action.triggered.connect(self.toggle_thin_etalon_lock)
+        self.lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
+        self.lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
+
+    # TODO: For logging, use a Queue. https://stackoverflow.com/questions/21071448/redirecting-stdout-and-stderr-to-a-pyqt4-qtextedit-from-a-secondary-thread
     def log(self, message, end='\n'):
         self.log_area.setText(self.log_area.toPlainText() + message + end)
 
     def error_dialog(self):
         stack = format_exception(*sys.exc_info())
         description = stack.pop()
-        self.log(description)
+        self.log(description, end='')
         # Remove entries for handled_function decorator, for clarity
         stack = filter(lambda item: os.path.join('gui', 'handled_function.py') not in item, stack)
-        msg_box = QMessageBox(icon=QMessageBox.Critical, text=f"{description}\n{''.join(stack)}")
-        msg_box.setWindowTitle('Error')
-        msg_box.exec()
-
-    def open_idle(self):
-        self.log('Opening IDLE.')
-        subprocess.Popen('python -m idlelib -t "Matisse Controller - Python Shell" -c "from matisse import Matisse; \
-            matisse = Matisse(); print(\'Access the Matisse using \\\'matisse.[method]\\\'\')"')
+        dialog = QMessageBox(icon=QMessageBox.Critical, text=f"{description}\n{''.join(stack)}")
+        dialog.setWindowTitle('Error')
+        dialog.exec()
 
     @handled_function
-    def lock_all(self, lock):
-        if lock:
+    def clear_log_area(self, checked):
+        self.log_area.clear()
+
+    @handled_function
+    def open_idle(self, checked):
+        self.log('Opening IDLE.')
+        subprocess.Popen('python -m idlelib -t "Matisse Controller - Python Shell" -c "from matisse import Matisse; ' +
+                         'matisse = Matisse(); print(\'Access the Matisse using \\\'matisse.[method]\\\'\')"')
+
+    @handled_function
+    def set_wavelength_dialog(self, checked):
+        # TODO: Set default value to current target wavelength or just to the middle
+        target_wavelength, success = QInputDialog.getDouble(self, 'Set Wavelength', 'Wavelength (nm): ')
+        if success:
+            self.log(f"Setting wavelength to {target_wavelength} nm...")
+
+    @handled_function
+    def set_bifi_motor_pos_dialog(self, checked):
+        # TODO: Set default value to current position or just to the middle
+        target_position, success = QInputDialog.getInt(self, 'Set BiFi Motor Position', 'Absolute Position:')
+        if success:
+            self.log(f"Setting BiFi motor position to {target_position}.")
+
+    @handled_function
+    def set_thin_eta_motor_pos_dialog(self, checked):
+        # TODO: Set default value to current position or just to the middle
+        target_position, success = QInputDialog.getInt(self, 'Set Thin Etalon Motor Position', 'Absolute Position:')
+        if success:
+            self.log(f"Setting thin etalon motor position to {target_position}.")
+
+    @handled_function
+    def start_bifi_scan(self, checked):
+        self.log("Starting BiFi scan...")
+
+    @handled_function
+    def start_thin_etalon_scan(self, checked):
+        self.log("Starting thin etalon scan...")
+
+    @handled_function
+    def lock_all(self, checked):
+        if checked:
             for action in self.lock_actions:
                 if not action.isChecked():
                     action.trigger()
@@ -106,21 +158,21 @@ class Gui(QMainWindow):
                 action.setEnabled(True)
 
     @handled_function
-    def toggle_slow_piezo_lock(self, lock):
-        self.log(f"{'Locking' if lock else 'Unlocking'} slow piezo.")
+    def toggle_slow_piezo_lock(self, checked):
+        self.log(f"{'Locking' if checked else 'Unlocking'} slow piezo.")
         raise NotImplementedError
 
     @handled_function
-    def toggle_thin_etalon_lock(self, lock):
-        self.log(f"{'Locking' if lock else 'Unlocking'} thin etalon.")
+    def toggle_thin_etalon_lock(self, checked):
+        self.log(f"{'Locking' if checked else 'Unlocking'} thin etalon.")
         raise NotImplementedError
 
     @handled_function
-    def toggle_piezo_etalon_lock(self, lock):
-        self.log(f"{'Locking' if lock else 'Unlocking'} piezo etalon.")
+    def toggle_piezo_etalon_lock(self, checked):
+        self.log(f"{'Locking' if checked else 'Unlocking'} piezo etalon.")
         raise NotImplementedError
 
     @handled_function
-    def toggle_fast_piezo_lock(self, lock):
-        self.log(f"{'Locking' if lock else 'Unlocking'} fast piezo.")
+    def toggle_fast_piezo_lock(self, checked):
+        self.log(f"{'Locking' if checked else 'Unlocking'} fast piezo.")
         raise NotImplementedError
