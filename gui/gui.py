@@ -76,7 +76,7 @@ class Gui(QMainWindow):
         self.thin_eta_scan_action.triggered.connect(self.start_thin_etalon_scan)
 
         # Lock
-        self.lock_all_action.triggered.connect(self.lock_all)
+        self.lock_all_action.triggered.connect(self.toggle_lock_all)
         self.lock_slow_piezo_action.triggered.connect(self.toggle_slow_piezo_lock)
         self.lock_thin_etalon_action.triggered.connect(self.toggle_thin_etalon_lock)
         self.lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
@@ -141,7 +141,7 @@ class Gui(QMainWindow):
         self.log("Starting thin etalon scan...")
 
     @handled_function
-    def lock_all(self, checked):
+    def toggle_lock_all(self, checked):
         if checked:
             for action in self.lock_actions:
                 if not action.isChecked():
