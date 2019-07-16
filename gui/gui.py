@@ -48,19 +48,19 @@ class Gui(QMainWindow):
         lock_menu = menu_bar.addMenu('Lock')
         self.lock_all_action = lock_all_action = lock_menu.addAction('Lock All')
         lock_all_action.setCheckable(True)
-        lock_all_action.toggled.connect(self.lock_all)
+        lock_all_action.triggered.connect(self.lock_all)
         self.lock_slow_piezo_action = lock_slow_piezo_action = lock_menu.addAction('Lock Slow Piezo')
         lock_slow_piezo_action.setCheckable(True)
-        lock_slow_piezo_action.toggled.connect(self.toggle_slow_piezo_lock)
+        lock_slow_piezo_action.triggered.connect(self.toggle_slow_piezo_lock)
         self.lock_thin_etalon_action = lock_thin_etalon_action = lock_menu.addAction('Lock Thin Etalon')
         lock_thin_etalon_action.setCheckable(True)
-        lock_thin_etalon_action.toggled.connect(self.toggle_thin_etalon_lock)
+        lock_thin_etalon_action.triggered.connect(self.toggle_thin_etalon_lock)
         self.lock_piezo_etalon_action = lock_piezo_etalon_action = lock_menu.addAction('Lock Piezo Etalon')
         lock_piezo_etalon_action.setCheckable(True)
-        lock_piezo_etalon_action.toggled.connect(self.toggle_piezo_etalon_lock)
+        lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
         self.lock_fast_piezo_action = lock_fast_piezo_action = lock_menu.addAction('Lock Fast Piezo')
         lock_fast_piezo_action.setCheckable(True)
-        lock_fast_piezo_action.toggled.connect(self.toggle_fast_piezo_lock)
+        lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
 
     def log(self, message, end='\n'):
         self.log_area.setText(self.log_area.toPlainText() + message + end)
@@ -77,33 +77,34 @@ class Gui(QMainWindow):
     def lock_all(self, lock):
         if lock:
             for action in self.lock_actions:
-                action.setChecked(True)
-                action.setEnabled(False)
+                if not action.isChecked():
+                    action.trigger()
+            if all([action.isChecked() for action in self.lock_actions]):
+                [action.setEnabled(False) for action in self.lock_actions]
+            else:
+                self.lock_all_action.setChecked(False)
+                self.log("Couldn't lock all laser components.")
         else:
             for action in reversed(self.lock_actions):
-                action.setChecked(False)
+                action.trigger()
                 action.setEnabled(True)
 
     @HandledSlot('bool')
     def toggle_slow_piezo_lock(self, lock):
-        self.log(f"{'Locking' if lock else 'Unlocking'} slow piezo... ", end='')
+        self.log(f"{'Locking' if lock else 'Unlocking'} slow piezo.")
         raise NotImplementedError
-        self.log('Done.')
 
     @HandledSlot('bool')
     def toggle_thin_etalon_lock(self, lock):
-        self.log(f"{'Locking' if lock else 'Unlocking'} thin etalon... ", end='')
+        self.log(f"{'Locking' if lock else 'Unlocking'} thin etalon.")
         raise NotImplementedError
-        self.log('Done.')
 
     @HandledSlot('bool')
     def toggle_piezo_etalon_lock(self, lock):
-        self.log(f"{'Locking' if lock else 'Unlocking'} piezo etalon... ", end='')
+        self.log(f"{'Locking' if lock else 'Unlocking'} piezo etalon.")
         raise NotImplementedError
-        self.log('Done.')
 
     @HandledSlot('bool')
     def toggle_fast_piezo_lock(self, lock):
-        self.log(f"{'Locking' if lock else 'Unlocking'} fast piezo... ", end='')
+        self.log(f"{'Locking' if lock else 'Unlocking'} fast piezo.")
         raise NotImplementedError
-        self.log('Done.')
