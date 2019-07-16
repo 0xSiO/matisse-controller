@@ -1,11 +1,13 @@
-from .stabilization_thread import StabilizationThread
-from .scans_plot import ScansPlot
-from wavemaster import WaveMaster
-from pyvisa import ResourceManager, VisaIOError
 from queue import Queue
-from warnings import warn
-from scipy.signal import savgol_filter, argrelextrema
+from warnings import warn  # TODO: Tag warning messages in log, like "WARNING: ..."
+
 import numpy as np
+from pyvisa import ResourceManager, VisaIOError
+from scipy.signal import savgol_filter, argrelextrema
+
+from wavemaster import WaveMaster
+from .scans_plot import ScansPlot
+from .stabilization_thread import StabilizationThread
 
 
 class Matisse:
