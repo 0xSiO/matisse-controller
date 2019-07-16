@@ -1,5 +1,5 @@
-from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 
 
 class ScansPlot:
