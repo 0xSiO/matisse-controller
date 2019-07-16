@@ -86,8 +86,8 @@ class Gui(QMainWindow):
 
     def open_idle(self):
         self.log('Opening IDLE.')
-        # TODO: Open python shell with access to any relevant objects
-        subprocess.run(['python', '-m', 'idlelib'])
+        subprocess.Popen('python -m idlelib -t "Matisse Controller - Python Shell" -c "from matisse import Matisse; \
+            matisse = Matisse(); print(\'Access the Matisse using \\\'matisse.[method]\\\'\')"')
 
     @handled_function
     def lock_all(self, lock):
