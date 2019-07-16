@@ -71,13 +71,13 @@ class Gui(QMainWindow):
         lock_fast_piezo_action.setCheckable(True)
         lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
 
-    @handled_function
     def log(self, message, end='\n'):
         self.log_area.setText(self.log_area.toPlainText() + message + end)
 
     def error_dialog(self):
         stack = format_exception(*sys.exc_info())
         description = stack.pop()
+        self.log(description)
         # Remove entries for handled_function decorator, for clarity
         stack = filter(lambda item: os.path.join('gui', 'handled_function.py') not in item, stack)
         msg_box = QMessageBox(icon=QMessageBox.Critical, text=f"{description}\n{''.join(stack)}")
