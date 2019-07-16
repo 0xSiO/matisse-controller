@@ -82,3 +82,8 @@ When running loop while checking for idle status, I keep getting code 8706, some
 Got it working, just use the last 8 bits of the motor status to decide whether to send the command, since the first few
 bits change depending on other factors.
 
+Important feature to add from Matisse Commander: RefCell properties measurement. Scan the RefCell, measure the RefCell
+spectrum, fit to an Airy function. Do it when the laser is locked? When doing a fit, change the parameters of the fit to
+the new fit so that the next fit uses the previous fit. This allows us to slowly correct a fit.
+
+More: RefCell waveform dialog, Control loop live view.
