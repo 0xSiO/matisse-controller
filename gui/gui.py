@@ -1,3 +1,5 @@
+import os
+import subprocess
 import sys
 from traceback import format_exception
 
@@ -30,8 +32,10 @@ class Gui(QMainWindow):
 
     @handled_function
     def setup_matisse(self):
-        self.matisse = Matisse()
+        # TODO: Initialize Matisse
+        self.matisse: Matisse = None
 
+    @handled_function
     def setup_menus(self):
         menu_bar = self.menuBar()
 
@@ -39,8 +43,7 @@ class Gui(QMainWindow):
         self.clear_console_action = console_menu.addAction('Clear Log')
         self.clear_console_action.triggered.connect(lambda: self.log_area.clear())
         self.open_shell_action = console_menu.addAction('Open Python Shell...')
-        self.open_shell_action.triggered.connect(lambda: self.log('Launching Python shell.'))
-        # TODO: Open python shell with access to any relevant objects
+        self.open_shell_action.triggered.connect(self.open_idle)
 
         set_menu = menu_bar.addMenu('Set')
         self.set_wavelength_action = set_menu.addAction('Wavelength')
@@ -68,16 +71,23 @@ class Gui(QMainWindow):
         lock_fast_piezo_action.setCheckable(True)
         lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
 
+    @handled_function
     def log(self, message, end='\n'):
         self.log_area.setText(self.log_area.toPlainText() + message + end)
 
     def error_dialog(self):
         stack = format_exception(*sys.exc_info())
-        stack.pop(1)  # Remove entry for the HandledSlot decorator, for clarity
-        description = stack.pop()  # Grab exception message to use as the description
+        description = stack.pop()
+        # Remove entries for handled_function decorator, for clarity
+        stack = filter(lambda item: os.path.join('gui', 'handled_function.py') not in item, stack)
         msg_box = QMessageBox(icon=QMessageBox.Critical, text=f"{description}\n{''.join(stack)}")
         msg_box.setWindowTitle('Error')
         msg_box.exec()
+
+    def open_idle(self):
+        self.log('Opening IDLE.')
+        # TODO: Open python shell with access to any relevant objects
+        subprocess.run(['python', '-m', 'idlelib'])
 
     @handled_function
     def lock_all(self, lock):
