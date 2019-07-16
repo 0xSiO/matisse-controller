@@ -13,9 +13,10 @@ from .handled_function import handled_function
 class Gui(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setup_matisse()
         self.setup_menus()
         self.setup_action_listeners()
+        self.setup_matisse()
+
         self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
                              self.lock_fast_piezo_action]
 
@@ -32,12 +33,6 @@ class Gui(QMainWindow):
         self.resize(600, 200)
         self.show()
 
-    @handled_function
-    def setup_matisse(self):
-        # TODO: Initialize Matisse
-        self.matisse: Matisse = None
-
-    @handled_function
     def setup_menus(self):
         menu_bar = self.menuBar()
 
@@ -66,7 +61,6 @@ class Gui(QMainWindow):
         self.lock_fast_piezo_action = lock_menu.addAction('Lock Fast Piezo')
         self.lock_fast_piezo_action.setCheckable(True)
 
-    @handled_function
     def setup_action_listeners(self):
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
@@ -87,6 +81,11 @@ class Gui(QMainWindow):
         self.lock_thin_etalon_action.triggered.connect(self.toggle_thin_etalon_lock)
         self.lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
         self.lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
+
+    @handled_function
+    def setup_matisse(self):
+        # TODO: Initialize Matisse
+        self.matisse: Matisse = None
 
     # TODO: For logging, use a Queue. https://stackoverflow.com/questions/21071448/redirecting-stdout-and-stderr-to-a-pyqt4-qtextedit-from-a-secondary-thread
     def log(self, message, end='\n'):
