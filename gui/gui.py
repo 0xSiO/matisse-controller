@@ -5,8 +5,10 @@ class Gui(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setup_menus()
+        self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
+                             self.lock_fast_piezo_action]
 
-        console_area = QTextEdit()
+        self.console_area = console_area = QTextEdit()
         console_area.setReadOnly(True)
 
         layout = QVBoxLayout()
@@ -37,24 +39,53 @@ class Gui(QMainWindow):
         lock_all_action.toggled.connect(self.lock_all)
         self.lock_slow_piezo_action = lock_slow_piezo_action = lock_menu.addAction('Lock Slow Piezo')
         lock_slow_piezo_action.setCheckable(True)
+        lock_slow_piezo_action.toggled.connect(self.toggle_slow_piezo_lock)
         self.lock_thin_etalon_action = lock_thin_etalon_action = lock_menu.addAction('Lock Thin Etalon')
         lock_thin_etalon_action.setCheckable(True)
+        lock_thin_etalon_action.toggled.connect(self.toggle_thin_etalon_lock)
         self.lock_piezo_etalon_action = lock_piezo_etalon_action = lock_menu.addAction('Lock Piezo Etalon')
         lock_piezo_etalon_action.setCheckable(True)
+        lock_piezo_etalon_action.toggled.connect(self.toggle_piezo_etalon_lock)
         self.lock_fast_piezo_action = lock_fast_piezo_action = lock_menu.addAction('Lock Fast Piezo')
         lock_fast_piezo_action.setCheckable(True)
+        lock_fast_piezo_action.toggled.connect(self.toggle_fast_piezo_lock)
+
+    def log(self, message, end='\n'):
+        self.console_area.setText(self.console_area.toPlainText() + message + end)
+
+    def error_dialog(self, error, message=''):
+        # TODO: Show a dialog with info about the error and an optional message
+        raise NotImplementedError
 
     def lock_all(self, lock):
         if lock:
-            for action in [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
-                           self.lock_fast_piezo_action]:
+            for action in self.lock_actions:
                 action.setChecked(True)
                 action.setEnabled(False)
         else:
-            for action in [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
-                           self.lock_fast_piezo_action]:
+            for action in reversed(self.lock_actions):
                 action.setChecked(False)
                 action.setEnabled(True)
+
+    def toggle_slow_piezo_lock(self, lock):
+        self.log(f"{'Locking' if lock else 'Unlocking'} slow piezo... ", end='')
+        # TODO: lock it
+        self.log('Done.')
+
+    def toggle_thin_etalon_lock(self, lock):
+        self.log(f"{'Locking' if lock else 'Unlocking'} thin etalon... ", end='')
+        # TODO: lock it
+        self.log('Done.')
+
+    def toggle_piezo_etalon_lock(self, lock):
+        self.log(f"{'Locking' if lock else 'Unlocking'} piezo etalon... ", end='')
+        # TODO: lock it
+        self.log('Done.')
+
+    def toggle_fast_piezo_lock(self, lock):
+        self.log(f"{'Locking' if lock else 'Unlocking'} fast piezo... ", end='')
+        # TODO: lock it
+        self.log('Done.')
 
 
 if __name__ == '__main__':
