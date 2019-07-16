@@ -8,11 +8,11 @@ class Gui(QMainWindow):
         self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
                              self.lock_fast_piezo_action]
 
-        self.console_area = console_area = QTextEdit()
-        console_area.setReadOnly(True)
+        self.log_area = log_area = QTextEdit()
+        log_area.setReadOnly(True)
 
         layout = QVBoxLayout()
-        layout.addWidget(console_area)
+        layout.addWidget(log_area)
 
         container = QWidget()
         container.setLayout(layout)
@@ -23,6 +23,10 @@ class Gui(QMainWindow):
 
     def setup_menus(self):
         menu_bar = self.menuBar()
+
+        console_menu = menu_bar.addMenu('Console')
+        self.clear_console_action = console_menu.addAction('Clear Log')
+        self.clear_console_action.triggered.connect(lambda: self.log_area.clear())
 
         set_menu = menu_bar.addMenu('Set')
         self.set_wavelength_action = set_menu.addAction('Wavelength')
@@ -51,7 +55,7 @@ class Gui(QMainWindow):
         lock_fast_piezo_action.toggled.connect(self.toggle_fast_piezo_lock)
 
     def log(self, message, end='\n'):
-        self.console_area.setText(self.console_area.toPlainText() + message + end)
+        self.log_area.setText(self.log_area.toPlainText() + message + end)
 
     def error_dialog(self, error, message=''):
         # TODO: Show a dialog with info about the error and an optional message
