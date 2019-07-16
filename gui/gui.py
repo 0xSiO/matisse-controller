@@ -1,7 +1,7 @@
 import os
 import subprocess
 import sys
-from traceback import format_exception
+import traceback
 
 from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QMessageBox, QInputDialog
 
@@ -92,7 +92,7 @@ class Gui(QMainWindow):
         self.log_area.setText(self.log_area.toPlainText() + message + end)
 
     def error_dialog(self):
-        stack = format_exception(*sys.exc_info())
+        stack = traceback.format_exception(*sys.exc_info())
         description = stack.pop()
         self.log(description, end='')
         # Remove entries for handled_function decorator, for clarity
