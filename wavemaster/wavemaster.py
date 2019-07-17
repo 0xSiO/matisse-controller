@@ -2,6 +2,7 @@ from serial import Serial, SerialException
 
 
 class WaveMaster:
+    # TODO: Make this configurable
     SERIAL_PORT = 'COM5'
 
     def __init__(self):
