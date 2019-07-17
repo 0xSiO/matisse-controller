@@ -11,7 +11,7 @@ from .stabilization_thread import StabilizationThread
 
 
 class Matisse:
-    # TODO: Make this configurable?
+    # TODO: Make this configurable
     DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
     # How far to each side should we scan the BiFi?
     BIREFRINGENT_SCAN_RANGE = 300
