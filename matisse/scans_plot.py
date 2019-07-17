@@ -4,6 +4,7 @@ from matplotlib.axes import Axes
 
 class ScansPlot:
     def __init__(self):
+        plt.figure()
         self._birefringent_scan_plot: Axes = plt.subplot(2, 1, 1)
         self._thin_etalon_scan_plot: Axes = plt.subplot(2, 1, 2)
 
