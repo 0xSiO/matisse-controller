@@ -183,19 +183,27 @@ class Gui(QMainWindow):
     @handled_slot(bool)
     def toggle_slow_piezo_lock(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} slow piezo.")
-        raise NotImplementedError
+        self.lock_slow_piezo_action.setChecked(not checked)
+        self.matisse.set_slow_piezo_lock(checked)
+        self.lock_slow_piezo_action.setChecked(checked)
 
     @handled_slot(bool)
     def toggle_thin_etalon_lock(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} thin etalon.")
-        raise NotImplementedError
+        self.lock_thin_etalon_action.setChecked(not checked)
+        self.matisse.set_thin_etalon_lock(checked)
+        self.lock_thin_etalon_action.setChecked(checked)
 
     @handled_slot(bool)
     def toggle_piezo_etalon_lock(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} piezo etalon.")
-        raise NotImplementedError
+        self.lock_piezo_etalon_action.setChecked(not checked)
+        self.matisse.set_piezo_etalon_lock(checked)
+        self.lock_piezo_etalon_action.setChecked(checked)
 
     @handled_slot(bool)
     def toggle_fast_piezo_lock(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} fast piezo.")
-        raise NotImplementedError
+        self.lock_fast_piezo_action.setChecked(not checked)
+        self.matisse.set_piezo_etalon_lock(checked)
+        self.lock_fast_piezo_action.setChecked(checked)
