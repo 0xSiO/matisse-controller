@@ -10,12 +10,12 @@ from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QInput
 
 from matisse import Matisse
 from .handled_decorators import handled_function, handled_slot
-from .logging import LoggingStream, LoggingThread
+from .logging import LoggingStream, LoggingThread, LoggingExitFlag
 
 
 # TODO: Splash screen?
 class ControlApplication(QApplication):
-    EXIT_CODE_REBOOT = 42
+    EXIT_CODE_RESTART = 42
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -25,6 +25,10 @@ class ControlApplication(QApplication):
         self.setup_action_listeners()
         self.setup_matisse()
         self.window.show()
+
+    def __del__(self):
+        """Tell the logging thread to gracefully exit."""
+        self.log_queue.put(LoggingExitFlag())
 
     def setup_logging(self):
         self.log_area = QTextEdit()
@@ -55,6 +59,7 @@ class ControlApplication(QApplication):
         console_menu = menu_bar.addMenu('Console')
         self.clear_log_area_action = console_menu.addAction('Clear Log')
         self.open_idle_action = console_menu.addAction('Open Python Shell...')
+        self.restart_action = console_menu.addAction('Restart')
 
         set_menu = menu_bar.addMenu('Set')
         self.set_wavelength_action = set_menu.addAction('Wavelength')
@@ -84,6 +89,7 @@ class ControlApplication(QApplication):
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
         self.open_idle_action.triggered.connect(self.open_idle)
+        self.restart_action.triggered.connect(self.restart)
 
         # Set
         self.set_wavelength_action.triggered.connect(self.set_wavelength_dialog)
@@ -100,8 +106,6 @@ class ControlApplication(QApplication):
         self.lock_thin_etalon_action.triggered.connect(self.toggle_thin_etalon_lock)
         self.lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
         self.lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
-
-    # TODO: A 'reload' method to reload the entire state of the GUI in case something goes terribly wrong
 
     @handled_function
     def setup_matisse(self):
@@ -139,6 +143,10 @@ class ControlApplication(QApplication):
                          'matisse = Matisse(); print(\'Access the Matisse using \\\'matisse.[method]\\\'\')"')
 
     @handled_slot(bool)
+    def restart(self, checked):
+        self.exit(self.EXIT_CODE_RESTART)
+
+    @handled_slot(bool)
     def set_wavelength_dialog(self, checked):
         # TODO: Set default value to current target wavelength or just to the middle
         target_wavelength, success = QInputDialog.getDouble(self.window, 'Set Wavelength', 'Wavelength (nm): ')
@@ -149,18 +157,18 @@ class ControlApplication(QApplication):
     @handled_slot(bool)
     def set_bifi_motor_pos_dialog(self, checked):
         # TODO: Set default value to current position or just to the middle
-        target_position, success = QInputDialog.getInt(self.window, 'Set BiFi Motor Position', 'Absolute Position:')
+        target_pos, success = QInputDialog.getInt(self.window, 'Set BiFi Motor Position', 'Absolute Position:')
         if success:
-            print(f"Setting BiFi motor position to {target_position}.")
-            self.matisse.set_bifi_motor_pos(target_position)
+            print(f"Setting BiFi motor position to {target_pos}.")
+            self.matisse.set_bifi_motor_pos(target_pos)
 
     @handled_slot(bool)
     def set_thin_eta_motor_pos_dialog(self, checked):
         # TODO: Set default value to current position or just to the middle
-        target_position, success = QInputDialog.getInt(self.window, 'Set Thin Etalon Motor Position', 'Absolute Position:')
+        target_pos, success = QInputDialog.getInt(self.window, 'Set Thin Etalon Motor Position', 'Absolute Position:')
         if success:
-            print(f"Setting thin etalon motor position to {target_position}.")
-            self.matisse.set_thin_etalon_motor_pos(target_position)
+            print(f"Setting thin etalon motor position to {target_pos}.")
+            self.matisse.set_thin_etalon_motor_pos(target_pos)
 
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
