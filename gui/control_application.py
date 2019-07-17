@@ -10,7 +10,8 @@ from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QInput
 
 from matisse import Matisse
 from .handled_decorators import handled_function, handled_slot
-from .logging import LoggingStream, LoggingThread, LoggingExitFlag
+from .logging_stream import LoggingStream
+from .threading import ExitFlag, LoggingThread
 from .wavelength_monitor import WavelengthMonitor
 
 
@@ -39,7 +40,7 @@ class ControlApplication(QApplication):
 
     def __del__(self):
         """Tell the logging thread to gracefully exit."""
-        self.log_queue.put(LoggingExitFlag())
+        self.log_queue.put(ExitFlag())
 
     def setup_logging(self):
         self.log_area = QTextEdit()
