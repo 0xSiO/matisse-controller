@@ -9,7 +9,7 @@ from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QInputDialog, QMessageBox
 
 from matisse import Matisse
-from .handled_function import handled_function
+from .handled_function import handled_function, handled_slot
 from .logging import LoggingStream, LoggingThread
 
 
@@ -120,46 +120,46 @@ class Gui(QMainWindow):
         dialog.setText(f"{description + '_' * desired_width}\n\n{''.join(stack)}")
         dialog.exec()
 
-    @handled_function
+    @handled_slot(bool)
     def clear_log_area(self, checked):
         self.log_area.clear()
 
-    @handled_function
+    @handled_slot(bool)
     def open_idle(self, checked):
         print('Opening IDLE.')
         subprocess.Popen('python -m idlelib -t "Matisse Controller - Python Shell" -c "from matisse import Matisse; ' +
                          'matisse = Matisse(); print(\'Access the Matisse using \\\'matisse.[method]\\\'\')"')
 
-    @handled_function
+    @handled_slot(bool)
     def set_wavelength_dialog(self, checked):
         # TODO: Set default value to current target wavelength or just to the middle
         target_wavelength, success = QInputDialog.getDouble(self, 'Set Wavelength', 'Wavelength (nm): ')
         if success:
             print(f"Setting wavelength to {target_wavelength} nm...")
 
-    @handled_function
+    @handled_slot(bool)
     def set_bifi_motor_pos_dialog(self, checked):
         # TODO: Set default value to current position or just to the middle
         target_position, success = QInputDialog.getInt(self, 'Set BiFi Motor Position', 'Absolute Position:')
         if success:
             print(f"Setting BiFi motor position to {target_position}.")
 
-    @handled_function
+    @handled_slot(bool)
     def set_thin_eta_motor_pos_dialog(self, checked):
         # TODO: Set default value to current position or just to the middle
         target_position, success = QInputDialog.getInt(self, 'Set Thin Etalon Motor Position', 'Absolute Position:')
         if success:
             print(f"Setting thin etalon motor position to {target_position}.")
 
-    @handled_function
+    @handled_slot(bool)
     def start_bifi_scan(self, checked):
         print("Starting BiFi scan...")
 
-    @handled_function
+    @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
         print("Starting thin etalon scan...")
 
-    @handled_function
+    @handled_slot(bool)
     def toggle_lock_all(self, checked):
         if checked:
             for action in self.lock_actions:
@@ -175,22 +175,22 @@ class Gui(QMainWindow):
                 action.trigger()
                 action.setEnabled(True)
 
-    @handled_function
+    @handled_slot(bool)
     def toggle_slow_piezo_lock(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} slow piezo.")
         raise NotImplementedError
 
-    @handled_function
+    @handled_slot(bool)
     def toggle_thin_etalon_lock(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} thin etalon.")
         raise NotImplementedError
 
-    @handled_function
+    @handled_slot(bool)
     def toggle_piezo_etalon_lock(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} piezo etalon.")
         raise NotImplementedError
 
-    @handled_function
+    @handled_slot(bool)
     def toggle_fast_piezo_lock(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} fast piezo.")
         raise NotImplementedError
