@@ -51,4 +51,4 @@ class StabilizationThread(threading.Thread):
                     print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                 time.sleep(self._delay)
             else:
-                return
+                break
