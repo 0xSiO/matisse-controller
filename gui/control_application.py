@@ -16,7 +16,7 @@ from .wavelength_monitor import WavelengthMonitor
 
 # TODO: Splash screen?
 class ControlApplication(QApplication):
-    EXIT_CODE_RESTART = 42
+    EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
