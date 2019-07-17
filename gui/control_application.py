@@ -82,6 +82,9 @@ class ControlApplication(QApplication):
         self.lock_fast_piezo_action = lock_menu.addAction('Lock Fast Piezo')
         self.lock_fast_piezo_action.setCheckable(True)
 
+        tools_menu = menu_bar.addMenu('Tools')
+        self.wavelength_monitor_action = tools_menu.addAction('Wavelength Monitor')
+
         self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
                              self.lock_fast_piezo_action]
 
@@ -106,6 +109,9 @@ class ControlApplication(QApplication):
         self.lock_thin_etalon_action.triggered.connect(self.toggle_thin_etalon_lock)
         self.lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
         self.lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
+
+        # Tools
+        self.wavelength_monitor_action.triggered.connect(self.start_wavelength_monitor)
 
     @handled_function
     def setup_matisse(self):
@@ -172,12 +178,12 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
-        print("Starting BiFi scan...")
+        print('Starting BiFi scan...')
         self.matisse.birefringent_filter_scan()
 
     @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
-        print("Starting thin etalon scan...")
+        print('Starting thin etalon scan...')
         self.matisse.thin_etalon_scan()
 
     @handled_slot(bool)
@@ -223,3 +229,8 @@ class ControlApplication(QApplication):
         self.lock_fast_piezo_action.setChecked(not checked)
         self.matisse.set_piezo_etalon_lock(checked)
         self.lock_fast_piezo_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def start_wavelength_monitor(self, checked):
+        print('Starting wavelength monitor.')
+        raise NotImplementedError
