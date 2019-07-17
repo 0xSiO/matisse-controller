@@ -95,6 +95,8 @@ class Gui(QMainWindow):
         self.log_thread.message_received.connect(self.log)
         self.log_thread.start()
 
+    # TODO: A 'reload' method to reload the entire state of the GUI in case something goes terribly wrong
+
     @handled_function
     def setup_matisse(self):
         # TODO: Initialize Matisse
