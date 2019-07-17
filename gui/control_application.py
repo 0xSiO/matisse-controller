@@ -6,36 +6,49 @@ import traceback
 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QTextCursor
-from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QInputDialog, QMessageBox
+from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QInputDialog, QMessageBox, QApplication
 
 from matisse import Matisse
-from .handled_function import handled_function, handled_slot
+from .handled_decorators import handled_function, handled_slot
 from .logging import LoggingStream, LoggingThread
 
 
 # TODO: Splash screen?
-class Gui(QMainWindow):
-    def __init__(self):
-        super().__init__()
+class ControlApplication(QApplication):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setup_logging()
+        self.setup_window()
         self.setup_menus()
         self.setup_action_listeners()
-        self.setup_logging()
-        self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
-                             self.lock_fast_piezo_action]
+        self.setup_matisse()
+        self.window.show()
 
+    def setup_logging(self):
+        self.log_area = QTextEdit()
+        self.log_area.setReadOnly(True)
+
+        # Create the queue that holds all log messages and the input stream that writes them
+        self.log_queue = queue.Queue()
+        self.log_stream = LoggingStream(self.log_queue)
+        # Create a thread to manage receiving log messages
+        self.log_thread = LoggingThread(self.log_queue, parent=self)
+        self.log_thread.message_received.connect(self.log)
+        self.log_thread.start()
+
+    def setup_window(self):
         layout = QVBoxLayout()
         layout.addWidget(self.log_area)
-
         container = QWidget()
         container.setLayout(layout)
-        self.setWindowTitle('Matisse Controller')
-        self.setCentralWidget(container)
-        self.resize(600, 200)
-        self.show()
-        self.setup_matisse()
+
+        self.window = window = QMainWindow()
+        window.setWindowTitle('Matisse Controller')
+        window.setCentralWidget(container)
+        window.resize(600, 200)
 
     def setup_menus(self):
-        menu_bar = self.menuBar()
+        menu_bar = self.window.menuBar()
 
         console_menu = menu_bar.addMenu('Console')
         self.clear_log_area_action = console_menu.addAction('Clear Log')
@@ -62,6 +75,9 @@ class Gui(QMainWindow):
         self.lock_fast_piezo_action = lock_menu.addAction('Lock Fast Piezo')
         self.lock_fast_piezo_action.setCheckable(True)
 
+        self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
+                             self.lock_fast_piezo_action]
+
     def setup_action_listeners(self):
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
@@ -83,18 +99,6 @@ class Gui(QMainWindow):
         self.lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
         self.lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
 
-    def setup_logging(self):
-        self.log_area = QTextEdit()
-        self.log_area.setReadOnly(True)
-
-        # Create the queue that holds all log messages and the input stream that writes them
-        self.log_queue = queue.Queue()
-        self.log_stream = LoggingStream(self.log_queue)
-        # Create a thread to manage receiving log messages
-        self.log_thread = LoggingThread(self.log_queue, parent=self)
-        self.log_thread.message_received.connect(self.log)
-        self.log_thread.start()
-
     # TODO: A 'reload' method to reload the entire state of the GUI in case something goes terribly wrong
 
     @handled_function
@@ -114,7 +118,7 @@ class Gui(QMainWindow):
         description = stack.pop()
         print(description, end='')
         # Remove entries for handled_function decorator, for clarity
-        stack = filter(lambda item: os.path.join('gui', 'handled_function.py') not in item, stack)
+        stack = filter(lambda item: os.path.join('gui', 'handled_decorators.py') not in item, stack)
         dialog = QMessageBox(icon=QMessageBox.Critical)
         dialog.setWindowTitle('Error')
         # Adding the underscores is a hack to resize the QMessageBox because it's not normally resizable.
@@ -135,7 +139,7 @@ class Gui(QMainWindow):
     @handled_slot(bool)
     def set_wavelength_dialog(self, checked):
         # TODO: Set default value to current target wavelength or just to the middle
-        target_wavelength, success = QInputDialog.getDouble(self, 'Set Wavelength', 'Wavelength (nm): ')
+        target_wavelength, success = QInputDialog.getDouble(self.window, 'Set Wavelength', 'Wavelength (nm): ')
         if success:
             print(f"Setting wavelength to {target_wavelength} nm...")
             self.matisse.set_wavelength(target_wavelength)
@@ -143,7 +147,7 @@ class Gui(QMainWindow):
     @handled_slot(bool)
     def set_bifi_motor_pos_dialog(self, checked):
         # TODO: Set default value to current position or just to the middle
-        target_position, success = QInputDialog.getInt(self, 'Set BiFi Motor Position', 'Absolute Position:')
+        target_position, success = QInputDialog.getInt(self.window, 'Set BiFi Motor Position', 'Absolute Position:')
         if success:
             print(f"Setting BiFi motor position to {target_position}.")
             self.matisse.set_bifi_motor_pos(target_position)
@@ -151,7 +155,7 @@ class Gui(QMainWindow):
     @handled_slot(bool)
     def set_thin_eta_motor_pos_dialog(self, checked):
         # TODO: Set default value to current position or just to the middle
-        target_position, success = QInputDialog.getInt(self, 'Set Thin Etalon Motor Position', 'Absolute Position:')
+        target_position, success = QInputDialog.getInt(self.window, 'Set Thin Etalon Motor Position', 'Absolute Position:')
         if success:
             print(f"Setting thin etalon motor position to {target_position}.")
             self.matisse.set_thin_etalon_motor_pos(target_position)
