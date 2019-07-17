@@ -39,36 +39,6 @@ class Matisse:
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
-    # TODO: Make this the definitive control mechanism to start the wavelength selection process
-    def set_wavelength(self, wavelength: float):
-        """
-        Configure the Matisse to output a given wavelength.
-
-        This is the process I'll follow:
-        1. Set approx. wavelength using BiFi. This is good to about +-1 nm.
-        2. Scan the BiFi back and forth and measure the total laser power at each point. Power looks like upside-down
-           parabolas.
-        3. Find all local maxima of the laser power data. Move the BiFi to the maximum that's closest to the desired
-           wavelength.
-        4. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
-        5. Find all local minima of the reflex data. Move the TE to the minimum that's closest to the desired
-           wavelength.
-        6. Shift the TE to the left or right a little bit. We want to be on the "flank" of the chosen parabola.
-        7. Adjust the piezo etalon until desired wavelength is reached.
-
-        :param wavelength: the desired wavelength
-        """
-        del self.scans_plot
-        self.scans_plot = ScansPlot()
-        self.target_wavelength = wavelength
-        print(f"Setting BiFi to ~{wavelength} nm... ", end='')
-        self.set_bifi_wavelength(wavelength)
-        print('Done.')
-        self.birefringent_filter_scan()
-        self.thin_etalon_scan()
-        # TODO: piezo etalon
-        print('All done.')
-
     def query(self, command: str, numeric_result=False, raise_on_error=True):
         """
         Send a command to the Matisse and return the response.
@@ -102,6 +72,36 @@ class Matisse:
     def wavemeter_wavelength(self) -> float:
         """:return: the wavelength (in nanometers) as measured by the wavemeter"""
         return self.wavemeter.get_wavelength()
+
+    # TODO: Make this the definitive control mechanism to start the wavelength selection process
+    def set_wavelength(self, wavelength: float):
+        """
+        Configure the Matisse to output a given wavelength.
+
+        This is the process I'll follow:
+        1. Set approx. wavelength using BiFi. This is good to about +-1 nm.
+        2. Scan the BiFi back and forth and measure the total laser power at each point. Power looks like upside-down
+           parabolas.
+        3. Find all local maxima of the laser power data. Move the BiFi to the maximum that's closest to the desired
+           wavelength.
+        4. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
+        5. Find all local minima of the reflex data. Move the TE to the minimum that's closest to the desired
+           wavelength.
+        6. Shift the TE to the left or right a little bit. We want to be on the "flank" of the chosen parabola.
+        7. Adjust the piezo etalon until desired wavelength is reached.
+
+        :param wavelength: the desired wavelength
+        """
+        del self.scans_plot
+        self.scans_plot = ScansPlot()
+        self.target_wavelength = wavelength
+        print(f"Setting BiFi to ~{wavelength} nm... ", end='')
+        self.set_bifi_wavelength(wavelength)
+        print('Done.')
+        self.birefringent_filter_scan()
+        self.thin_etalon_scan()
+        # TODO: piezo etalon
+        print('All done.')
 
     def birefringent_filter_scan(self):
         """
