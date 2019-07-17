@@ -1,5 +1,4 @@
 from queue import Queue
-from warnings import warn  # TODO: Tag warning messages in log, like "WARNING: ..."
 
 import numpy as np
 from pyvisa import ResourceManager, VisaIOError
@@ -248,30 +247,17 @@ class Matisse:
         """Set the current position of the reference cell as a float value in [0, 1]"""
         return self.query(f"SCAN:NOW {val}")
 
-    # TODO: Clean up these lock/unlock methods if they're going to remain one-liners
-    def lock_slow_piezo(self):
-        self.query('SLOWPIEZO:CONTROLSTATUS RUN')
+    def set_slow_piezo_lock(self, lock: bool):
+        self.query(f"SLOWPIEZO:CONTROLSTATUS {'RUN' if lock else 'STOP'}")
 
-    def unlock_slow_piezo(self):
-        self.query('SLOWPIEZO:CONTROLSTATUS STOP')
+    def set_fast_piezo_lock(self, lock: bool):
+        self.query(f"FASTPIEZO:CONTROLSTATUS {'RUN' if lock else 'STOP'}")
 
-    def lock_fast_piezo(self):
-        self.query('FASTPIEZO:CONTROLSTATUS RUN')
+    def set_thin_etalon_lock(self, lock: bool):
+        self.query(f"THINETALON:CONTROLSTATUS {'RUN' if lock else 'STOP'}")
 
-    def unlock_fast_piezo(self):
-        self.query('FASTPIEZO:CONTROLSTATUS STOP')
-
-    def lock_thin_etalon(self):
-        self.query('THINETALON:CONTROLSTATUS RUN')
-
-    def unlock_thin_etalon(self):
-        self.query('THINETALON:CONTROLSTATUS STOP')
-
-    def lock_piezo_etalon(self):
-        self.query('PIEZOETALON:CONTROLSTATUS RUN')
-
-    def unlock_piezo_etalon(self):
-        self.query('PIEZOETALON:CONTROLSTATUS STOP')
+    def set_piezo_etalon_lock(self, lock: bool):
+        self.query(f"PIEZOETALON:CONTROLSTATUS {'RUN' if lock else 'STOP'}")
 
     def assert_locked(self):
         """
@@ -296,16 +282,16 @@ class Matisse:
         :param delay: how many seconds to wait in between each correction of the reference cell
         """
         if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
-            warn('Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
+            print('WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
             self.stabilization_thread = StabilizationThread(self, tolerance, delay, Queue(maxsize=1))
             # Lock the laser and begin stabilization
             print('Locking laser...')
-            self.lock_slow_piezo()
-            self.lock_thin_etalon()
-            self.lock_piezo_etalon()
-            self.lock_fast_piezo()
+            self.set_slow_piezo_lock(True)
+            self.set_thin_etalon_lock(True)
+            self.set_piezo_etalon_lock(True)
+            self.set_fast_piezo_lock(True)
             self.assert_locked()
             # TODO: Note the wavelength given by the user to stabilize.
             print(f"Stabilizing laser at {self.target_wavelength} nm...")
@@ -318,10 +304,10 @@ class Matisse:
             print('Stopping stabilization thread...')
             self.stabilization_thread.join()
             print('Unlocking laser...')
-            self.unlock_fast_piezo()
-            self.unlock_piezo_etalon()
-            self.unlock_thin_etalon()
-            self.unlock_slow_piezo()
+            self.set_fast_piezo_lock(False)
+            self.set_piezo_etalon_lock(False)
+            self.set_thin_etalon_lock(False)
+            self.set_slow_piezo_lock(False)
             print('Done.')
         else:
-            warn('Stabilization thread is not running.')
+            print('WARNING: Stabilization thread is not running.')
