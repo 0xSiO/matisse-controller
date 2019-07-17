@@ -136,6 +136,7 @@ class Gui(QMainWindow):
         target_wavelength, success = QInputDialog.getDouble(self, 'Set Wavelength', 'Wavelength (nm): ')
         if success:
             print(f"Setting wavelength to {target_wavelength} nm...")
+            self.matisse.set_wavelength(target_wavelength)
 
     @handled_slot(bool)
     def set_bifi_motor_pos_dialog(self, checked):
@@ -143,6 +144,7 @@ class Gui(QMainWindow):
         target_position, success = QInputDialog.getInt(self, 'Set BiFi Motor Position', 'Absolute Position:')
         if success:
             print(f"Setting BiFi motor position to {target_position}.")
+            self.matisse.set_bifi_motor_pos(target_position)
 
     @handled_slot(bool)
     def set_thin_eta_motor_pos_dialog(self, checked):
@@ -150,14 +152,17 @@ class Gui(QMainWindow):
         target_position, success = QInputDialog.getInt(self, 'Set Thin Etalon Motor Position', 'Absolute Position:')
         if success:
             print(f"Setting thin etalon motor position to {target_position}.")
+            self.matisse.set_thin_etalon_motor_pos(target_position)
 
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
         print("Starting BiFi scan...")
+        self.matisse.birefringent_filter_scan()
 
     @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
         print("Starting thin etalon scan...")
+        self.matisse.thin_etalon_scan()
 
     @handled_slot(bool)
     def toggle_lock_all(self, checked):
