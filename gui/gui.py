@@ -3,7 +3,7 @@ import subprocess
 import sys
 import traceback
 
-from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QMessageBox, QInputDialog
+from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QInputDialog, QMessageBox
 
 from matisse import Matisse
 from .handled_function import handled_function
@@ -15,8 +15,6 @@ class Gui(QMainWindow):
         super().__init__()
         self.setup_menus()
         self.setup_action_listeners()
-        self.setup_matisse()
-
         self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
                              self.lock_fast_piezo_action]
 
@@ -32,6 +30,7 @@ class Gui(QMainWindow):
         self.setCentralWidget(container)
         self.resize(600, 200)
         self.show()
+        self.setup_matisse()
 
     def setup_menus(self):
         menu_bar = self.menuBar()
@@ -92,13 +91,18 @@ class Gui(QMainWindow):
         self.log_area.setText(self.log_area.toPlainText() + message + end)
 
     def error_dialog(self):
-        stack = traceback.format_exception(*sys.exc_info())
+        stack = list(traceback.format_exception(*sys.exc_info()))
+        # Pick length of longest line in stack, with a cutoff at 185
+        desired_width = min(max([len(line) for line in stack]), 185)
         description = stack.pop()
         self.log(description, end='')
         # Remove entries for handled_function decorator, for clarity
         stack = filter(lambda item: os.path.join('gui', 'handled_function.py') not in item, stack)
-        dialog = QMessageBox(icon=QMessageBox.Critical, text=f"{description}\n{''.join(stack)}")
+        dialog = QMessageBox(icon=QMessageBox.Critical)
         dialog.setWindowTitle('Error')
+        # Adding the underscores is a hack to resize the QMessageBox because it's not normally resizable.
+        # This looks good in Windows, haven't tested other platforms. Sorry :(
+        dialog.setText(f"{description + '_' * desired_width}\n\n{''.join(stack)}")
         dialog.exec()
 
     @handled_function
