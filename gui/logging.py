@@ -9,8 +9,8 @@ class LoggingStream:
     def __init__(self, queue: Queue):
         self.queue = queue
 
-    def write(self, text):
-        self.queue.put(text)
+    def write(self, message):
+        self.queue.put(message)
 
 
 class LoggingThread(QThread):
@@ -28,11 +28,11 @@ class LoggingThread(QThread):
 
     def run(self):
         while True:
-            text = self.queue.get()
-            if isinstance(text, LoggingExitFlag):
+            message = self.queue.get()
+            if isinstance(message, LoggingExitFlag):
                 break
             else:
-                self.message_received.emit(text)
+                self.message_received.emit(message)
 
 
 class LoggingExitFlag:
