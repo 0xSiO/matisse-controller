@@ -15,6 +15,8 @@ from .logging import LoggingStream, LoggingThread
 
 # TODO: Splash screen?
 class ControlApplication(QApplication):
+    EXIT_CODE_REBOOT = 42
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setup_logging()
