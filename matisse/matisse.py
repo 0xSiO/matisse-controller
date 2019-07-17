@@ -35,7 +35,7 @@ class Matisse:
             self.stabilization_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.wavemeter = WaveMaster()
-            self.scans_plot = ScansPlot()
+            self.scans_plot = None
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
@@ -58,6 +58,8 @@ class Matisse:
 
         :param wavelength: the desired wavelength
         """
+        del self.scans_plot
+        self.scans_plot = ScansPlot()
         self.target_wavelength = wavelength
         print(f"Setting BiFi to ~{wavelength} nm... ", end='')
         self.set_bifi_wavelength(wavelength)
@@ -140,6 +142,8 @@ class Matisse:
         self.set_bifi_motor_pos(best_pos)
         print('Done.')
 
+        if self.scans_plot is None:
+            self.scans_plot = ScansPlot()
         self.scans_plot.plot_birefringent_scan(positions, voltages, smoothed_data)
         self.scans_plot.plot_birefringent_selection(best_pos)
         self.scans_plot.plot_birefringent_maxima(positions[maxima], smoothed_data[maxima])
@@ -210,6 +214,8 @@ class Matisse:
         self.set_thin_etalon_motor_pos(best_pos)
         print('Done.')
 
+        if self.scans_plot is None:
+            self.scans_plot = ScansPlot()
         self.scans_plot.plot_thin_etalon_scan(positions, voltages, smoothed_data)
         self.scans_plot.plot_thin_etalon_selection(best_pos)
         self.scans_plot.plot_thin_etalon_minima(positions[minima], smoothed_data[minima])
