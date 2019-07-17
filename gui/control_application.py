@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QInput
 from matisse import Matisse
 from .handled_decorators import handled_function, handled_slot
 from .logging import LoggingStream, LoggingThread, LoggingExitFlag
+from .wavelength_monitor import WavelengthMonitor
 
 
 # TODO: Splash screen?
@@ -19,11 +20,21 @@ class ControlApplication(QApplication):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Non-handled functions only here
         self.setup_logging()
         self.setup_window()
         self.setup_menus()
         self.setup_action_listeners()
+        # Set up the log window first to display log output
+        self.setup_log_window()
+
+        # Handled functions can go here
+        self.setup_widgets()
         self.setup_matisse()
+
+        container = QWidget()
+        container.setLayout(self.layout)
+        self.window.setCentralWidget(container)
         self.window.show()
 
     def __del__(self):
@@ -43,14 +54,9 @@ class ControlApplication(QApplication):
         self.log_thread.start()
 
     def setup_window(self):
-        layout = QVBoxLayout()
-        layout.addWidget(self.log_area)
-        container = QWidget()
-        container.setLayout(layout)
-
         self.window = window = QMainWindow()
+        self.layout = QVBoxLayout()
         window.setWindowTitle('Matisse Controller')
-        window.setCentralWidget(container)
         window.resize(600, 200)
 
     def setup_menus(self):
@@ -83,7 +89,6 @@ class ControlApplication(QApplication):
         self.lock_fast_piezo_action.setCheckable(True)
 
         tools_menu = menu_bar.addMenu('Tools')
-        self.wavelength_monitor_action = tools_menu.addAction('Wavelength Monitor')
 
         self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
                              self.lock_fast_piezo_action]
@@ -111,7 +116,14 @@ class ControlApplication(QApplication):
         self.lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
 
         # Tools
-        self.wavelength_monitor_action.triggered.connect(self.start_wavelength_monitor)
+
+    def setup_log_window(self):
+        self.layout.addWidget(self.log_area)
+
+    @handled_function
+    def setup_widgets(self):
+        # TODO: Pass self.matisse.wavemeter into the monitor
+        self.layout.addWidget(WavelengthMonitor(None))
 
     @handled_function
     def setup_matisse(self):
@@ -229,8 +241,3 @@ class ControlApplication(QApplication):
         self.lock_fast_piezo_action.setChecked(not checked)
         self.matisse.set_piezo_etalon_lock(checked)
         self.lock_fast_piezo_action.setChecked(checked)
-
-    @handled_slot(bool)
-    def start_wavelength_monitor(self, checked):
-        print('Starting wavelength monitor.')
-        raise NotImplementedError
