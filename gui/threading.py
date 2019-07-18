@@ -37,10 +37,12 @@ class WavelengthUpdateThread(QThread):
         self.messages = messages
 
     def run(self):
-        wavelength = 'Wavelength: 0.000'
         while True:
-            if self.messages.empty():
-                # TODO: Read wavelength from wavemeter and format it
+            if self.messages.qsize() == 0:
+                try:
+                    wavelength = 'Wavelength: ' + self.wavemeter.get_raw_value()
+                except Exception:
+                    wavelength = 'Wavelength: ERROR'
                 self.wavelength_read.emit(wavelength)
                 time.sleep(1)
             else:

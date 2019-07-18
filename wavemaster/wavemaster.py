@@ -27,8 +27,12 @@ class WaveMaster:
         self.serial.flush()
         return self.serial.readline().strip().decode()
 
+    def get_raw_value(self):
+        return self.query('VAL?').split(',')[1].strip()
+
     def get_wavelength(self):
-        value = self.query('VAL?').split(',')[1]
-        while value == 'NO SIGNAL' or value == 'MULTI-LINE':
-            value = self.query('VAL?').split(',')[1]
-        return float(value)
+        raw_value = self.get_raw_value()
+        # Keep trying until we get a number
+        while raw_value == 'NO SIGNAL' or raw_value == 'MULTI-LINE':
+            raw_value = self.get_raw_value()
+        return float(raw_value)

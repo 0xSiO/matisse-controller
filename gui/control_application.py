@@ -33,14 +33,13 @@ class ControlApplication(QApplication):
         self.setup_widgets()
         self.setup_matisse()
 
+        # Other setup
+        self.aboutToQuit.connect(self.clean_up)
+
         container = QWidget()
         container.setLayout(self.layout)
         self.window.setCentralWidget(container)
         self.window.show()
-
-    def __del__(self):
-        """Tell the logging thread to gracefully exit."""
-        self.log_queue.put(ExitFlag())
 
     def setup_logging(self):
         self.log_area = QTextEdit()
@@ -50,6 +49,7 @@ class ControlApplication(QApplication):
         self.log_queue = queue.Queue()
         self.log_stream = LoggingStream(self.log_queue)
         # Create a thread to manage receiving log messages
+        # TODO: Subclass QTextEdit and keep the logging thread there
         self.log_thread = LoggingThread(self.log_queue, parent=self)
         self.log_thread.message_received.connect(self.log)
         self.log_thread.start()
@@ -124,12 +124,21 @@ class ControlApplication(QApplication):
     @handled_function
     def setup_widgets(self):
         # TODO: Pass self.matisse.wavemeter into the monitor
-        self.layout.addWidget(WavelengthMonitor(None))
+        self.wavelength_monitor_queue = queue.Queue(maxsize=1)
+        self.wavelength_monitor = WavelengthMonitor(None, self.wavelength_monitor_queue)
+        self.layout.addWidget(self.wavelength_monitor)
 
     @handled_function
     def setup_matisse(self):
         # TODO: Initialize Matisse
         self.matisse: Matisse = None
+
+    @pyqtSlot()
+    def clean_up(self):
+        self.wavelength_monitor_queue.put(ExitFlag())
+        self.wavelength_monitor.update_thread.wait()
+        self.log_queue.put(ExitFlag())
+        self.log_thread.wait()
 
     @pyqtSlot(str)
     def log(self, message):
