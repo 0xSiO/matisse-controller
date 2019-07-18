@@ -11,8 +11,8 @@ from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QInput
 from matisse import Matisse
 from .handled_decorators import handled_function, handled_slot
 from .logging_stream import LoggingStream
+from .status_monitor import StatusMonitor
 from .threading import ExitFlag, LoggingThread
-from .wavelength_monitor import WavelengthMonitor
 
 
 # TODO: Splash screen?
@@ -30,8 +30,8 @@ class ControlApplication(QApplication):
         self.setup_log_window()
 
         # Handled functions can go here
-        self.setup_widgets()
         self.setup_matisse()
+        self.setup_widgets()
 
         # Other setup
         self.aboutToQuit.connect(self.clean_up)
@@ -125,10 +125,9 @@ class ControlApplication(QApplication):
 
     @handled_function
     def setup_widgets(self):
-        # TODO: Pass self.matisse.wavemeter into the monitor
-        self.wavelength_monitor_queue = queue.Queue(maxsize=1)
-        self.wavelength_monitor = WavelengthMonitor(None, self.wavelength_monitor_queue)
-        self.layout.addWidget(self.wavelength_monitor)
+        self.status_monitor_queue = queue.Queue(maxsize=1)
+        self.status_monitor = StatusMonitor(self.matisse, self.status_monitor_queue)
+        self.layout.addWidget(self.status_monitor)
 
     @handled_function
     def setup_matisse(self):
@@ -137,8 +136,8 @@ class ControlApplication(QApplication):
 
     @pyqtSlot()
     def clean_up(self):
-        self.wavelength_monitor_queue.put(ExitFlag())
-        self.wavelength_monitor.update_thread.wait()
+        self.status_monitor_queue.put(ExitFlag())
+        self.status_monitor.update_thread.wait()
         self.log_queue.put(ExitFlag())
         self.log_thread.wait()
 
