@@ -21,6 +21,9 @@ class MotorStatusPaused(AbstractContextManager):
     def __enter__(self):
         # TODO: Maybe set a flag to only update wavemeter reading
         self.monitor.update_thread.stop()
+        print('Stopped status monitor.')
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        # TODO: I don't think you can just start it again. Consider a less destructive method for stopping it.
         self.monitor.update_thread.start()
+        print('Started status monitor.')
