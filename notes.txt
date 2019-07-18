@@ -104,3 +104,9 @@ print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.quer
 VI_ERROR_RSRC_LOCKED (-1073807345): Specified type of lock cannot be obtained, or specified operation cannot be
 performed, because the resource is locked.
 Might need to look into the pyvisa locking methods.
+
+I'm getting none of the above issues when executing commands from a shell, no GUI. This leads me to believe it's a
+threading issue and/or a resource locking issue. The Matisse can handle many commands thrown to it at once, but when
+executing commands from different threads there seems to be an issue. Might need to stop other threads while stuff like
+scans are running, then start the threads again when we finish. Simple one-query commands like setting the approx. BiFi
+wavelength don't cause locking issues, so hopefully we only need to worry about the bigger stuff.

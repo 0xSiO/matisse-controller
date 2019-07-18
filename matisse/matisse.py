@@ -151,6 +151,7 @@ class Matisse:
         self.set_bifi_motor_pos(best_pos)
         print('Done.')
 
+        # TODO: When plot window is closed, this doesn't just become None.
         if self.scans_plot is None:
             self.scans_plot = ScansPlot()
         self.scans_plot.plot_birefringent_scan(positions, voltages, smoothed_data)
