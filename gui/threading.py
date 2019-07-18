@@ -42,10 +42,15 @@ class StatusUpdateThread(QThread):
         while True:
             if self.messages.qsize() == 0:
                 try:
-                    bifi_pos = self.matisse.query('MOTBI:POS?')
-                    thin_eta_pos = self.matisse.query('MOTTE:POS?')
+                    bifi_pos = self.matisse.query('MOTBI:POS?', numeric_result=True)
+                    thin_eta_pos = self.matisse.query('MOTTE:POS?', numeric_result=True)
+                    pz_eta_pos = self.matisse.query('PIEZOETALON:BASELINE?', numeric_result=True)
+                    slow_pz_pos = self.matisse.query('SLOWPIEZO:NOW?', numeric_result=True)
+                    refcell_pos = self.matisse.query('SCAN:NOW?', numeric_result=True)
                     wavelength = self.matisse.wavemeter.get_raw_value()
-                    status = ''
+                    # TODO: Colors based on how close we are to limits
+                    status = f"BiFi:{bifi_pos} Thin Eta:{thin_eta_pos} Pz Eta:{pz_eta_pos} Slow Pz:{slow_pz_pos} \
+                    RefCell:{refcell_pos} Wavemeter:{wavelength}"
                 except Exception:
                     status = 'Error reading the status.'
                 self.status_read.emit(status)
