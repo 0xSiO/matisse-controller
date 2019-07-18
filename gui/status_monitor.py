@@ -1,8 +1,9 @@
+from contextlib import AbstractContextManager
 from queue import Queue
 
 from PyQt5.QtWidgets import QLabel
 
-from .threading import StatusUpdateThread
+from .threading import StatusUpdateThread, ExitFlag
 
 
 class StatusMonitor(QLabel):
@@ -11,3 +12,15 @@ class StatusMonitor(QLabel):
         self.update_thread = StatusUpdateThread(matisse, messages, parent=self)
         self.update_thread.status_read.connect(self.setText)
         self.update_thread.start()
+
+
+class MotorStatusPaused(AbstractContextManager):
+    def __init__(self, monitor: StatusMonitor):
+        self.monitor = monitor
+
+    def __enter__(self):
+        # TODO: Maybe set a flag to only update wavemeter reading
+        self.monitor.update_thread.stop()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.monitor.update_thread.start()
