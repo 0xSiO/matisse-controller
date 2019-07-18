@@ -85,6 +85,10 @@ class StatusUpdateThread(QThread):
             else:
                 break
 
+    def stop(self):
+        self.messages.put(ExitFlag())
+        self.wait()
+
 
 class ExitFlag:
     pass
