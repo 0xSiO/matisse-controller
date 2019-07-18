@@ -28,7 +28,7 @@ class StabilizationThread(threading.Thread):
         Exit if anything is pushed to the message queue.
         """
         while True:
-            if self._messages.empty():
+            if self._messages.qsize() == 0:
                 drift = self._matisse.target_wavelength - self._matisse.wavemeter_wavelength()
                 if abs(drift) > self._tolerance:
                     if drift < 0:
