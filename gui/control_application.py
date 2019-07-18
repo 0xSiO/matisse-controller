@@ -70,6 +70,7 @@ class ControlApplication(QApplication):
 
         set_menu = menu_bar.addMenu('Set')
         self.set_wavelength_action = set_menu.addAction('Wavelength')
+        self.set_bifi_approx_wavelength_action = set_menu.addAction('BiFi Approx. Wavelength')
         self.set_bifi_motor_pos_action = set_menu.addAction('BiFi Motor Position')
         self.set_thin_eta_motor_pos_action = set_menu.addAction('Thin Etalon Motor Position')
 
@@ -102,6 +103,7 @@ class ControlApplication(QApplication):
 
         # Set
         self.set_wavelength_action.triggered.connect(self.set_wavelength_dialog)
+        self.set_bifi_approx_wavelength_action.triggered.connect(self.set_bifi_approx_wavelength_dialog)
         self.set_bifi_motor_pos_action.triggered.connect(self.set_bifi_motor_pos_dialog)
         self.set_thin_eta_motor_pos_action.triggered.connect(self.set_thin_eta_motor_pos_dialog)
 
@@ -176,24 +178,40 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def set_wavelength_dialog(self, checked):
-        # TODO: Set default value to current target wavelength or just to the middle
-        target_wavelength, success = QInputDialog.getDouble(self.window, 'Set Wavelength', 'Wavelength (nm): ')
+        target_wavelength, success = QInputDialog.getDouble(self.window,
+                                                            title='Set Wavelength',
+                                                            label='Wavelength (nm): ',
+                                                            value=self.matisse.target_wavelength)
         if success:
             print(f"Setting wavelength to {target_wavelength} nm...")
             self.matisse.set_wavelength(target_wavelength)
 
     @handled_slot(bool)
+    def set_bifi_approx_wavelength_dialog(self, checked):
+        target_wavelength, success = QInputDialog.getDouble(self.window,
+                                                            title='Set Approx. Wavelength',
+                                                            label='Wavelength (nm): ',
+                                                            value=self.matisse.query('MOTBI:WL?', numeric_result=True))
+        if success:
+            print(f"Setting BiFi approximate wavelength to {target_wavelength} nm...")
+            self.matisse.set_bifi_wavelength(target_wavelength)
+
+    @handled_slot(bool)
     def set_bifi_motor_pos_dialog(self, checked):
-        # TODO: Set default value to current position or just to the middle
-        target_pos, success = QInputDialog.getInt(self.window, 'Set BiFi Motor Position', 'Absolute Position:')
+        target_pos, success = QInputDialog.getInt(self.window,
+                                                  title='Set BiFi Motor Position',
+                                                  label='Absolute Position:',
+                                                  value=self.matisse.query('MOTBI:POS?', numeric_result=True))
         if success:
             print(f"Setting BiFi motor position to {target_pos}.")
             self.matisse.set_bifi_motor_pos(target_pos)
 
     @handled_slot(bool)
     def set_thin_eta_motor_pos_dialog(self, checked):
-        # TODO: Set default value to current position or just to the middle
-        target_pos, success = QInputDialog.getInt(self.window, 'Set Thin Etalon Motor Position', 'Absolute Position:')
+        target_pos, success = QInputDialog.getInt(self.window,
+                                                  title='Set Thin Etalon Motor Position',
+                                                  label='Absolute Position:',
+                                                  value=self.matisse.query('MOTTE:POS?', numeric_result=True))
         if success:
             print(f"Setting thin etalon motor position to {target_pos}.")
             self.matisse.set_thin_etalon_motor_pos(target_pos)
