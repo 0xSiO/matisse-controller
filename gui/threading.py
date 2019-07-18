@@ -69,7 +69,7 @@ class StatusUpdateThread(QThread):
                     if not pz_eta_ok:
                         pz_eta_pos_text = utils.red_text(pz_eta_pos_text)
 
-                    status = f"{bifi_pos_text} {thin_eta_pos_text} {pz_eta_pos_text} {slow_pz_pos_text} {refcell_pos_text} {wavemeter_text}"
+                    status = f"{bifi_pos_text} | {thin_eta_pos_text} | {pz_eta_pos_text} | {slow_pz_pos_text} | {refcell_pos_text} | {wavemeter_text}"
                 except Exception:
                     status = utils.red_text('Error reading system status.')
                 self.status_read.emit(status)
