@@ -10,8 +10,6 @@ from .stabilization_thread import StabilizationThread
 
 
 class Matisse:
-    # TODO: Make this configurable via sys.argv
-    DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
     # How far to each side should we scan the BiFi?
     BIREFRINGENT_SCAN_RANGE = 300
     # How far apart should each point be spaced when measuring the diode power?
@@ -35,7 +33,7 @@ class Matisse:
 
     MOTOR_STATUS_IDLE = 0x02
 
-    def __init__(self):
+    def __init__(self, device_id: str, wavemeter_port: str):
         """
         Initialize VISA resource manager, connect to Matisse, clear any errors.
 
@@ -43,11 +41,11 @@ class Matisse:
         """
         try:
             # TODO: Add access modifiers on all these instance variables
-            self.instrument = ResourceManager().open_resource(self.DEVICE_ID)
+            self.instrument = ResourceManager().open_resource(device_id)
             self.target_wavelength = None
             self.stabilization_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
-            self.wavemeter = WaveMaster()
+            self.wavemeter = WaveMaster(wavemeter_port)
             self.scans_plot = None
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
