@@ -93,7 +93,9 @@ class ControlApplication(QApplication):
         self.lock_fast_piezo_action = lock_menu.addAction('Lock Fast Piezo')
         self.lock_fast_piezo_action.setCheckable(True)
 
-        tools_menu = menu_bar.addMenu('Tools')
+        refcell_menu = menu_bar.addMenu('RefCell')
+        self.refcell_stabilization_action = refcell_menu.addAction('Stabilize Wavelength')
+        self.refcell_stabilization_action.setCheckable(True)
 
         self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
                              self.lock_fast_piezo_action]
@@ -121,7 +123,8 @@ class ControlApplication(QApplication):
         self.lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
         self.lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
 
-        # Tools
+        # RefCell
+        self.refcell_stabilization_action.triggered.connect(self.toggle_refcell_stabilization)
 
     def setup_log_window(self):
         self.layout.addWidget(self.log_area)
@@ -276,3 +279,14 @@ class ControlApplication(QApplication):
         self.lock_fast_piezo_action.setChecked(not checked)
         self.matisse.set_piezo_etalon_lock(checked)
         self.lock_fast_piezo_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def toggle_refcell_stabilization(self, checked):
+        if checked:
+            self.refcell_stabilization_action.setChecked(False)
+            self.matisse.stabilize_on()
+            self.refcell_stabilization_action.setChecked(True)
+        else:
+            self.refcell_stabilization_action.setChecked(True)
+            self.matisse.stabilize_off()
+            self.refcell_stabilization_action.setChecked(False)
