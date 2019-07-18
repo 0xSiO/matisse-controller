@@ -4,7 +4,6 @@ from queue import Queue
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from gui import utils
-from matisse import Matisse
 
 
 # TODO: Abstract out these threads into another class: BreakableThread
@@ -34,7 +33,16 @@ class LoggingThread(QThread):
 class StatusUpdateThread(QThread):
     status_read = pyqtSignal(str)
 
-    def __init__(self, matisse: Matisse, messages: Queue, *args, **kwargs):
+    def __init__(self, matisse, messages: Queue, *args, **kwargs):
+        """
+        TODO: Documentation
+
+        :param matisse:
+        :type matisse: matisse.Matisse
+        :param messages:
+        :param args:
+        :param kwargs:
+        """
         super().__init__(*args, **kwargs)
         self.matisse = matisse
         self.messages = messages
@@ -58,9 +66,9 @@ class StatusUpdateThread(QThread):
                     wavemeter_text = f"Wavemeter:{wavemeter_value}"
 
                     offset = 0.05
-                    refcell_ok = Matisse.REFERENCE_CELL_LOWER_LIMIT + offset < refcell_pos < Matisse.REFERENCE_CELL_UPPER_LIMIT - offset
-                    slow_pz_ok = Matisse.SLOW_PIEZO_LOWER_LIMIT + offset < slow_pz_pos < Matisse.SLOW_PIEZO_UPPER_LIMIT - offset
-                    pz_eta_ok = Matisse.PIEZO_ETALON_LOWER_LIMIT + offset < pz_eta_pos < Matisse.PIEZO_ETALON_UPPER_LIMIT - offset
+                    refcell_ok = self.matisse.REFERENCE_CELL_LOWER_LIMIT + offset < refcell_pos < self.matisse.REFERENCE_CELL_UPPER_LIMIT - offset
+                    slow_pz_ok = self.matisse.SLOW_PIEZO_LOWER_LIMIT + offset < slow_pz_pos < self.matisse.SLOW_PIEZO_UPPER_LIMIT - offset
+                    pz_eta_ok = self.matisse.PIEZO_ETALON_LOWER_LIMIT + offset < pz_eta_pos < self.matisse.PIEZO_ETALON_UPPER_LIMIT - offset
 
                     if not refcell_ok:
                         refcell_pos_text = utils.red_text(refcell_pos_text)
