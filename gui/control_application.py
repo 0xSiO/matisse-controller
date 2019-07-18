@@ -130,8 +130,11 @@ class ControlApplication(QApplication):
 
     @handled_function
     def setup_matisse(self):
-        # TODO: Initialize Matisse using device ID from sys.argv
-        self.matisse: Matisse = None
+        try:
+            self.matisse: Matisse = Matisse(device_id=sys.argv[1], wavemeter_port=sys.argv[2])
+        except Exception as err:
+            self.matisse: Matisse = None
+            raise err
 
     @pyqtSlot()
     def clean_up(self):

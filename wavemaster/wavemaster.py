@@ -2,12 +2,9 @@ from serial import Serial, SerialException
 
 
 class WaveMaster:
-    # TODO: Make this configurable via sys.argv
-    SERIAL_PORT = 'COM5'
-
-    def __init__(self):
+    def __init__(self, port: str):
         try:
-            self.serial = Serial(self.SERIAL_PORT)
+            self.serial = Serial(port)
         except SerialException as err:
             raise IOError("Couldn't open connection to wavemeter.") from err
 
