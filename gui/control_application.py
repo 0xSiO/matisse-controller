@@ -3,6 +3,7 @@ import queue
 import subprocess
 import sys
 import traceback
+from contextlib import redirect_stdout
 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QTextCursor
@@ -52,6 +53,9 @@ class ControlApplication(QApplication):
         self.log_thread = LoggingThread(self.log_queue, parent=self)
         self.log_thread.message_received.connect(self.log)
         self.log_thread.start()
+        # Set up a context manager to redirect stdout to the log window
+        self.log_redirector = redirect_stdout(self.log_stream)
+        self.log_redirector.__enter__()
 
     def setup_window(self):
         self.window = window = QMainWindow()
@@ -142,6 +146,7 @@ class ControlApplication(QApplication):
         self.status_monitor.update_thread.wait()
         self.log_queue.put(ExitFlag())
         self.log_thread.wait()
+        self.log_redirector.__exit__(None, None, None)
 
     @pyqtSlot(str)
     def log(self, message):
@@ -171,7 +176,8 @@ class ControlApplication(QApplication):
     def open_idle(self, checked):
         print('Opening IDLE.')
         subprocess.Popen('python -m idlelib -t "Matisse Controller - Python Shell" -c "from matisse import Matisse; ' +
-                         'matisse = Matisse(); print(\'Access the Matisse using \\\'matisse.[method]\\\'\')"')
+                         f"matisse = Matisse(device_id='{sys.argv[1]}', wavemeter_port='{sys.argv[2]}'); " +
+                         f"print(\\\"Access the Matisse using 'matisse.[method]'\\\")\"")
 
     @handled_slot(bool)
     def restart(self, checked):
