@@ -14,7 +14,7 @@ class Matisse:
     BIREFRINGENT_SCAN_RANGE = 300
     # How far apart should each point be spaced when measuring the diode power?
     BIREFRINGENT_SCAN_STEP = 3
-    THIN_ETALON_SCAN_RANGE = 2000
+    THIN_ETALON_SCAN_RANGE = 2000  # TODO: Decrease this, it takes too long
     THIN_ETALON_SCAN_STEP = 10
 
     # TODO: Confirm this parameter is ok to use
