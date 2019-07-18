@@ -3,6 +3,7 @@ from queue import Queue
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
+from gui import utils
 from matisse import Matisse
 
 
@@ -47,12 +48,30 @@ class StatusUpdateThread(QThread):
                     pz_eta_pos = self.matisse.query('PIEZOETALON:BASELINE?', numeric_result=True)
                     slow_pz_pos = self.matisse.query('SLOWPIEZO:NOW?', numeric_result=True)
                     refcell_pos = self.matisse.query('SCAN:NOW?', numeric_result=True)
-                    wavelength = self.matisse.wavemeter.get_raw_value()
-                    # TODO: Colors based on how close we are to limits
-                    status = f"BiFi:{bifi_pos} Thin Eta:{thin_eta_pos} Pz Eta:{pz_eta_pos} Slow Pz:{slow_pz_pos} \
-                    RefCell:{refcell_pos} Wavemeter:{wavelength}"
+                    wavemeter_value = self.matisse.wavemeter.get_raw_value()
+
+                    bifi_pos_text = f"BiFi:{bifi_pos}"
+                    thin_eta_pos_text = f"Thin Eta:{thin_eta_pos}"
+                    pz_eta_pos_text = f"Pz Eta:{pz_eta_pos}"
+                    slow_pz_pos_text = f"Slow Pz:{slow_pz_pos}"
+                    refcell_pos_text = f"RefCell:{refcell_pos}"
+                    wavemeter_text = f"Wavemeter:{wavemeter_value}"
+
+                    offset = 0.05
+                    refcell_ok = Matisse.REFERENCE_CELL_LOWER_LIMIT + offset < refcell_pos < Matisse.REFERENCE_CELL_UPPER_LIMIT - offset
+                    slow_pz_ok = Matisse.SLOW_PIEZO_LOWER_LIMIT + offset < slow_pz_pos < Matisse.SLOW_PIEZO_UPPER_LIMIT - offset
+                    pz_eta_ok = Matisse.PIEZO_ETALON_LOWER_LIMIT + offset < pz_eta_pos < Matisse.PIEZO_ETALON_UPPER_LIMIT - offset
+
+                    if not refcell_ok:
+                        refcell_pos_text = utils.red_text(refcell_pos_text)
+                    if not slow_pz_ok:
+                        slow_pz_pos_text = utils.red_text(slow_pz_pos_text)
+                    if not pz_eta_ok:
+                        pz_eta_pos_text = utils.red_text(pz_eta_pos_text)
+
+                    status = f"{bifi_pos_text} {thin_eta_pos_text} {pz_eta_pos_text} {slow_pz_pos_text} {refcell_pos_text} {wavemeter_text}"
                 except Exception:
-                    status = 'Error reading the status.'
+                    status = utils.red_text('Error reading system status.')
                 self.status_read.emit(status)
                 time.sleep(1)
             else:
