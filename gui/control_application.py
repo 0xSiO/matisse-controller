@@ -15,7 +15,6 @@ from .status_monitor import StatusMonitor
 from .threading import ExitFlag, LoggingThread
 
 
-# TODO: Splash screen?
 class ControlApplication(QApplication):
     EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
 
@@ -131,7 +130,7 @@ class ControlApplication(QApplication):
 
     @handled_function
     def setup_matisse(self):
-        # TODO: Initialize Matisse
+        # TODO: Initialize Matisse using device ID from sys.argv
         self.matisse: Matisse = None
 
     @pyqtSlot()

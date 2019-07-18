@@ -2,7 +2,7 @@ from serial import Serial, SerialException
 
 
 class WaveMaster:
-    # TODO: Make this configurable
+    # TODO: Make this configurable via sys.argv
     SERIAL_PORT = 'COM5'
 
     def __init__(self):
@@ -17,15 +17,17 @@ class WaveMaster:
     def close(self):
         self.serial.close()
 
-    # TODO: Raise Python error on command error
     def query(self, command: str):
-        if not self.serial.is_open:
-            self.open()
-        # Ensure a newline is at the end
-        command = command.strip() + '\n\n'
-        self.serial.write(command.encode())
-        self.serial.flush()
-        return self.serial.readline().strip().decode()
+        try:
+            if not self.serial.is_open:
+                self.open()
+            # Ensure a newline is at the end
+            command = command.strip() + '\n\n'
+            self.serial.write(command.encode())
+            self.serial.flush()
+            return self.serial.readline().strip().decode()
+        except SerialException as err:
+            raise IOError("Error communicating with wavemeter serial port.") from err
 
     def get_raw_value(self):
         return self.query('VAL?').split(',')[1].strip()
