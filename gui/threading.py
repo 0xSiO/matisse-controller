@@ -3,6 +3,8 @@ from queue import Queue
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
+from matisse import Matisse
+
 
 # TODO: Abstract out these threads into another class: BreakableThread
 
@@ -28,22 +30,25 @@ class LoggingThread(QThread):
                 self.message_received.emit(message)
 
 
-class WavelengthUpdateThread(QThread):
-    wavelength_read = pyqtSignal(str)
+class StatusUpdateThread(QThread):
+    status_read = pyqtSignal(str)
 
-    def __init__(self, wavemeter, messages: Queue, *args, **kwargs):
+    def __init__(self, matisse: Matisse, messages: Queue, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.wavemeter = wavemeter
+        self.matisse = matisse
         self.messages = messages
 
     def run(self):
         while True:
             if self.messages.qsize() == 0:
                 try:
-                    wavelength = 'Wavelength: ' + self.wavemeter.get_raw_value()
+                    bifi_pos = self.matisse.query('MOTBI:POS?')
+                    thin_eta_pos = self.matisse.query('MOTTE:POS?')
+                    wavelength = self.matisse.wavemeter.get_raw_value()
+                    status = ''
                 except Exception:
-                    wavelength = 'Wavelength: ERROR'
-                self.wavelength_read.emit(wavelength)
+                    status = 'Error reading the status.'
+                self.status_read.emit(status)
                 time.sleep(1)
             else:
                 break
