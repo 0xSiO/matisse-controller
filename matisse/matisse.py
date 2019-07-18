@@ -17,6 +17,9 @@ class Matisse:
     THIN_ETALON_SCAN_RANGE = 2000
     THIN_ETALON_SCAN_STEP = 10
 
+    # TODO: Confirm this parameter is ok to use
+    THIN_ETALON_NUDGE = 75
+
     # TODO: Fill out all these constants and replace any usages of *:MAX?
     BIREFRINGENT_FILTER_LOWER_LIMIT = 0
     BIREFRINGENT_FILTER_UPPER_LIMIT = 0
@@ -217,7 +220,7 @@ class Matisse:
             self.set_thin_etalon_motor_pos(pos)
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
-        best_pos = positions[minima][np.argmin(wavelength_differences)]
+        best_pos = positions[minima][np.argmin(wavelength_differences)] + Matisse.THIN_ETALON_NUDGE
         print(wavelength_differences)
         self.set_thin_etalon_motor_pos(best_pos)
         print('Done.')
@@ -228,7 +231,6 @@ class Matisse:
         self.scans_plot.plot_thin_etalon_selection(best_pos)
         self.scans_plot.plot_thin_etalon_minima(positions[minima], smoothed_data[minima])
         self.scans_plot.add_thin_etalon_scan_legend()
-        # TODO: Small nudge
 
     def set_thin_etalon_motor_pos(self, pos: int):
         assert (0 < pos < self.query('MOTTE:MAX?', numeric_result=True)), 'Target motor position out of range.'
