@@ -184,7 +184,7 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def restart(self, checked):
-        self.exit(self.EXIT_CODE_RESTART)
+        self.exit(ControlApplication.EXIT_CODE_RESTART)
 
     @handled_slot(bool)
     def set_wavelength_dialog(self, checked):

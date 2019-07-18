@@ -123,13 +123,13 @@ class Matisse:
         Additionally, plot the power data and motor position selection.
         """
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
-        lower_limit = center_pos - self.BIREFRINGENT_SCAN_RANGE
-        upper_limit = center_pos + self.BIREFRINGENT_SCAN_RANGE
+        lower_limit = center_pos - Matisse.BIREFRINGENT_SCAN_RANGE
+        upper_limit = center_pos + Matisse.BIREFRINGENT_SCAN_RANGE
         max_pos = int(self.query('MOTBI:MAX?', numeric_result=True))
         assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
             'Conditions for BiFi scan invalid. Motor position must be between ' + \
-            f"{self.BIREFRINGENT_SCAN_RANGE} and {max_pos - self.BIREFRINGENT_SCAN_RANGE}"
-        positions = np.array(range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP))
+            f"{Matisse.BIREFRINGENT_SCAN_RANGE} and {max_pos - Matisse.BIREFRINGENT_SCAN_RANGE}"
+        positions = np.array(range(lower_limit, upper_limit, Matisse.BIREFRINGENT_SCAN_STEP))
         voltages = np.array([])
         print('Starting BiFi scan... ', end='')
         for pos in positions:
@@ -164,22 +164,22 @@ class Matisse:
     def set_bifi_motor_pos(self, pos: int):
         assert 0 < pos < self.query('MOTBI:MAX?', numeric_result=True), 'Target motor position out of range.'
         # Wait for motor to be ready to accept commands
-        while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass
         self.query(f"MOTBI:POS {pos}")
         # Wait for motor to finish movement
-        while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass
 
     def set_bifi_wavelength(self, value: float):
         # TODO: Figure out min and max values
         assert 720 < value < 800, 'Target wavelength out of range.'
         # Wait for motor to be ready to accept commands
-        while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass
         self.query(f"MOTBI:WAVELENGTH {value}")
         # Wait for motor to finish movement
-        while not self.bifi_motor_status() == self.MOTOR_STATUS_IDLE:
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass
 
     def bifi_motor_status(self):
@@ -194,13 +194,13 @@ class Matisse:
         Additionally, plot the reflex data and motor position selection.
         """
         center_pos = int(self.query('MOTTE:POS?', numeric_result=True))
-        lower_limit = center_pos - self.THIN_ETALON_SCAN_RANGE
-        upper_limit = center_pos + self.THIN_ETALON_SCAN_RANGE
+        lower_limit = center_pos - Matisse.THIN_ETALON_SCAN_RANGE
+        upper_limit = center_pos + Matisse.THIN_ETALON_SCAN_RANGE
         max_pos = int(self.query('MOTTE:MAX?', numeric_result=True))
         assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
             'Conditions for thin etalon scan invalid. Motor position must be between ' + \
-            f"{self.THIN_ETALON_SCAN_RANGE} and {max_pos - self.THIN_ETALON_SCAN_RANGE}"
-        positions = np.array(range(lower_limit, upper_limit, self.THIN_ETALON_SCAN_STEP))
+            f"{Matisse.THIN_ETALON_SCAN_RANGE} and {max_pos - Matisse.THIN_ETALON_SCAN_RANGE}"
+        positions = np.array(range(lower_limit, upper_limit, Matisse.THIN_ETALON_SCAN_STEP))
         voltages = np.array([])
         print('Starting thin etalon scan... ', end='')
         for pos in positions:
@@ -235,11 +235,11 @@ class Matisse:
     def set_thin_etalon_motor_pos(self, pos: int):
         assert (0 < pos < self.query('MOTTE:MAX?', numeric_result=True)), 'Target motor position out of range.'
         # Wait for motor to be ready to accept commands
-        while not self.thin_etalon_motor_status() == self.MOTOR_STATUS_IDLE:
+        while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass
         self.query(f"MOTTE:POS {pos}")
         # Wait for motor to finish movement
-        while not self.thin_etalon_motor_status() == self.MOTOR_STATUS_IDLE:
+        while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass
 
     def thin_etalon_motor_status(self):
