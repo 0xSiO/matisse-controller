@@ -110,3 +110,11 @@ threading issue and/or a resource locking issue. The Matisse can handle many com
 executing commands from different threads there seems to be an issue. Might need to stop other threads while stuff like
 scans are running, then start the threads again when we finish. Simple one-query commands like setting the approx. BiFi
 wavelength don't cause locking issues, so hopefully we only need to worry about the bigger stuff.
+
+Disabling the status monitor widget in the GUI works!! Definitely a threading/locking issue. Might have to scrap the
+status monitor or figure out a workaround.
+
+Another thing I noticed is that the output while a long operation is running is not displayed in the log area, so
+something is blocking the main thread. Do longer work in a separate thread so log area can update normally.
+
+Scan plots aren't showing either. Probably just a silly issue though.
