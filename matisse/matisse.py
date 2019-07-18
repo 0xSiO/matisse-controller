@@ -10,7 +10,7 @@ from .stabilization_thread import StabilizationThread
 
 
 class Matisse:
-    # TODO: Make this configurable
+    # TODO: Make this configurable via sys.argv
     DEVICE_ID = 'USB0::0x17E7::0x0102::07-40-01::INSTR'
     # How far to each side should we scan the BiFi?
     BIREFRINGENT_SCAN_RANGE = 300
@@ -86,7 +86,6 @@ class Matisse:
         """:return: the wavelength (in nanometers) as measured by the wavemeter"""
         return self.wavemeter.get_wavelength()
 
-    # TODO: Make this the definitive control mechanism to start the wavelength selection process
     def set_wavelength(self, wavelength: float):
         """
         Configure the Matisse to output a given wavelength.
@@ -113,7 +112,7 @@ class Matisse:
         print('Done.')
         self.birefringent_filter_scan()
         self.thin_etalon_scan()
-        # TODO: piezo etalon
+        # TODO: self.optimize_piezo_etalon()
         print('All done.')
 
     def birefringent_filter_scan(self):
@@ -132,7 +131,6 @@ class Matisse:
         positions = np.array(range(lower_limit, upper_limit, self.BIREFRINGENT_SCAN_STEP))
         voltages = np.array([])
         print('Starting BiFi scan... ', end='')
-        # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
             self.set_bifi_motor_pos(pos)
             voltages = np.append(voltages, self.query('DPOW:DC?', numeric_result=True))
@@ -204,7 +202,6 @@ class Matisse:
         positions = np.array(range(lower_limit, upper_limit, self.THIN_ETALON_SCAN_STEP))
         voltages = np.array([])
         print('Starting thin etalon scan... ', end='')
-        # TODO: If this becomes a performance bottleneck, do some pre-allocation or something
         for pos in positions:
             self.set_thin_etalon_motor_pos(pos)
             voltages = np.append(voltages, self.query('TE:DC?', numeric_result=True))
@@ -307,7 +304,6 @@ class Matisse:
             self.set_piezo_etalon_lock(True)
             self.set_fast_piezo_lock(True)
             self.assert_locked()
-            # TODO: Note the wavelength given by the user to stabilize.
             print(f"Stabilizing laser at {self.target_wavelength} nm...")
             self.stabilization_thread.start()
 
