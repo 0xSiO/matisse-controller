@@ -290,7 +290,7 @@ class Matisse:
         :param tolerance: how much drift you can tolerate in the wavelength, in nanometers
         :param delay: how many seconds to wait in between each correction of the reference cell
         """
-        if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
+        if self.is_stabilizing():
             print('WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
@@ -307,7 +307,7 @@ class Matisse:
 
     def stabilize_off(self):
         """Disable stabilization loop and unlock the laser. This stops the StabilizationThread."""
-        if self.stabilization_thread is not None and self.stabilization_thread.is_alive():
+        if self.is_stabilizing():
             self.stabilization_thread.messages.put('stop')
             print('Stopping stabilization thread...')
             self.stabilization_thread.join()
@@ -319,3 +319,6 @@ class Matisse:
             print('Done.')
         else:
             print('WARNING: Stabilization thread is not running.')
+
+    def is_stabilizing(self):
+        return self.stabilization_thread is not None and self.stabilization_thread.is_alive()
