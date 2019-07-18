@@ -20,19 +20,16 @@ class Matisse:
     # TODO: Confirm this parameter is ok to use
     THIN_ETALON_NUDGE = 75
 
-    # TODO: Fill out all these constants and replace any usages of *:MAX?
     BIREFRINGENT_FILTER_LOWER_LIMIT = 0
-    BIREFRINGENT_FILTER_UPPER_LIMIT = 0
+    BIREFRINGENT_FILTER_UPPER_LIMIT = 188096
     THIN_ETALON_LOWER_LIMIT = 0
-    THIN_ETALON_UPPER_LIMIT = 0
+    THIN_ETALON_UPPER_LIMIT = 45797
     PIEZO_ETALON_LOWER_LIMIT = -1
     PIEZO_ETALON_UPPER_LIMIT = 1
     REFERENCE_CELL_LOWER_LIMIT = 0
     REFERENCE_CELL_UPPER_LIMIT = 0.7
     SLOW_PIEZO_LOWER_LIMIT = 0
     SLOW_PIEZO_UPPER_LIMIT = 0.7
-    FAST_PIEZO_LOWER_LIMIT = 0
-    FAST_PIEZO_UPPER_LIMIT = 0
 
     MOTOR_STATUS_IDLE = 0x02
 
@@ -45,7 +42,8 @@ class Matisse:
         try:
             # TODO: Add access modifiers on all these instance variables
             self.instrument = ResourceManager().open_resource(device_id)
-            self.target_wavelength = None
+            # TODO: Maybe adjust timeout? self.instrument.timeout = 5000
+            self.target_wavelength = 0
             self.stabilization_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.wavemeter = WaveMaster(wavemeter_port)
@@ -125,10 +123,9 @@ class Matisse:
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
         lower_limit = center_pos - Matisse.BIREFRINGENT_SCAN_RANGE
         upper_limit = center_pos + Matisse.BIREFRINGENT_SCAN_RANGE
-        max_pos = int(self.query('MOTBI:MAX?', numeric_result=True))
-        assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
+        assert (0 < lower_limit < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT and 0 < upper_limit < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT and lower_limit < upper_limit), \
             'Conditions for BiFi scan invalid. Motor position must be between ' + \
-            f"{Matisse.BIREFRINGENT_SCAN_RANGE} and {max_pos - Matisse.BIREFRINGENT_SCAN_RANGE}"
+            f"{Matisse.BIREFRINGENT_SCAN_RANGE} and {Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT - Matisse.BIREFRINGENT_SCAN_RANGE}"
         positions = np.array(range(lower_limit, upper_limit, Matisse.BIREFRINGENT_SCAN_STEP))
         voltages = np.array([])
         print('Starting BiFi scan... ', end='')
@@ -162,7 +159,7 @@ class Matisse:
         self.scans_plot.add_bifi_scan_legend()
 
     def set_bifi_motor_pos(self, pos: int):
-        assert 0 < pos < self.query('MOTBI:MAX?', numeric_result=True), 'Target motor position out of range.'
+        assert 0 < pos < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, 'Target motor position out of range.'
         # Wait for motor to be ready to accept commands
         while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass
@@ -196,10 +193,9 @@ class Matisse:
         center_pos = int(self.query('MOTTE:POS?', numeric_result=True))
         lower_limit = center_pos - Matisse.THIN_ETALON_SCAN_RANGE
         upper_limit = center_pos + Matisse.THIN_ETALON_SCAN_RANGE
-        max_pos = int(self.query('MOTTE:MAX?', numeric_result=True))
-        assert (0 < lower_limit < max_pos and 0 < upper_limit < max_pos and lower_limit < upper_limit), \
+        assert (0 < lower_limit < Matisse.THIN_ETALON_UPPER_LIMIT and 0 < upper_limit < Matisse.THIN_ETALON_UPPER_LIMIT and lower_limit < upper_limit), \
             'Conditions for thin etalon scan invalid. Motor position must be between ' + \
-            f"{Matisse.THIN_ETALON_SCAN_RANGE} and {max_pos - Matisse.THIN_ETALON_SCAN_RANGE}"
+            f"{Matisse.THIN_ETALON_SCAN_RANGE} and {Matisse.THIN_ETALON_UPPER_LIMIT - Matisse.THIN_ETALON_SCAN_RANGE}"
         positions = np.array(range(lower_limit, upper_limit, Matisse.THIN_ETALON_SCAN_STEP))
         voltages = np.array([])
         print('Starting thin etalon scan... ', end='')
@@ -233,7 +229,7 @@ class Matisse:
         self.scans_plot.add_thin_etalon_scan_legend()
 
     def set_thin_etalon_motor_pos(self, pos: int):
-        assert (0 < pos < self.query('MOTTE:MAX?', numeric_result=True)), 'Target motor position out of range.'
+        assert (0 < pos < Matisse.THIN_ETALON_UPPER_LIMIT), 'Target motor position out of range.'
         # Wait for motor to be ready to accept commands
         while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass
@@ -304,6 +300,9 @@ class Matisse:
             self.set_piezo_etalon_lock(True)
             self.set_fast_piezo_lock(True)
             self.assert_locked()
+
+            if self.target_wavelength == 0:
+                self.target_wavelength = self.wavemeter_wavelength()
             print(f"Stabilizing laser at {self.target_wavelength} nm...")
             self.stabilization_thread.start()
 

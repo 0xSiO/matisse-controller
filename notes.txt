@@ -87,3 +87,20 @@ spectrum, fit to an Airy function. Do it when the laser is locked? When doing a 
 the new fit so that the next fit uses the previous fit. This allows us to slowly correct a fit.
 
 More: RefCell waveform dialog, Control loop live view.
+
+Trying to open IDLE from the GUI results in an error since the WaveMaster can only be accessed with one instance at a
+time. Trying to set the wavelength via the GUI results in a timeout error:
+VI_ERROR_TMO (-1073807339): Timeout expired before operation completed.
+Trying to access the BiFi motor status many times in a row causes a different error:
+VI_ERROR_INP_PROT_VIOL (-1073807305): Device reported an input protocol error during transfer.
+Restarting the GUI repeatedly gives the same error.
+Continuing to execute commands via a shell sometimes gives another error:
+Error executing Matisse command 'MOTBI:STATUS?' :ERR:CODE: 208
+Error 208 is: "transfer buffer too small; the USB message will not fit into the host computer's transfer buffer."
+This is unresolved until the control box is switched off and then on again.
+
+Trying to write the RefCell position info when stabilizing gives an error:
+print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+VI_ERROR_RSRC_LOCKED (-1073807345): Specified type of lock cannot be obtained, or specified operation cannot be
+performed, because the resource is locked.
+Might need to look into the pyvisa locking methods.
