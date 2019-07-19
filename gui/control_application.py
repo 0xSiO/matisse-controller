@@ -6,14 +6,14 @@ import traceback
 from contextlib import redirect_stdout
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtGui import QTextCursor
-from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QTextEdit, QInputDialog, QMessageBox, QApplication
+from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication
 
 from matisse import Matisse
 from .handled_decorators import handled_function, handled_slot
+from .logging_area import LoggingArea
 from .logging_stream import LoggingStream
 from .status_monitor import StatusMonitor
-from .threading import ExitFlag, LoggingThread
+from .threading import ExitFlag
 
 
 class ControlApplication(QApplication):
@@ -42,19 +42,12 @@ class ControlApplication(QApplication):
         self.window.show()
 
     def setup_logging(self):
-        self.log_area = QTextEdit()
+        self.log_queue = queue.Queue()
+        self.log_area = LoggingArea(self.log_queue)
         self.log_area.setReadOnly(True)
 
-        # Create the queue that holds all log messages and the input stream that writes them
-        self.log_queue = queue.Queue()
-        self.log_stream = LoggingStream(self.log_queue)
-        # Create a thread to manage receiving log messages
-        # TODO: Subclass QTextEdit and keep the logging thread there
-        self.log_thread = LoggingThread(self.log_queue, parent=self)
-        self.log_thread.message_received.connect(self.log)
-        self.log_thread.start()
         # Set up a context manager to redirect stdout to the log window
-        self.log_redirector = redirect_stdout(self.log_stream)
+        self.log_redirector = redirect_stdout(LoggingStream(self.log_queue))
         self.log_redirector.__enter__()
 
     def setup_window(self):
@@ -147,14 +140,8 @@ class ControlApplication(QApplication):
     def clean_up(self):
         self.status_monitor_queue.put(ExitFlag())
         self.status_monitor.update_thread.wait()
-        self.log_queue.put(ExitFlag())
-        self.log_thread.wait()
+        self.log_area.clean_up()
         self.log_redirector.__exit__(None, None, None)
-
-    @pyqtSlot(str)
-    def log(self, message):
-        self.log_area.moveCursor(QTextCursor.End)
-        self.log_area.insertPlainText(message)
 
     def error_dialog(self):
         stack = list(traceback.format_exception(*sys.exc_info()))
