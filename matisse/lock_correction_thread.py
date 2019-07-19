@@ -30,24 +30,24 @@ class LockCorrectionThread(threading.Thread):
             timer.start()
             while True:
                 if self.messages.qsize() == 0:
-                    # Are we locked yet?
                     if self.matisse.fast_piezo_locked():
-                        # Good, cancel the timer
                         timer.cancel()
-                        # Check limits and correct if needed
                         if self.matisse.is_any_limit_reached():
-                            self.make_piezo_corrections()
+                            print('WARNING: A component has hit a limit while the laser is locked. '
+                                  'Attempting automatic corrections.')
+                            self.attempt_piezo_corrections()
                     else:
                         if self.matisse.is_any_limit_reached():
-                            # Stop early if we hit a limit before locking
+                            print('WARNING: A component has hit a limit before the laser could lock. '
+                                  'Stopping control loops.')
                             timer.cancel()
-                            self.messages.put('stop')
+                            break
 
                     time.sleep(1)
                 else:
                     break
 
-    def make_piezo_corrections(self):
+    def attempt_piezo_corrections(self):
         self.matisse.query(f"PIEZOETALON:BASELINE {LockCorrectionThread.PIEZO_ETALON_CORRECTION_POS}")
         self.matisse.query(f"SLOWPIEZO:NOW {LockCorrectionThread.SLOW_PIEZO_CORRECTION_POS}")
         self.matisse.set_refcell_pos(LockCorrectionThread.REFCELL_CORRECTION_POS)
