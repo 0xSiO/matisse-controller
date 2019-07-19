@@ -1,7 +1,11 @@
+import multiprocessing
+
 from serial import Serial, SerialException
 
 
 class WaveMaster:
+    wavemeter_lock = multiprocessing.Lock()
+
     def __init__(self, port: str):
         try:
             self.serial = Serial(port)
@@ -15,16 +19,17 @@ class WaveMaster:
         self.serial.close()
 
     def query(self, command: str):
-        try:
-            if not self.serial.is_open:
-                self.open()
-            # Ensure a newline is at the end
-            command = command.strip() + '\n\n'
-            self.serial.write(command.encode())
-            self.serial.flush()
-            return self.serial.readline().strip().decode()
-        except SerialException as err:
-            raise IOError("Error communicating with wavemeter serial port.") from err
+        with WaveMaster.wavemeter_lock:
+            try:
+                if not self.serial.is_open:
+                    self.open()
+                # Ensure a newline is at the end
+                command = command.strip() + '\n\n'
+                self.serial.write(command.encode())
+                self.serial.flush()
+                return self.serial.readline().strip().decode()
+            except SerialException as err:
+                raise IOError("Error communicating with wavemeter serial port.") from err
 
     def get_raw_value(self):
         return self.query('VAL?').split(',')[1].strip()
