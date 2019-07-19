@@ -1,4 +1,4 @@
-import multiprocessing
+import threading
 from queue import Queue
 
 import numpy as np
@@ -11,7 +11,7 @@ from wavemaster import WaveMaster
 
 
 class Matisse:
-    matisse_lock = multiprocessing.Lock()
+    matisse_lock = threading.Lock()
 
     # How far to each side should we scan the BiFi?
     BIREFRINGENT_SCAN_RANGE = 300
