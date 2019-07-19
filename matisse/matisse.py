@@ -264,6 +264,7 @@ class Matisse:
         """Set the current position of the reference cell as a float value in [0, 1]"""
         return self.query(f"SCAN:NOW {val}")
 
+    # TODO: Don't change anything and warn user if lock correction is on
     def set_slow_piezo_control(self, enable: bool):
         self.query(f"SLOWPIEZO:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
