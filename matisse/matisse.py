@@ -258,29 +258,26 @@ class Matisse:
         """Set the current position of the reference cell as a float value in [0, 1]"""
         return self.query(f"SCAN:NOW {val}")
 
-    def set_slow_piezo_lock(self, lock: bool):
-        self.query(f"SLOWPIEZO:CONTROLSTATUS {'RUN' if lock else 'STOP'}")
+    def set_slow_piezo_control(self, enable: bool):
+        self.query(f"SLOWPIEZO:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
-    def set_fast_piezo_lock(self, lock: bool):
-        self.query(f"FASTPIEZO:CONTROLSTATUS {'RUN' if lock else 'STOP'}")
+    def set_fast_piezo_control(self, enable: bool):
+        self.query(f"FASTPIEZO:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
-    def set_thin_etalon_lock(self, lock: bool):
-        self.query(f"THINETALON:CONTROLSTATUS {'RUN' if lock else 'STOP'}")
+    def set_thin_etalon_control(self, enable: bool):
+        self.query(f"THINETALON:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
-    def set_piezo_etalon_lock(self, lock: bool):
-        self.query(f"PIEZOETALON:CONTROLSTATUS {'RUN' if lock else 'STOP'}")
+    def set_piezo_etalon_control(self, enable: bool):
+        self.query(f"PIEZOETALON:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
-    def assert_locked(self):
+    def all_control_loops_on(self):
         """
-        Assert that the slow piezo, thin etalon, piezo etalon, and fast piezo all have their control loops enabled.
-
-        Throw an error if this condition is not met.
+        Returns whether the slow piezo, thin etalon, piezo etalon, and fast piezo all have their control loops enabled.
         """
-        assert ('RUN' in self.query('SLOWPIEZO:CONTROLSTATUS?')
+        return ('RUN' in self.query('SLOWPIEZO:CONTROLSTATUS?')
                 and 'RUN' in self.query('THINETALON:CONTROLSTATUS?')
                 and 'RUN' in self.query('PIEZOETALON:CONTROLSTATUS?')
-                and 'RUN' in self.query('FASTPIEZO:CONTROLSTATUS?')), \
-            'Unable to obtain laser lock. Manual correction needed.'
+                and 'RUN' in self.query('FASTPIEZO:CONTROLSTATUS?'))
 
     def stabilize_on(self, tolerance=0.002, delay=0.5):
         """

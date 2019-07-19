@@ -1,7 +1,7 @@
 import multiprocessing
 from queue import Queue
 
-from matisse.laser_locked import LaserLocked
+from matisse.control_loops_on import ControlLoopsOn
 
 
 class LockCorrectionProcess(multiprocessing.Process):
@@ -19,7 +19,7 @@ class LockCorrectionProcess(multiprocessing.Process):
         self.messages = messages
 
     def run(self):
-        with LaserLocked(self.matisse):
+        with ControlLoopsOn(self.matisse):
             while True:
                 if self.messages.qsize() == 0:
                     pass
