@@ -279,6 +279,9 @@ class Matisse:
                 and 'RUN' in self.query('PIEZOETALON:CONTROLSTATUS?')
                 and 'RUN' in self.query('FASTPIEZO:CONTROLSTATUS?'))
 
+    def fast_piezo_locked(self):
+        return 'TRUE' in self.query('FASTPIEZO:LOCK?')
+
     def stabilize_on(self, tolerance=0.002, delay=0.5):
         """
         Lock the laser and enable stabilization using the reference cell to keep the wavelength constant.
@@ -312,3 +315,15 @@ class Matisse:
 
     def is_stabilizing(self):
         return self.stabilization_thread is not None and self.stabilization_thread.is_alive()
+
+    def is_any_limit_reached(self):
+        """Returns true if the RefCell, slow piezo, or piezo etalon are very close to one of their limits."""
+
+        current_refcell_pos = self.query('SCAN:NOW?', numeric_result=True)
+        current_slow_pz_pos = self.query('SLOWPIEZO:NOW?', numeric_result=True)
+        current_pz_eta_pos = self.query('PIEZOETALON:BASELINE?', numeric_result=True)
+
+        offset = 0.05
+        return (self.REFERENCE_CELL_LOWER_LIMIT + offset < current_refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
+               and self.SLOW_PIEZO_LOWER_LIMIT + offset < current_slow_pz_pos < self.SLOW_PIEZO_UPPER_LIMIT - offset
+               and self.PIEZO_ETALON_LOWER_LIMIT + offset < current_pz_eta_pos < self.PIEZO_ETALON_UPPER_LIMIT - offset)
