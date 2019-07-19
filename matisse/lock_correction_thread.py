@@ -45,6 +45,7 @@ class LockCorrectionThread(threading.Thread):
 
                     time.sleep(1)
                 else:
+                    timer.cancel()
                     break
 
     def attempt_piezo_corrections(self):

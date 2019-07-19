@@ -118,7 +118,7 @@ class ControlApplication(QApplication):
 
     @handled_function
     def setup_widgets(self):
-        self.status_monitor_queue = queue.Queue(maxsize=1)
+        self.status_monitor_queue = queue.Queue()
         self.status_monitor = StatusMonitor(self.matisse, self.status_monitor_queue)
         self.layout.addWidget(self.status_monitor)
 

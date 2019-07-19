@@ -1,10 +1,11 @@
 import threading
-from queue import Queue
+import queue
 
 import numpy as np
 from pyvisa import ResourceManager, VisaIOError
 from scipy.signal import savgol_filter, argrelextrema
 
+from matisse.lock_correction_thread import LockCorrectionThread
 from matisse.scans_plot import ScansPlot
 from matisse.stabilization_thread import StabilizationThread
 from wavemaster import WaveMaster
@@ -22,6 +23,9 @@ class Matisse:
 
     # TODO: Confirm this parameter is ok to use
     THIN_ETALON_NUDGE = 75
+
+    # How long to wait, in seconds, before giving up on locking the laser.
+    LOCKING_TIMEOUT = 7.0
 
     BIREFRINGENT_FILTER_LOWER_LIMIT = 0
     BIREFRINGENT_FILTER_UPPER_LIMIT = 188096
@@ -47,6 +51,7 @@ class Matisse:
             self.instrument = ResourceManager().open_resource(device_id)
             self.target_wavelength = None
             self.stabilization_thread = None
+            self.lock_correction_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.wavemeter = WaveMaster(wavemeter_port)
             self.scans_plot = None
@@ -295,8 +300,7 @@ class Matisse:
         if self.is_stabilizing():
             print('WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
-            # Message queue has a maxsize of 1 since we'll just tell it to stop later
-            self.stabilization_thread = StabilizationThread(self, tolerance, delay, Queue(maxsize=1))
+            self.stabilization_thread = StabilizationThread(self, tolerance, delay, queue.Queue())
 
             if self.target_wavelength is None:
                 self.target_wavelength = self.wavemeter_wavelength()
@@ -327,3 +331,21 @@ class Matisse:
         return (self.REFERENCE_CELL_LOWER_LIMIT + offset < current_refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
                and self.SLOW_PIEZO_LOWER_LIMIT + offset < current_slow_pz_pos < self.SLOW_PIEZO_UPPER_LIMIT - offset
                and self.PIEZO_ETALON_LOWER_LIMIT + offset < current_pz_eta_pos < self.PIEZO_ETALON_UPPER_LIMIT - offset)
+
+    def start_laser_lock_correction(self):
+        if self.is_lock_correction_on():
+            print('WARNING: Lock stabilization is already running.')
+        else:
+            print('Starting laser lock.')
+            self.lock_correction_thread = LockCorrectionThread(self, Matisse.LOCKING_TIMEOUT, queue.Queue())
+            self.lock_correction_thread.start()
+
+    def stop_laser_lock_correction(self):
+        if self.is_lock_correction_on():
+            self.lock_correction_thread.messages.put('stop')
+            self.lock_correction_thread.join()
+        else:
+            print('WARNING: laser is not locked.')
+
+    def is_lock_correction_on(self):
+        return self.lock_correction_thread is not None and self.lock_correction_thread.is_alive()
