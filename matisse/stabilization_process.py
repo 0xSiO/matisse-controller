@@ -2,7 +2,7 @@ import multiprocessing
 import time
 from queue import Queue
 
-from matisse.laser_locked import LaserLocked
+from matisse.control_loops_on import ControlLoopsOn
 
 
 class StabilizationProcess(multiprocessing.Process):
@@ -29,7 +29,7 @@ class StabilizationProcess(multiprocessing.Process):
 
         Exit if anything is pushed to the message queue.
         """
-        with LaserLocked(self._matisse):
+        with ControlLoopsOn(self._matisse):
             while True:
                 if self._messages.qsize() == 0:
                     drift = self._matisse.target_wavelength - self._matisse.wavemeter_wavelength()
