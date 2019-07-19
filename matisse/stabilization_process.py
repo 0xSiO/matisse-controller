@@ -1,11 +1,11 @@
-import threading
+import multiprocessing
 import time
 from queue import Queue
 
 from matisse.laser_locked import LaserLocked
 
 
-class StabilizationThread(threading.Thread):
+class StabilizationProcess(multiprocessing.Process):
     def __init__(self, matisse, tolerance: float, delay: float, messages: Queue):
         """
         Initialize stabilization thread with parameters for stabilization loop.
