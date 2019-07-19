@@ -89,7 +89,8 @@ the new fit so that the next fit uses the previous fit. This allows us to slowly
 More:
 RefCell waveform dialog, used primarily to find a recommended setpoint for the fast piezo (amplitude of the transmission
 spectrum at full-width-half-max points). Scans RefCell and measures transmitted intensity.
-RefCell properties measurement: measures transmitted intensity of the RefCell while scanning it
+RefCell properties measurement: measures transmitted intensity of the RefCell while scanning it. This is less of a
+priority.
 Control loop live view, shows live feed of values of internal variables used by various control loops.
 
 Trying to open IDLE from the GUI results in an error since the WaveMaster can only be accessed with one instance at a
@@ -127,4 +128,7 @@ While the control loops are on, the fast piezo is not necessarily locked. Sugges
 lock, if not locked within this timeout or if any components reach their limits within that timeout, then stop the
 locking procedure. If the fast piezo locks within the timeout, keep checking limits. If a component is at its limit, you
 can adjust it in the opposite direction. When the fast piezo is locked we want to avoid disabling the lock and opt for
-automatic corrections to components instead.
+automatic corrections to components instead, then stop locking and perform the whole set_wavelength procedure again.
+
+Need 3 options in stabilization menu: locking laser without setting fast piezo setpoint, locking and automatically
+setting fast piezo setpoint, and a separate dialog to just set the fast piezo setpoint.
