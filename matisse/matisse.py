@@ -45,8 +45,7 @@ class Matisse:
         try:
             # TODO: Add access modifiers on all these instance variables
             self.instrument = ResourceManager().open_resource(device_id)
-            # TODO: Maybe adjust timeout? self.instrument.timeout = 5000
-            self.target_wavelength = 0
+            self.target_wavelength = None
             self.stabilization_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.wavemeter = WaveMaster(wavemeter_port)
@@ -299,7 +298,7 @@ class Matisse:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
             self.stabilization_thread = StabilizationThread(self, tolerance, delay, Queue(maxsize=1))
 
-            if self.target_wavelength == 0:
+            if self.target_wavelength is None:
                 self.target_wavelength = self.wavemeter_wavelength()
             print(f"Stabilizing laser at {self.target_wavelength} nm...")
             self.stabilization_thread.start()
