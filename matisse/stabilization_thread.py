@@ -1,12 +1,11 @@
-import multiprocessing
+import threading
 import time
 from queue import Queue
 
 from matisse.control_loops_on import ControlLoopsOn
 
 
-# TODO: issues 'pickling' data to use in new process, convert back to thread
-class StabilizationProcess(multiprocessing.Process):
+class StabilizationThread(threading.Thread):
     def __init__(self, matisse, tolerance: float, delay: float, messages: Queue):
         """
         Initialize stabilization thread with parameters for stabilization loop.

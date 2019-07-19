@@ -6,7 +6,7 @@ from pyvisa import ResourceManager, VisaIOError
 from scipy.signal import savgol_filter, argrelextrema
 
 from matisse.scans_plot import ScansPlot
-from matisse.stabilization_process import StabilizationProcess
+from matisse.stabilization_thread import StabilizationThread
 from wavemaster import WaveMaster
 
 
@@ -296,7 +296,7 @@ class Matisse:
             print('WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
-            self.stabilization_thread = StabilizationProcess(self, tolerance, delay, Queue(maxsize=1))
+            self.stabilization_thread = StabilizationThread(self, tolerance, delay, Queue(maxsize=1))
 
             if self.target_wavelength is None:
                 self.target_wavelength = self.wavemeter_wavelength()
