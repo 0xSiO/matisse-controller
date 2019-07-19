@@ -1,3 +1,4 @@
+import multiprocessing
 from queue import Queue
 
 import numpy as np
@@ -10,6 +11,8 @@ from .stabilization_thread import StabilizationThread
 
 
 class Matisse:
+    matisse_lock = multiprocessing.Lock()
+
     # How far to each side should we scan the BiFi?
     BIREFRINGENT_SCAN_RANGE = 300
     # How far apart should each point be spaced when measuring the diode power?
@@ -68,7 +71,8 @@ class Matisse:
         :return: the response from the Matisse to the given command
         """
         try:
-            result: str = self.instrument.query(command).strip()
+            with Matisse.matisse_lock:
+                result: str = self.instrument.query(command).strip()
         except VisaIOError as ioerr:
             raise IOError("Couldn't execute command. Check Matisse is on and connected via USB.") from ioerr
 
