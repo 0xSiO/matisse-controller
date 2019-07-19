@@ -5,6 +5,7 @@ from queue import Queue
 from matisse.control_loops_on import ControlLoopsOn
 
 
+# TODO: issues 'pickling' data to use in new process, convert back to thread
 class StabilizationProcess(multiprocessing.Process):
     def __init__(self, matisse, tolerance: float, delay: float, messages: Queue):
         """
@@ -37,7 +38,7 @@ class StabilizationProcess(multiprocessing.Process):
                         if drift < 0:
                             # measured wavelength is too high
                             print(f"Too high, decreasing. Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
-                            if not self.limits_reached():
+                            if not self._matisse.is_any_limit_reached():
                                 next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) - 0.001
                                 self._matisse.set_refcell_pos(next_pos)
                             else:
@@ -46,7 +47,7 @@ class StabilizationProcess(multiprocessing.Process):
                         else:
                             # measured wavelength is too low
                             print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
-                            if not self.limits_reached():
+                            if not self._matisse.is_any_limit_reached():
                                 next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) + 0.001
                                 self._matisse.set_refcell_pos(next_pos)
                             else:
@@ -57,14 +58,3 @@ class StabilizationProcess(multiprocessing.Process):
                     time.sleep(self._delay)
                 else:
                     break
-
-    def limits_reached(self):
-        current_refcell_pos = self._matisse.query('SCAN:NOW?', numeric_result=True)
-        current_slow_pz_pos = self._matisse.query('SLOWPIEZO:NOW?', numeric_result=True)
-        current_pz_eta_pos = self._matisse.query('PIEZOETALON:BASELINE?', numeric_result=True)
-
-        # During stabilization, we don't want to hit the true limits of any component, so reduce the range slightly
-        offset = 0.05
-        return (self._matisse.REFERENCE_CELL_LOWER_LIMIT + offset < current_refcell_pos < self._matisse.REFERENCE_CELL_UPPER_LIMIT - offset
-               and self._matisse.SLOW_PIEZO_LOWER_LIMIT + offset < current_slow_pz_pos < self._matisse.SLOW_PIEZO_UPPER_LIMIT - offset
-               and self._matisse.PIEZO_ETALON_LOWER_LIMIT + offset < current_pz_eta_pos < self._matisse.PIEZO_ETALON_UPPER_LIMIT - offset)
