@@ -5,9 +5,9 @@ import numpy as np
 from pyvisa import ResourceManager, VisaIOError
 from scipy.signal import savgol_filter, argrelextrema
 
+from matisse.scans_plot import ScansPlot
+from matisse.stabilization_thread import StabilizationThread
 from wavemaster import WaveMaster
-from .scans_plot import ScansPlot
-from .stabilization_thread import StabilizationThread
 
 
 class Matisse:
