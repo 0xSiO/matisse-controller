@@ -1,10 +1,10 @@
-import multiprocessing
+import threading
 
 from serial import Serial, SerialException
 
 
 class WaveMaster:
-    wavemeter_lock = multiprocessing.Lock()
+    wavemeter_lock = threading.Lock()
 
     def __init__(self, port: str):
         try:
