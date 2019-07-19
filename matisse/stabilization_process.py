@@ -16,6 +16,7 @@ class StabilizationProcess(multiprocessing.Process):
         :param delay: the time to wait between each stabilization loop
         :param messages: a message queue for this thread
         """
+        # TODO: Use *args, **kwargs
         super().__init__(daemon=True)
         self._matisse = matisse
         self._tolerance = tolerance
