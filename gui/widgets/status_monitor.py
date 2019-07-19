@@ -2,7 +2,7 @@ from queue import Queue
 
 from PyQt5.QtWidgets import QLabel
 
-from .threading import StatusUpdateThread, ExitFlag
+from gui.threading import StatusUpdateThread, ExitFlag
 
 
 class StatusMonitor(QLabel):

@@ -1,0 +1,2 @@
+class ExitFlag:
+    pass

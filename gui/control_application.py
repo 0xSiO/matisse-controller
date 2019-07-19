@@ -8,11 +8,10 @@ from contextlib import redirect_stdout
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication
 
+from gui.logging_stream import LoggingStream
+from gui.utils import handled_function, handled_slot
+from gui.widgets import LoggingArea, StatusMonitor
 from matisse import Matisse
-from .handled_decorators import handled_function, handled_slot
-from .logging_area import LoggingArea
-from .logging_stream import LoggingStream
-from .status_monitor import StatusMonitor
 
 
 class ControlApplication(QApplication):
@@ -145,7 +144,7 @@ class ControlApplication(QApplication):
         description = stack.pop()
         print(description, end='')
         # Remove entries for handled_function decorator, for clarity
-        stack = filter(lambda item: os.path.join('gui', 'handled_decorators.py') not in item, stack)
+        stack = filter(lambda item: os.path.join('gui', 'utils.py') not in item, stack)
         dialog = QMessageBox(icon=QMessageBox.Critical)
         dialog.setWindowTitle('Error')
         # Adding the underscores is a hack to resize the QMessageBox because it's not normally resizable.

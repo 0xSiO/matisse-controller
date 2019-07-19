@@ -4,7 +4,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QTextEdit
 
-from .threading import LoggingThread, ExitFlag
+from gui.threading import LoggingThread, ExitFlag
 
 
 class LoggingArea(QTextEdit):
