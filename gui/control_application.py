@@ -31,8 +31,7 @@ class ControlApplication(QApplication):
 
         # Handled functions can go here
         self.setup_matisse()
-        # TODO: The status monitor widget causes all kinds of locking problems
-        # self.setup_widgets()
+        self.setup_widgets()
 
         # Other setup
         self.aboutToQuit.connect(self.clean_up)
@@ -146,9 +145,8 @@ class ControlApplication(QApplication):
 
     @pyqtSlot()
     def clean_up(self):
-        # TODO: Uncomment these once status monitor issues have been fixed
-        # self.status_monitor_queue.put(ExitFlag())
-        # self.status_monitor.update_thread.wait()
+        self.status_monitor_queue.put(ExitFlag())
+        self.status_monitor.update_thread.wait()
         self.log_queue.put(ExitFlag())
         self.log_thread.wait()
         self.log_redirector.__exit__(None, None, None)
