@@ -2,7 +2,7 @@ import threading
 import time
 from queue import Queue
 
-from .laser_locked import LaserLocked
+from matisse.laser_locked import LaserLocked
 
 
 class StabilizationThread(threading.Thread):
