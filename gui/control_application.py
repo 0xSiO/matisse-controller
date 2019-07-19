@@ -13,7 +13,6 @@ from .handled_decorators import handled_function, handled_slot
 from .logging_area import LoggingArea
 from .logging_stream import LoggingStream
 from .status_monitor import StatusMonitor
-from .threading import ExitFlag
 
 
 class ControlApplication(QApplication):
@@ -22,12 +21,10 @@ class ControlApplication(QApplication):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Non-handled functions only here
-        self.setup_logging()
         self.setup_window()
+        self.setup_logging()
         self.setup_menus()
-        self.setup_action_listeners()
-        # Set up the log window first to display log output
-        self.setup_log_window()
+        self.setup_slots()
 
         # Handled functions can go here
         self.setup_matisse()
@@ -41,20 +38,21 @@ class ControlApplication(QApplication):
         self.window.setCentralWidget(container)
         self.window.show()
 
-    def setup_logging(self):
-        self.log_queue = queue.Queue()
-        self.log_area = LoggingArea(self.log_queue)
-        self.log_area.setReadOnly(True)
-
-        # Set up a context manager to redirect stdout to the log window
-        self.log_redirector = redirect_stdout(LoggingStream(self.log_queue))
-        self.log_redirector.__enter__()
-
     def setup_window(self):
         self.window = window = QMainWindow()
         self.layout = QVBoxLayout()
         window.setWindowTitle('Matisse Controller')
         window.resize(600, 200)
+
+    def setup_logging(self):
+        self.log_queue = queue.Queue()
+        self.log_area = LoggingArea(self.log_queue)
+        self.log_area.setReadOnly(True)
+        self.layout.addWidget(self.log_area)
+
+        # Set up a context manager to redirect stdout to the log window
+        self.log_redirector = redirect_stdout(LoggingStream(self.log_queue))
+        self.log_redirector.__enter__()
 
     def setup_menus(self):
         menu_bar = self.window.menuBar()
@@ -93,7 +91,7 @@ class ControlApplication(QApplication):
         self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
                              self.lock_fast_piezo_action]
 
-    def setup_action_listeners(self):
+    def setup_slots(self):
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
         self.open_idle_action.triggered.connect(self.open_idle)
@@ -119,9 +117,6 @@ class ControlApplication(QApplication):
         # RefCell
         self.refcell_stabilization_action.triggered.connect(self.toggle_refcell_stabilization)
 
-    def setup_log_window(self):
-        self.layout.addWidget(self.log_area)
-
     @handled_function
     def setup_widgets(self):
         self.status_monitor_queue = queue.Queue(maxsize=1)
@@ -138,8 +133,8 @@ class ControlApplication(QApplication):
 
     @pyqtSlot()
     def clean_up(self):
-        self.status_monitor_queue.put(ExitFlag())
-        self.status_monitor.update_thread.wait()
+        # Clean up widgets with running threads.
+        self.status_monitor.clean_up()
         self.log_area.clean_up()
         self.log_redirector.__exit__(None, None, None)
 
