@@ -11,6 +11,7 @@ from matisse.stabilization_thread import StabilizationThread
 from wavemaster import WaveMaster
 
 
+# TODO: Consider making a singleton instance
 class Matisse:
     matisse_lock = threading.Lock()
 
