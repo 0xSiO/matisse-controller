@@ -294,13 +294,6 @@ class Matisse:
         else:
             # Message queue has a maxsize of 1 since we'll just tell it to stop later
             self.stabilization_thread = StabilizationThread(self, tolerance, delay, Queue(maxsize=1))
-            # Lock the laser and begin stabilization
-            print('Locking laser...')
-            self.set_slow_piezo_lock(True)
-            self.set_thin_etalon_lock(True)
-            self.set_piezo_etalon_lock(True)
-            self.set_fast_piezo_lock(True)
-            self.assert_locked()
 
             if self.target_wavelength == 0:
                 self.target_wavelength = self.wavemeter_wavelength()
@@ -310,15 +303,10 @@ class Matisse:
     def stabilize_off(self):
         """Disable stabilization loop and unlock the laser. This stops the StabilizationThread."""
         if self.is_stabilizing():
+            print('Stopping stabilization thread.')
             self.stabilization_thread.messages.put('stop')
-            print('Stopping stabilization thread...')
             self.stabilization_thread.join()
-            print('Unlocking laser...')
-            self.set_fast_piezo_lock(False)
-            self.set_piezo_etalon_lock(False)
-            self.set_thin_etalon_lock(False)
-            self.set_slow_piezo_lock(False)
-            print('Done.')
+            print('Stabilization thread has been stopped.')
         else:
             print('WARNING: Stabilization thread is not running.')
 
