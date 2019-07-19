@@ -86,7 +86,11 @@ Important feature to add from Matisse Commander: RefCell properties measurement.
 spectrum, fit to an Airy function. Do it when the laser is locked? When doing a fit, change the parameters of the fit to
 the new fit so that the next fit uses the previous fit. This allows us to slowly correct a fit.
 
-More: RefCell waveform dialog, Control loop live view.
+More:
+RefCell waveform dialog, used primarily to find a recommended setpoint for the fast piezo (amplitude of the transmission
+spectrum at full-width-half-max points). Scans RefCell and measures transmitted intensity.
+RefCell properties measurement: measures transmitted intensity of the RefCell while scanning it
+Control loop live view, shows live feed of values of internal variables used by various control loops.
 
 Trying to open IDLE from the GUI results in an error since the WaveMaster can only be accessed with one instance at a
 time. Trying to set the wavelength via the GUI results in a timeout error:
@@ -118,3 +122,9 @@ Another thing I noticed is that the output while a long operation is running is 
 something is blocking the main thread. Do longer work in a separate thread so log area can update normally.
 
 Scan plots aren't showing either. Probably just a silly issue though.
+
+While the control loops are on, the fast piezo is not necessarily locked. Suggested wait time is about 7 seconds for a
+lock, if not locked within this timeout or if any components reach their limits within that timeout, then stop the
+locking procedure. If the fast piezo locks within the timeout, keep checking limits. If a component is at its limit, you
+can adjust it in the opposite direction. When the fast piezo is locked we want to avoid disabling the lock and opt for
+automatic corrections to components instead.
