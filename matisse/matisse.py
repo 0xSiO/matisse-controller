@@ -22,8 +22,8 @@ class Matisse:
     THIN_ETALON_SCAN_RANGE = 2000  # TODO: Decrease this, it takes too long
     THIN_ETALON_SCAN_STEP = 10
 
-    # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'
-    THIN_ETALON_NUDGE = -75
+    # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
+    THIN_ETALON_NUDGE = -50
 
     # How long to wait, in seconds, before giving up on locking the laser.
     LOCKING_TIMEOUT = 7.0

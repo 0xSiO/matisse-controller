@@ -29,10 +29,6 @@ class StabilizationThread(threading.Thread):
         """
         while True:
             if self.messages.qsize() == 0:
-                if not self._matisse.fast_piezo_locked():
-                    print('WARNING: Unable to stabilize - laser must be locked.')
-                    break
-
                 drift = self._matisse.target_wavelength - self._matisse.wavemeter_wavelength()
                 if abs(drift) > self._tolerance:
                     if drift < 0:
@@ -42,6 +38,7 @@ class StabilizationThread(threading.Thread):
                             next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) - 0.001
                             self._matisse.set_refcell_pos(next_pos)
                         else:
+                            # TODO: Do the correction automatically
                             print('WARNING: One or more motor limits have been reached. Stopping stabilization for manual correction.')
                             break
                     else:
