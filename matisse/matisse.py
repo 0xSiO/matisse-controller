@@ -12,7 +12,6 @@ from matisse.stabilization_thread import StabilizationThread
 from wavemaster import WaveMaster
 
 
-# TODO: Consider making a singleton instance
 class Matisse(Constants):
     matisse_lock = threading.Lock()
 
@@ -25,6 +24,7 @@ class Matisse(Constants):
         try:
             # TODO: Add access modifiers on all these instance variables
             self.instrument = ResourceManager().open_resource(device_id)
+            # TODO: Make this a method
             self.target_wavelength = None
             self.stabilization_thread = None
             self.lock_correction_thread = None
@@ -105,6 +105,9 @@ class Matisse(Constants):
 
         Additionally, plot the power data and motor position selection.
         """
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
+
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
         lower_limit = center_pos - Matisse.BIREFRINGENT_SCAN_RANGE
         upper_limit = center_pos + Matisse.BIREFRINGENT_SCAN_RANGE
@@ -126,15 +129,12 @@ class Matisse(Constants):
         maxima = argrelextrema(smoothed_data, np.greater, order=5)
 
         # Find the position of the extremum closest to the target wavelength
-        if self.target_wavelength is None:
-            self.target_wavelength = self.wavemeter_wavelength()
         wavelength_differences = np.array([])
         for pos in positions[maxima]:
             self.set_bifi_motor_pos(pos)
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[maxima][np.argmin(wavelength_differences)]
-        print(wavelength_differences)
         self.set_bifi_motor_pos(best_pos)
         print('Done.')
 
@@ -178,6 +178,9 @@ class Matisse(Constants):
         Nudges the motor position a little bit away from the minimum to ensure good locking later.
         Additionally, plot the reflex data and motor position selection.
         """
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
+
         center_pos = int(self.query('MOTTE:POS?', numeric_result=True))
         lower_limit = center_pos - Matisse.THIN_ETALON_SCAN_RANGE
         upper_limit = center_pos + Matisse.THIN_ETALON_SCAN_RANGE
@@ -199,15 +202,12 @@ class Matisse(Constants):
         minima = argrelextrema(smoothed_data, np.less, order=5)
 
         # Find the position of the extremum closest to the target wavelength
-        if self.target_wavelength is None:
-            self.target_wavelength = self.wavemeter_wavelength()
         wavelength_differences = np.array([])
         for pos in positions[minima]:
             self.set_thin_etalon_motor_pos(pos)
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[minima][np.argmin(wavelength_differences)] + Matisse.THIN_ETALON_NUDGE
-        print(wavelength_differences)
         self.set_thin_etalon_motor_pos(best_pos)
         print('Done.')
 
