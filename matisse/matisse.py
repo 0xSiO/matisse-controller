@@ -322,6 +322,14 @@ class Matisse(Constants):
         self.query(f"SLOWPIEZO:NOW {Matisse.SLOW_PIEZO_CORRECTION_POS}")
         self.set_refcell_pos(Matisse.REFCELL_CORRECTION_POS)
 
+    def get_reference_cell_transmission_spectrum(self):
+        # TODO: Look into the REFCELL:TABLE? command to do a scan and measure the transmission spectrum
+        raise NotImplementedError
+
+    def get_recommended_fast_piezo_setpoint(self):
+        # TODO: Use result from get_reference_cell_transmission_spectrum
+        raise NotImplementedError
+
     def start_laser_lock_correction(self):
         if self.is_lock_correction_on():
             print('WARNING: Lock correction is already running.')
