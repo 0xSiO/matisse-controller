@@ -2,6 +2,7 @@ import os
 import queue
 import subprocess
 import sys
+import threading
 import traceback
 from contextlib import redirect_stdout
 
@@ -209,14 +210,14 @@ class ControlApplication(QApplication):
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
         print('Starting BiFi scan...')
-        # TODO: Run this in a separate thread
-        self.matisse.birefringent_filter_scan()
+        self.bifi_scan_thread = threading.Thread(target=self.matisse.birefringent_filter_scan)
+        self.bifi_scan_thread.start()
 
     @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
         print('Starting thin etalon scan...')
-        # TODO: Run this in a separate thread
-        self.matisse.thin_etalon_scan()
+        self.thin_etalon_scan_thread = threading.Thread(target=self.matisse.thin_etalon_scan)
+        self.thin_etalon_scan_thread.start()
 
     @handled_slot(bool)
     def toggle_lock_all(self, checked):
