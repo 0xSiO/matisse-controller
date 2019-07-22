@@ -22,8 +22,8 @@ class Matisse:
     THIN_ETALON_SCAN_RANGE = 2000  # TODO: Decrease this, it takes too long
     THIN_ETALON_SCAN_STEP = 10
 
-    # TODO: Confirm this parameter is ok to use
-    THIN_ETALON_NUDGE = 75
+    # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'
+    THIN_ETALON_NUDGE = -75
 
     # How long to wait, in seconds, before giving up on locking the laser.
     LOCKING_TIMEOUT = 7.0
@@ -150,6 +150,8 @@ class Matisse:
         maxima = argrelextrema(smoothed_data, np.greater, order=5)
 
         # Find the position of the extremum closest to the target wavelength
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
         wavelength_differences = np.array([])
         for pos in positions[maxima]:
             self.set_bifi_motor_pos(pos)
@@ -221,6 +223,8 @@ class Matisse:
         minima = argrelextrema(smoothed_data, np.less, order=5)
 
         # Find the position of the extremum closest to the target wavelength
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
         wavelength_differences = np.array([])
         for pos in positions[minima]:
             self.set_thin_etalon_motor_pos(pos)
@@ -288,7 +292,7 @@ class Matisse:
     def fast_piezo_locked(self):
         return 'TRUE' in self.query('FASTPIEZO:LOCK?')
 
-    def stabilize_on(self, tolerance=0.002, delay=0.5):
+    def stabilize_on(self, tolerance=0.001, delay=0.5):
         """
         Enable stabilization using the reference cell to keep the wavelength constant.
 
