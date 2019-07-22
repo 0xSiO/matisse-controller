@@ -44,17 +44,29 @@ class StatusUpdateThread(QThread):
                     locked_text = f"{utils.green_text('LOCKED') if is_locked else utils.red_text('NO LOCK')}"
                     wavemeter_text = f"Wavemeter:{wavemeter_value}"
 
-                    offset = 0.05
-                    refcell_ok = self.matisse.REFERENCE_CELL_LOWER_LIMIT + offset < refcell_pos < self.matisse.REFERENCE_CELL_UPPER_LIMIT - offset
-                    slow_pz_ok = self.matisse.SLOW_PIEZO_LOWER_LIMIT + offset < slow_pz_pos < self.matisse.SLOW_PIEZO_UPPER_LIMIT - offset
-                    pz_eta_ok = self.matisse.PIEZO_ETALON_LOWER_LIMIT + offset < pz_eta_pos < self.matisse.PIEZO_ETALON_UPPER_LIMIT - offset
+                    limit_offset = 0.05
+                    refcell_at_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset < refcell_pos < self.matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
+                    slow_pz_at_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset < slow_pz_pos < self.matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
+                    pz_eta_at_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + limit_offset < pz_eta_pos < self.matisse.PIEZO_ETALON_UPPER_LIMIT - limit_offset
+                    warn_offset = 0.15
+                    refcell_near_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + warn_offset < refcell_pos < self.matisse.REFERENCE_CELL_UPPER_LIMIT - warn_offset
+                    slow_pz_near_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + warn_offset < slow_pz_pos < self.matisse.SLOW_PIEZO_UPPER_LIMIT - warn_offset
+                    pz_eta_near_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + warn_offset < pz_eta_pos < self.matisse.PIEZO_ETALON_UPPER_LIMIT - warn_offset
 
-                    if not refcell_ok:
+                    if refcell_at_limit:
                         refcell_pos_text = utils.red_text(refcell_pos_text)
-                    if not slow_pz_ok:
+                    elif refcell_near_limit:
+                        refcell_pos_text = utils.orange_text(refcell_pos_text)
+
+                    if slow_pz_at_limit:
                         slow_pz_pos_text = utils.red_text(slow_pz_pos_text)
-                    if not pz_eta_ok:
+                    elif slow_pz_near_limit:
+                        slow_pz_pos_text = utils.orange_text(slow_pz_pos_text)
+
+                    if pz_eta_at_limit:
                         pz_eta_pos_text = utils.red_text(pz_eta_pos_text)
+                    elif pz_eta_near_limit:
+                        pz_eta_pos_text = utils.orange_text(pz_eta_pos_text)
 
                     status = f"{bifi_pos_text} | {thin_eta_pos_text} | {pz_eta_pos_text} | {slow_pz_pos_text} | {refcell_pos_text} | {locked_text} | {wavemeter_text}"
                 except Exception:
