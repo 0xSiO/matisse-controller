@@ -39,6 +39,10 @@ class Matisse:
     SLOW_PIEZO_LOWER_LIMIT = 0
     SLOW_PIEZO_UPPER_LIMIT = 0.7
 
+    PIEZO_ETALON_CORRECTION_POS = 0
+    SLOW_PIEZO_CORRECTION_POS = 0.35
+    REFCELL_CORRECTION_POS = 0.35
+
     MOTOR_STATUS_IDLE = 0x02
 
     def __init__(self, device_id: str, wavemeter_port: str):
@@ -339,6 +343,11 @@ class Matisse:
         return not (self.REFERENCE_CELL_LOWER_LIMIT + offset < current_refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
                and self.SLOW_PIEZO_LOWER_LIMIT + offset < current_slow_pz_pos < self.SLOW_PIEZO_UPPER_LIMIT - offset
                and self.PIEZO_ETALON_LOWER_LIMIT + offset < current_pz_eta_pos < self.PIEZO_ETALON_UPPER_LIMIT - offset)
+
+    def reset_stabilization_piezos(self):
+        self.query(f"PIEZOETALON:BASELINE {Matisse.PIEZO_ETALON_CORRECTION_POS}")
+        self.query(f"SLOWPIEZO:NOW {Matisse.SLOW_PIEZO_CORRECTION_POS}")
+        self.set_refcell_pos(Matisse.REFCELL_CORRECTION_POS)
 
     def start_laser_lock_correction(self):
         if self.is_lock_correction_on():
