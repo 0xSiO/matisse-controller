@@ -171,6 +171,7 @@ class Matisse(Constants):
         """Return the last 8 bits of the BiFi motor status."""
         return int(self.query('MOTBI:STATUS?', numeric_result=True)) & 0b000000011111111
 
+    # TODO: If wavemeter wavelength < or > target wavelength, do the scan ONLY going right or left, not both
     def thin_etalon_scan(self):
         """
         Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
