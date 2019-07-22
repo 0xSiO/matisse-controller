@@ -292,6 +292,9 @@ class Matisse:
     def fast_piezo_locked(self):
         return 'TRUE' in self.query('FASTPIEZO:LOCK?')
 
+    def laser_locked(self):
+        return self.all_control_loops_on() and self.fast_piezo_locked()
+
     def stabilize_on(self, tolerance=0.001, delay=0.5):
         """
         Enable stabilization using the reference cell to keep the wavelength constant.
