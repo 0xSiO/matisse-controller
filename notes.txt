@@ -122,8 +122,6 @@ status monitor or figure out a workaround.
 Another thing I noticed is that the output while a long operation is running is not displayed in the log area, so
 something is blocking the main thread. Do longer work in a separate thread so log area can update normally.
 
-Scan plots aren't showing either. Probably just a silly issue though.
-
 While the control loops are on, the fast piezo is not necessarily locked. Suggested wait time is about 7 seconds for a
 lock, if not locked within this timeout or if any components reach their limits within that timeout, then stop the
 locking procedure. If the fast piezo locks within the timeout, keep checking limits. If a component is at its limit, you
@@ -146,3 +144,5 @@ one side.
 
 Make a configuration window where you can manually set some of the constants you've defined, like the lock correction
 timeout or the scan parameters.
+
+Scan plots aren't showing, there's probably some issue with which thread we're on when we have to show the plots.
