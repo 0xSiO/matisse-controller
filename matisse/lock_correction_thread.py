@@ -14,6 +14,9 @@ class LockCorrectionThread(threading.Thread):
     TODO: Set recommended setpoint for fast piezo
     """
 
+    UNABLE_TO_LOCK_MESSAGE = 'Try manually stabilizing the laser output power. Alternatively, try setting the ' \
+                             'recommended fast piezo setpoint. '
+
     def __init__(self, matisse, timeout: float, messages: Queue, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.matisse = matisse
@@ -22,6 +25,7 @@ class LockCorrectionThread(threading.Thread):
         self.timer = threading.Timer(self.timeout, self.quit_unless_locked)
 
     def run(self):
+        # TODO: Only reset piezos that are too far towards their limits
         self.matisse.reset_stabilization_piezos()
         with ControlLoopsOn(self.matisse):
             self.timer.start()
@@ -37,7 +41,7 @@ class LockCorrectionThread(threading.Thread):
                         self.restart_timer()
                         if self.matisse.is_any_limit_reached():
                             print('WARNING: A component has hit a limit before the laser could lock. '
-                                  'Stopping control loops.')
+                                  'Stopping control loops. ', LockCorrectionThread.UNABLE_TO_LOCK_MESSAGE)
                             self.timer.cancel()
                             break
 
@@ -48,7 +52,8 @@ class LockCorrectionThread(threading.Thread):
 
     def quit_unless_locked(self):
         if not self.matisse.fast_piezo_locked():
-            print("WARNING: Locking failed. Timeout expired while trying to obtain lock.")
+            print('WARNING: Locking failed. Timeout expired while trying to obtain lock. ',
+                  LockCorrectionThread.UNABLE_TO_LOCK_MESSAGE)
             self.messages.put('stop')
 
     def restart_timer(self):
