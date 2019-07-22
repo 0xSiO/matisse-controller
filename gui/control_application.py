@@ -170,6 +170,7 @@ class ControlApplication(QApplication):
     @handled_slot(bool)
     def open_idle(self, checked):
         print('Opening IDLE.')
+        # TODO: Can't open wavemeter, access is denied
         subprocess.Popen('python -m idlelib -t "Matisse Controller - Python Shell" -c "from matisse import Matisse; ' +
                          f"matisse = Matisse(device_id='{sys.argv[1]}', wavemeter_port='{sys.argv[2]}'); " +
                          f"print(\\\"Access the Matisse using 'matisse.[method]'\\\")\"")
@@ -188,7 +189,8 @@ class ControlApplication(QApplication):
                                                             current_wavelength)
         if success:
             print(f"Setting wavelength to {target_wavelength} nm...")
-            self.matisse.set_wavelength(target_wavelength)
+            self.set_wavelength_thread = threading.Thread(target=self.matisse.set_wavelength, args=[target_wavelength], daemon=True)
+            self.set_wavelength_thread.start()
 
     @handled_slot(bool)
     def set_bifi_approx_wavelength_dialog(self, checked):
@@ -216,12 +218,12 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
-        self.bifi_scan_thread = threading.Thread(target=self.matisse.birefringent_filter_scan)
+        self.bifi_scan_thread = threading.Thread(target=self.matisse.birefringent_filter_scan, daemon=True)
         self.bifi_scan_thread.start()
 
     @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
-        self.thin_etalon_scan_thread = threading.Thread(target=self.matisse.thin_etalon_scan)
+        self.thin_etalon_scan_thread = threading.Thread(target=self.matisse.thin_etalon_scan, daemon=True)
         self.thin_etalon_scan_thread.start()
 
     @handled_slot(bool)

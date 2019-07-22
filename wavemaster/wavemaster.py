@@ -3,7 +3,6 @@ import threading
 from serial import Serial, SerialException
 
 
-# TODO: Consider making a singleton instance
 class WaveMaster:
     wavemeter_lock = threading.Lock()
 
