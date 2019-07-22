@@ -28,11 +28,13 @@ class LockCorrectionThread(threading.Thread):
             while True:
                 if self.messages.qsize() == 0:
                     if self.matisse.fast_piezo_locked():
+                        self.timer.cancel()
                         if self.matisse.is_any_limit_reached():
                             print('WARNING: A component has hit a limit while the laser is locked. '
                                   'Attempting automatic corrections.')
                             self.matisse.reset_stabilization_piezos()
                     else:
+                        self.restart_timer()
                         if self.matisse.is_any_limit_reached():
                             print('WARNING: A component has hit a limit before the laser could lock. '
                                   'Stopping control loops.')
@@ -48,6 +50,8 @@ class LockCorrectionThread(threading.Thread):
         if not self.matisse.fast_piezo_locked():
             print("WARNING: Locking failed. Timeout expired while trying to obtain lock.")
             self.messages.put('stop')
-        else:
+
+    def restart_timer(self):
+        if not self.timer.is_alive():
             self.timer = threading.Timer(self.timeout, self.quit_unless_locked)
             self.timer.start()
