@@ -14,10 +14,6 @@ class LockCorrectionThread(threading.Thread):
     TODO: Set recommended setpoint for fast piezo
     """
 
-    PIEZO_ETALON_CORRECTION_POS = 0
-    SLOW_PIEZO_CORRECTION_POS = 0.35
-    REFCELL_CORRECTION_POS = 0.35
-
     def __init__(self, matisse, timeout: float, messages: Queue, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.matisse = matisse
@@ -35,7 +31,7 @@ class LockCorrectionThread(threading.Thread):
                         if self.matisse.is_any_limit_reached():
                             print('WARNING: A component has hit a limit while the laser is locked. '
                                   'Attempting automatic corrections.')
-                            self.attempt_piezo_corrections()
+                            self.matisse.reset_stabilization_piezos()
                     else:
                         if self.matisse.is_any_limit_reached():
                             print('WARNING: A component has hit a limit before the laser could lock. '
@@ -47,8 +43,3 @@ class LockCorrectionThread(threading.Thread):
                 else:
                     timer.cancel()
                     break
-
-    def attempt_piezo_corrections(self):
-        self.matisse.query(f"PIEZOETALON:BASELINE {LockCorrectionThread.PIEZO_ETALON_CORRECTION_POS}")
-        self.matisse.query(f"SLOWPIEZO:NOW {LockCorrectionThread.SLOW_PIEZO_CORRECTION_POS}")
-        self.matisse.set_refcell_pos(LockCorrectionThread.REFCELL_CORRECTION_POS)

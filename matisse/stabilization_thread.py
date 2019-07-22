@@ -29,6 +29,7 @@ class StabilizationThread(threading.Thread):
         """
         while True:
             if self.messages.qsize() == 0:
+                # TODO: Round this up to the nearest 0.001
                 drift = self._matisse.target_wavelength - self._matisse.wavemeter_wavelength()
                 if abs(drift) > self._tolerance:
                     if drift < 0:
@@ -38,9 +39,9 @@ class StabilizationThread(threading.Thread):
                             next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) - 0.001
                             self._matisse.set_refcell_pos(next_pos)
                         else:
-                            # TODO: Do the correction automatically
-                            print('WARNING: One or more motor limits have been reached. Stopping stabilization for manual correction.')
-                            break
+                            print('WARNING: A component has hit a limit while adjusting the RefCell. '
+                                  'Attempting automatic corrections.')
+                            self._matisse.reset_stabilization_piezos()
                     else:
                         # measured wavelength is too low
                         print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
@@ -48,8 +49,9 @@ class StabilizationThread(threading.Thread):
                             next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) + 0.001
                             self._matisse.set_refcell_pos(next_pos)
                         else:
-                            print('WARNING: One or more motor limits have been reached. Stopping stabilization for manual correction.')
-                            break
+                            print('WARNING: A component has hit a limit while adjusting the RefCell. '
+                                  'Attempting automatic corrections.')
+                            self._matisse.reset_stabilization_piezos()
                 else:
                     print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                 time.sleep(self._delay)
