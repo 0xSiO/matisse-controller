@@ -29,8 +29,8 @@ class StabilizationThread(threading.Thread):
         """
         while True:
             if self.messages.qsize() == 0:
-                # TODO: Round this up to the nearest 0.001
                 drift = self._matisse.target_wavelength - self._matisse.wavemeter_wavelength()
+                drift = round(drift, self._matisse.wavemeter.PRECISION)
                 if abs(drift) > self._tolerance:
                     if drift < 0:
                         # measured wavelength is too high
