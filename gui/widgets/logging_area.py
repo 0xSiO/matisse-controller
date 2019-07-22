@@ -4,6 +4,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QTextEdit
 
+from gui import utils
 from gui.threading import LoggingThread, ExitFlag
 
 
@@ -17,8 +18,11 @@ class LoggingArea(QTextEdit):
 
     @pyqtSlot(str)
     def log_message(self, message):
+        if 'WARNING' in message:
+            message = utils.orange_text(message)
+
         self.moveCursor(QTextCursor.End)
-        self.insertPlainText(message)
+        self.insertHtml(message.replace('\n', '<br>'))
 
     def clean_up(self):
         self.messages.put(ExitFlag())

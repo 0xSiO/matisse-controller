@@ -9,6 +9,7 @@ from contextlib import redirect_stdout
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication
 
+from gui import utils
 from gui.logging_stream import LoggingStream
 from gui.utils import handled_function, handled_slot
 from gui.widgets import LoggingArea, StatusMonitor
@@ -136,12 +137,15 @@ class ControlApplication(QApplication):
 
     @pyqtSlot()
     def clean_up(self):
-        # Reset Matisse to a 'good' default state
-        self.matisse.stabilize_off()
-        self.matisse.stop_laser_lock_correction()
         # Clean up widgets with running threads.
         self.status_monitor.clean_up()
         self.log_area.clean_up()
+
+        # Reset Matisse to a 'good' default state
+        if self.matisse is not None:
+            self.matisse.stabilize_off()
+            self.matisse.stop_laser_lock_correction()
+
         self.log_redirector.__exit__(None, None, None)
 
     def error_dialog(self):
@@ -149,7 +153,7 @@ class ControlApplication(QApplication):
         # Pick length of longest line in stack, with a cutoff at 185
         desired_width = min(max([len(line) for line in stack]), 185)
         description = stack.pop()
-        print(description, end='')
+        print(utils.red_text(description), end='')
         # Remove entries for handled_function decorator, for clarity
         stack = filter(lambda item: os.path.join('gui', 'utils.py') not in item, stack)
         dialog = QMessageBox(icon=QMessageBox.Critical)
