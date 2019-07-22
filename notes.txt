@@ -132,3 +132,6 @@ automatic corrections to components instead, then stop locking and perform the w
 
 Need 3 options in stabilization menu: locking laser without setting fast piezo setpoint, locking and automatically
 setting fast piezo setpoint, and a separate dialog to just set the fast piezo setpoint.
+
+Don't give feedback unless something important is happening or you're changing something.
+Pop up a dialog to set parameters of RefCell stabilization.

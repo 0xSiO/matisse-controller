@@ -172,8 +172,11 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def set_wavelength_dialog(self, checked):
+        current_wavelength = self.matisse.target_wavelength
+        if current_wavelength is None:
+            current_wavelength = self.matisse.wavemeter_wavelength()
         target_wavelength, success = QInputDialog.getDouble(self.window, 'Set Wavelength', 'Wavelength (nm): ',
-                                                            self.matisse.target_wavelength)
+                                                            current_wavelength)
         if success:
             print(f"Setting wavelength to {target_wavelength} nm...")
             self.matisse.set_wavelength(target_wavelength)
