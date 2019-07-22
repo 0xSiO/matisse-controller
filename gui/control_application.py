@@ -216,13 +216,11 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
-        print('Starting BiFi scan...')
         self.bifi_scan_thread = threading.Thread(target=self.matisse.birefringent_filter_scan)
         self.bifi_scan_thread.start()
 
     @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
-        print('Starting thin etalon scan...')
         self.thin_etalon_scan_thread = threading.Thread(target=self.matisse.thin_etalon_scan)
         self.thin_etalon_scan_thread.start()
 
