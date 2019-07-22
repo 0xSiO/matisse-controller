@@ -125,6 +125,7 @@ class Matisse:
         self.birefringent_filter_scan()
         self.thin_etalon_scan()
         # TODO: self.optimize_piezo_etalon()
+        # TODO: self.optimize_reference_cell() and then redo BiFi/TE scans
         print('All done.')
 
     def birefringent_filter_scan(self):
