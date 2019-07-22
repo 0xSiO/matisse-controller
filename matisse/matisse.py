@@ -291,7 +291,7 @@ class Matisse:
 
     def stabilize_on(self, tolerance=0.002, delay=0.5):
         """
-        Lock the laser and enable stabilization using the reference cell to keep the wavelength constant.
+        Enable stabilization using the reference cell to keep the wavelength constant.
 
         Starts a StabilizationThread as a daemon for this purpose. To stop stabilizing and unlock the laser, call
         stabilize_off.
@@ -330,7 +330,7 @@ class Matisse:
         current_pz_eta_pos = self.query('PIEZOETALON:BASELINE?', numeric_result=True)
 
         offset = 0.05
-        return (self.REFERENCE_CELL_LOWER_LIMIT + offset < current_refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
+        return not (self.REFERENCE_CELL_LOWER_LIMIT + offset < current_refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
                and self.SLOW_PIEZO_LOWER_LIMIT + offset < current_slow_pz_pos < self.SLOW_PIEZO_UPPER_LIMIT - offset
                and self.PIEZO_ETALON_LOWER_LIMIT + offset < current_pz_eta_pos < self.PIEZO_ETALON_UPPER_LIMIT - offset)
 
