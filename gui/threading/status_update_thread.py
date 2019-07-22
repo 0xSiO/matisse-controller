@@ -33,6 +33,7 @@ class StatusUpdateThread(QThread):
                     pz_eta_pos = self.matisse.query('PIEZOETALON:BASELINE?', numeric_result=True)
                     slow_pz_pos = self.matisse.query('SLOWPIEZO:NOW?', numeric_result=True)
                     refcell_pos = self.matisse.query('SCAN:NOW?', numeric_result=True)
+                    is_locked = self.matisse.fast_piezo_locked()
                     wavemeter_value = self.matisse.wavemeter.get_raw_value()
 
                     bifi_pos_text = f"BiFi:{bifi_pos}"
@@ -40,6 +41,7 @@ class StatusUpdateThread(QThread):
                     pz_eta_pos_text = f"Pz Eta:{pz_eta_pos}"
                     slow_pz_pos_text = f"Slow Pz:{slow_pz_pos}"
                     refcell_pos_text = f"RefCell:{refcell_pos}"
+                    locked_text = f"{utils.green_text('LOCKED') if is_locked else utils.red_text('NO LOCK')}"
                     wavemeter_text = f"Wavemeter:{wavemeter_value}"
 
                     offset = 0.05
@@ -54,9 +56,9 @@ class StatusUpdateThread(QThread):
                     if not pz_eta_ok:
                         pz_eta_pos_text = utils.red_text(pz_eta_pos_text)
 
-                    status = f"{bifi_pos_text} | {thin_eta_pos_text} | {pz_eta_pos_text} | {slow_pz_pos_text} | {refcell_pos_text} | {wavemeter_text}"
+                    status = f"{bifi_pos_text} | {thin_eta_pos_text} | {pz_eta_pos_text} | {slow_pz_pos_text} | {refcell_pos_text} | {locked_text} | {wavemeter_text}"
                 except Exception:
-                    status = utils.red_text('Error reading system status.')
+                    status = utils.red_text('Error reading system status. Please restart if this issue persists.')
                 self.status_read.emit(status)
                 time.sleep(1)
             else:

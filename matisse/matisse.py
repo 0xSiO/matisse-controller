@@ -264,7 +264,6 @@ class Matisse:
         """Set the current position of the reference cell as a float value in [0, 1]"""
         return self.query(f"SCAN:NOW {val}")
 
-    # TODO: Don't change anything and warn user if lock correction is on
     def set_slow_piezo_control(self, enable: bool):
         self.query(f"SLOWPIEZO:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
@@ -336,7 +335,7 @@ class Matisse:
 
     def start_laser_lock_correction(self):
         if self.is_lock_correction_on():
-            print('WARNING: Lock stabilization is already running.')
+            print('WARNING: Lock correction is already running.')
         else:
             print('Starting laser lock.')
             self.lock_correction_thread = LockCorrectionThread(self, Matisse.LOCKING_TIMEOUT, queue.Queue())

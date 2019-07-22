@@ -30,3 +30,6 @@ def handled_slot(*args):
 
 def red_text(text):
     return f"<span style='color:red'>{text}</span>"
+
+def green_text(text):
+    return f"<span style='color:green'>{text}</span>"
