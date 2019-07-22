@@ -168,6 +168,7 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def restart(self, checked):
+        # TODO: Check if clean_up is called here
         self.exit(ControlApplication.EXIT_CODE_RESTART)
 
     @handled_slot(bool)
@@ -208,15 +209,18 @@ class ControlApplication(QApplication):
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
         print('Starting BiFi scan...')
+        # TODO: Run this in a separate thread
         self.matisse.birefringent_filter_scan()
 
     @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
         print('Starting thin etalon scan...')
+        # TODO: Run this in a separate thread
         self.matisse.thin_etalon_scan()
 
     @handled_slot(bool)
     def toggle_lock_all(self, checked):
+        self.lock_all_action.setChecked(not checked)
         if checked:
             self.matisse.start_laser_lock_correction()
             [action.setEnabled(False) for action in self.lock_actions]
@@ -225,6 +229,7 @@ class ControlApplication(QApplication):
             self.matisse.stop_laser_lock_correction()
             [action.setEnabled(True) for action in self.lock_actions]
             [action.setChecked(False) for action in self.lock_actions]
+        self.lock_all_action.setChecked(checked)
 
     @handled_slot(bool)
     def toggle_slow_piezo_lock(self, checked):
@@ -256,11 +261,9 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def toggle_refcell_stabilization(self, checked):
+        self.refcell_stabilization_action.setChecked(not checked)
         if checked:
-            self.refcell_stabilization_action.setChecked(False)
             self.matisse.stabilize_on()
-            self.refcell_stabilization_action.setChecked(True)
         else:
-            self.refcell_stabilization_action.setChecked(True)
             self.matisse.stabilize_off()
-            self.refcell_stabilization_action.setChecked(False)
+        self.refcell_stabilization_action.setChecked(checked)

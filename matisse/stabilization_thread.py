@@ -19,7 +19,7 @@ class StabilizationThread(threading.Thread):
         self._matisse = matisse
         self._tolerance = tolerance
         self._delay = delay
-        self._messages = messages
+        self.messages = messages
 
     def run(self):
         """
@@ -28,7 +28,7 @@ class StabilizationThread(threading.Thread):
         Exit if anything is pushed to the message queue.
         """
         while True:
-            if self._messages.qsize() == 0:
+            if self.messages.qsize() == 0:
                 if not self._matisse.fast_piezo_locked():
                     print('WARNING: Unable to stabilize - laser must be locked.')
                     break
