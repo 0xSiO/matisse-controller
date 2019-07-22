@@ -5,6 +5,7 @@ import numpy as np
 from pyvisa import ResourceManager, VisaIOError
 from scipy.signal import savgol_filter, argrelextrema
 
+from matisse.constants import Constants
 from matisse.lock_correction_thread import LockCorrectionThread
 from matisse.scans_plot import ScansPlot
 from matisse.stabilization_thread import StabilizationThread
@@ -12,38 +13,8 @@ from wavemaster import WaveMaster
 
 
 # TODO: Consider making a singleton instance
-class Matisse:
+class Matisse(Constants):
     matisse_lock = threading.Lock()
-
-    # How far to each side should we scan the BiFi?
-    BIREFRINGENT_SCAN_RANGE = 300
-    # How far apart should each point be spaced when measuring the diode power?
-    BIREFRINGENT_SCAN_STEP = 3
-    THIN_ETALON_SCAN_RANGE = 2000  # TODO: Decrease this, it takes too long
-    THIN_ETALON_SCAN_STEP = 10
-
-    # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
-    THIN_ETALON_NUDGE = -50
-
-    # How long to wait, in seconds, before giving up on locking the laser.
-    LOCKING_TIMEOUT = 7.0
-
-    BIREFRINGENT_FILTER_LOWER_LIMIT = 0
-    BIREFRINGENT_FILTER_UPPER_LIMIT = 188096
-    THIN_ETALON_LOWER_LIMIT = 0
-    THIN_ETALON_UPPER_LIMIT = 45797
-    PIEZO_ETALON_LOWER_LIMIT = -1
-    PIEZO_ETALON_UPPER_LIMIT = 1
-    REFERENCE_CELL_LOWER_LIMIT = 0
-    REFERENCE_CELL_UPPER_LIMIT = 0.7
-    SLOW_PIEZO_LOWER_LIMIT = 0
-    SLOW_PIEZO_UPPER_LIMIT = 0.7
-
-    PIEZO_ETALON_CORRECTION_POS = 0
-    SLOW_PIEZO_CORRECTION_POS = 0.35
-    REFCELL_CORRECTION_POS = 0.35
-
-    MOTOR_STATUS_IDLE = 0x02
 
     def __init__(self, device_id: str, wavemeter_port: str):
         """
