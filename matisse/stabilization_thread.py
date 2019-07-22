@@ -4,7 +4,10 @@ from queue import Queue
 
 
 class StabilizationThread(threading.Thread):
-    def __init__(self, matisse, tolerance: float, delay: float, messages: Queue):
+    REFCELL_ADJUSTMENT_STEP = 0.001
+    DRIFT_PRECISION = 4
+
+    def __init__(self, matisse, tolerance: float, delay: float, messages: Queue, *args, **kwargs):
         """
         Initialize stabilization thread with parameters for stabilization loop.
 
@@ -14,8 +17,7 @@ class StabilizationThread(threading.Thread):
         :param delay: the time to wait between each stabilization loop
         :param messages: a message queue for this thread
         """
-        # TODO: Use *args, **kwargs
-        super().__init__(daemon=True)
+        super().__init__(*args, **kwargs)
         self._matisse = matisse
         self._tolerance = tolerance
         self._delay = delay
@@ -30,13 +32,13 @@ class StabilizationThread(threading.Thread):
         while True:
             if self.messages.qsize() == 0:
                 drift = self._matisse.target_wavelength - self._matisse.wavemeter_wavelength()
-                drift = round(drift, self._matisse.wavemeter.PRECISION)
+                drift = round(drift, StabilizationThread.DRIFT_PRECISION)
                 if abs(drift) > self._tolerance:
                     if drift < 0:
                         # measured wavelength is too high
                         print(f"Too high, decreasing. Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
-                            next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) - 0.001
+                            next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) - StabilizationThread.REFCELL_ADJUSTMENT_STEP
                             self._matisse.set_refcell_pos(next_pos)
                         else:
                             print('WARNING: A component has hit a limit while adjusting the RefCell. '
@@ -46,7 +48,7 @@ class StabilizationThread(threading.Thread):
                         # measured wavelength is too low
                         print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
-                            next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) + 0.001
+                            next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) + StabilizationThread.REFCELL_ADJUSTMENT_STEP
                             self._matisse.set_refcell_pos(next_pos)
                         else:
                             print('WARNING: A component has hit a limit while adjusting the RefCell. '

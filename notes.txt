@@ -138,8 +138,11 @@ Pop up a dialog to set parameters of RefCell stabilization.
 Adjust reference cell after setting wavelength to get it just right, then perform much smaller BiFi/TE scans after
 setting wavelength to ensure you're still on the peaks. Also nice to see a scan while it's happening.
 
-Timer doesn't seem to be working for lock correction timeout.
+Timer doesn't seem to be working for lock correction timeout. Also, make warning messages orange, errors red.
 
 If can't obtain laser lock, suggest manual stabilizing of output power of the laser, or suggest redoing the lock while
 setting the fast piezo setpoint. When we try locking again, put the 3 piezos back in the middle if they're too far to
 one side.
+
+Make a configuration window where you can manually set some of the constants you've defined, like the lock correction
+timeout or the scan parameters.

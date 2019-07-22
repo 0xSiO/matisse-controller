@@ -299,7 +299,7 @@ class Matisse:
     def laser_locked(self):
         return self.all_control_loops_on() and self.fast_piezo_locked()
 
-    def stabilize_on(self, tolerance=0.001, delay=0.5):
+    def stabilize_on(self, tolerance=0.0005, delay=0.5):
         """
         Enable stabilization using the reference cell to keep the wavelength constant.
 
@@ -312,7 +312,7 @@ class Matisse:
         if self.is_stabilizing():
             print('WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
-            self.stabilization_thread = StabilizationThread(self, tolerance, delay, queue.Queue())
+            self.stabilization_thread = StabilizationThread(self, tolerance, delay, queue.Queue(), daemon=True)
 
             if self.target_wavelength is None:
                 self.target_wavelength = self.wavemeter_wavelength()
@@ -354,7 +354,8 @@ class Matisse:
             print('WARNING: Lock correction is already running.')
         else:
             print('Starting laser lock.')
-            self.lock_correction_thread = LockCorrectionThread(self, Matisse.LOCKING_TIMEOUT, queue.Queue())
+            self.lock_correction_thread = LockCorrectionThread(self, Matisse.LOCKING_TIMEOUT, queue.Queue(),
+                                                               daemon=True)
             self.lock_correction_thread.start()
 
     def stop_laser_lock_correction(self):
