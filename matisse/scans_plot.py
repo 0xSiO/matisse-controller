@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 
 
+# TODO: See https://matplotlib.org/api/animation_api.html for real-time plotting
 class ScansPlot:
     def __init__(self):
         plt.figure()
