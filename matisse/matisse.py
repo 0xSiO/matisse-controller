@@ -237,14 +237,6 @@ class Matisse(Constants):
         # TODO: Just use a binary search method to pick the right value?
         raise NotImplementedError
 
-    def get_refcell_pos(self) -> float:
-        """:return: the current position of the reference cell as a float value in [0, 1]"""
-        return self.query('SCAN:NOW?', numeric_result=True)
-
-    def set_refcell_pos(self, val: float):
-        """Set the current position of the reference cell as a float value in [0, 1]"""
-        return self.query(f"SCAN:NOW {val}")
-
     def set_slow_piezo_control(self, enable: bool):
         self.query(f"SLOWPIEZO:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
@@ -320,7 +312,7 @@ class Matisse(Constants):
     def reset_stabilization_piezos(self):
         self.query(f"PIEZOETALON:BASELINE {Matisse.PIEZO_ETALON_CORRECTION_POS}")
         self.query(f"SLOWPIEZO:NOW {Matisse.SLOW_PIEZO_CORRECTION_POS}")
-        self.set_refcell_pos(Matisse.REFCELL_CORRECTION_POS)
+        self.query(f"SCAN:NOW {Matisse.REFCELL_CORRECTION_POS}")
 
     def get_reference_cell_transmission_spectrum(self):
         # TODO: Look into the REFCELL:TABLE? command to do a scan and measure the transmission spectrum

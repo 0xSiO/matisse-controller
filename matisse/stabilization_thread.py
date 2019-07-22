@@ -39,7 +39,7 @@ class StabilizationThread(threading.Thread):
                         print(f"Too high, decreasing. Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
                             next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) - StabilizationThread.REFCELL_ADJUSTMENT_STEP
-                            self._matisse.set_refcell_pos(next_pos)
+                            self._matisse.query(f"SCAN:NOW {next_pos}")
                         else:
                             print('WARNING: A component has hit a limit while adjusting the RefCell. '
                                   'Attempting automatic corrections.')
@@ -49,7 +49,7 @@ class StabilizationThread(threading.Thread):
                         print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
                             next_pos = self._matisse.query('SCAN:NOW?', numeric_result=True) + StabilizationThread.REFCELL_ADJUSTMENT_STEP
-                            self._matisse.set_refcell_pos(next_pos)
+                            self._matisse.query(f"SCAN:NOW {next_pos}")
                         else:
                             print('WARNING: A component has hit a limit while adjusting the RefCell. '
                                   'Attempting automatic corrections.')
