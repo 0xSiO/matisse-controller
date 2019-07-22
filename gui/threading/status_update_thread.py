@@ -33,7 +33,7 @@ class StatusUpdateThread(QThread):
                     pz_eta_pos = self.matisse.query('PIEZOETALON:BASELINE?', numeric_result=True)
                     slow_pz_pos = self.matisse.query('SLOWPIEZO:NOW?', numeric_result=True)
                     refcell_pos = self.matisse.query('SCAN:NOW?', numeric_result=True)
-                    is_locked = self.matisse.fast_piezo_locked()
+                    is_locked = self.matisse.laser_locked()
                     wavemeter_value = self.matisse.wavemeter.get_raw_value()
 
                     bifi_pos_text = f"BiFi:{bifi_pos}"
