@@ -14,6 +14,7 @@ from gui.widgets import LoggingArea, StatusMonitor
 from matisse import Matisse
 
 
+# TODO: UpdateGuiState thread to make sure menus are checked correctly
 class ControlApplication(QApplication):
     EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
 
@@ -214,18 +215,13 @@ class ControlApplication(QApplication):
     @handled_slot(bool)
     def toggle_lock_all(self, checked):
         if checked:
-            for action in self.lock_actions:
-                if not action.isChecked():
-                    action.trigger()
-            if all([action.isChecked() for action in self.lock_actions]):
-                [action.setEnabled(False) for action in self.lock_actions]
-            else:
-                self.lock_all_action.setChecked(False)
-                print("Couldn't lock all laser components.")
+            self.matisse.start_laser_lock_correction()
+            [action.setEnabled(False) for action in self.lock_actions]
+            [action.setChecked(True) for action in self.lock_actions]
         else:
-            for action in reversed(self.lock_actions):
-                action.trigger()
-                action.setEnabled(True)
+            self.matisse.stop_laser_lock_correction()
+            [action.setEnabled(True) for action in self.lock_actions]
+            [action.setChecked(False) for action in self.lock_actions]
 
     @handled_slot(bool)
     def toggle_slow_piezo_lock(self, checked):
