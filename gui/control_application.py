@@ -44,7 +44,7 @@ class ControlApplication(QApplication):
         self.window = window = QMainWindow()
         self.layout = QVBoxLayout()
         window.setWindowTitle('Matisse Controller')
-        window.resize(600, 200)
+        window.resize(600, 300)
 
     def setup_logging(self):
         self.log_queue = queue.Queue()
@@ -69,6 +69,9 @@ class ControlApplication(QApplication):
         self.set_bifi_approx_wavelength_action = set_menu.addAction('BiFi Approx. Wavelength')
         self.set_bifi_motor_pos_action = set_menu.addAction('BiFi Motor Position')
         self.set_thin_eta_motor_pos_action = set_menu.addAction('Thin Etalon Motor Position')
+        self.set_piezo_eta_pos_action = set_menu.addAction('Piezo Etalon Position')
+        self.set_slow_piezo_pos_action = set_menu.addAction('Slow Piezo Position')
+        self.set_refcell_pos_action = set_menu.addAction('RefCell Position')
 
         scan_menu = menu_bar.addMenu('Scan')
         self.bifi_scan_action = scan_menu.addAction('Birefringent Filter')
@@ -106,6 +109,9 @@ class ControlApplication(QApplication):
         self.set_bifi_approx_wavelength_action.triggered.connect(self.set_bifi_approx_wavelength_dialog)
         self.set_bifi_motor_pos_action.triggered.connect(self.set_bifi_motor_pos_dialog)
         self.set_thin_eta_motor_pos_action.triggered.connect(self.set_thin_eta_motor_pos_dialog)
+        self.set_piezo_eta_pos_action.triggered.connect(self.set_piezo_eta_pos_dialog)
+        self.set_slow_piezo_pos_action.triggered.connect(self.set_slow_piezo_pos_dialog)
+        self.set_refcell_pos_action.triggered.connect(self.set_refcell_pos_dialog)
 
         # Scan
         self.bifi_scan_action.triggered.connect(self.start_bifi_scan)
@@ -189,7 +195,8 @@ class ControlApplication(QApplication):
                                                             current_wavelength)
         if success:
             print(f"Setting wavelength to {target_wavelength} nm...")
-            self.set_wavelength_thread = threading.Thread(target=self.matisse.set_wavelength, args=[target_wavelength], daemon=True)
+            self.set_wavelength_thread = threading.Thread(target=self.matisse.set_wavelength, args=[target_wavelength],
+                                                          daemon=True)
             self.set_wavelength_thread.start()
 
     @handled_slot(bool)
@@ -215,6 +222,27 @@ class ControlApplication(QApplication):
         if success:
             print(f"Setting thin etalon motor position to {target_pos}.")
             self.matisse.set_thin_etalon_motor_pos(target_pos)
+
+    @handled_slot(bool)
+    def set_piezo_eta_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getDouble(self.window, 'Set Piezo Etalon Position', 'Position: ',
+                                                     self.matisse.query('PZETL:BASE?', numeric_result=True))
+        if success:
+            self.matisse.query(f"PZETL:BASE {target_pos}")
+
+    @handled_slot(bool)
+    def set_slow_piezo_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getDouble(self.window, 'Set Slow Piezo Position', 'Position: ',
+                                                     self.matisse.query('SPZT:NOW?', numeric_result=True))
+        if success:
+            self.matisse.query(f"SPZT:NOW {target_pos}")
+
+    @handled_slot(bool)
+    def set_refcell_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getDouble(self.window, 'Set RefCell Position', 'Position: ',
+                                                     self.matisse.query('SCAN:NOW?', numeric_result=True))
+        if success:
+            self.matisse.query(f"SCAN:NOW {target_pos}")
 
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
