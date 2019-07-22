@@ -136,6 +136,9 @@ class ControlApplication(QApplication):
 
     @pyqtSlot()
     def clean_up(self):
+        # Reset Matisse to a 'good' default state
+        self.matisse.stabilize_off()
+        self.matisse.stop_laser_lock_correction()
         # Clean up widgets with running threads.
         self.status_monitor.clean_up()
         self.log_area.clean_up()
