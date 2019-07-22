@@ -69,6 +69,7 @@ class Matisse(Constants):
         """:return: the wavelength (in nanometers) as measured by the wavemeter"""
         return self.wavemeter.get_wavelength()
 
+    # TODO: If the laser is locked, unlock it, set the wavelength, then try to lock it again
     def set_wavelength(self, wavelength: float):
         """
         Configure the Matisse to output a given wavelength.
