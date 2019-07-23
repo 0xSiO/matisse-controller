@@ -170,4 +170,5 @@ If it's between 0.02 nm and 0.15 nm, skip the first birefringent scan and go rig
 If it's less than 0.02 nm, skip all BiFi and TE scans, and just do a RefCell scan.
 
 For the thin etalon scan: figure out how to move the wavelength a certain amount with just the motor. Move to this
-approximate position and then do the TE scan.
+approximate position and then do the TE scan. Average motor steps between each minima in my sample_scans data: 467
+Approximate change in wavelength between each minimum: 0.033 nm, so nm/pos = 7.08589e-05

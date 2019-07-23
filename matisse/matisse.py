@@ -112,7 +112,7 @@ class Matisse(Constants):
             print(f"Setting BiFi to ~{wavelength} nm.")
             self.set_bifi_wavelength(wavelength)
             self.birefringent_filter_scan()
-            # TODO: self.set_thin_etalon_wavelength(wavelength)
+            self.set_thin_etalon_wavelength(wavelength)
             self.thin_etalon_scan()
             # TODO: Double check these small ranges
             self.birefringent_filter_scan(scan_range=100)
@@ -120,14 +120,14 @@ class Matisse(Constants):
         elif 0.15 < diff <= 0.4:
             # Small BiFi scan
             self.birefringent_filter_scan(scan_range=100)
-            # TODO: self.set_thin_etalon_wavelength(wavelength)
+            self.set_thin_etalon_wavelength(wavelength)
             self.thin_etalon_scan()
             # TODO: Double check these small ranges
             self.birefringent_filter_scan(scan_range=100)
             self.thin_etalon_scan(scan_range=500)
         elif 0.02 < diff <= 0.15:
             # No BiFi scan, TE scan only
-            # TODO: self.set_thin_etalon_wavelength(wavelength)
+            self.set_thin_etalon_wavelength(wavelength)
             self.thin_etalon_scan()
             # TODO: Double check these small ranges
             self.birefringent_filter_scan(scan_range=100)
@@ -216,6 +216,12 @@ class Matisse(Constants):
         """Return the last 8 bits of the BiFi motor status."""
         return int(self.query('MOTBI:STATUS?', numeric_result=True)) & 0b000000011111111
 
+    def set_thin_etalon_wavelength(self, wavelength: float):
+        diff = wavelength - self.wavemeter_wavelength()
+        motor_steps = int(diff / Matisse.THIN_ETALON_NM_PER_STEP)
+        current_pos = int(self.query('MOTTE:POS?', numeric_result=True))
+        self.set_thin_etalon_motor_pos(current_pos + motor_steps)
+
     def thin_etalon_scan(self, scan_range: int = None):
         """
         Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
@@ -268,7 +274,8 @@ class Matisse(Constants):
         self.scans_plot.add_thin_etalon_scan_legend()
 
     def set_thin_etalon_motor_pos(self, pos: int):
-        assert (0 < pos < Matisse.THIN_ETALON_UPPER_LIMIT), 'Target motor position out of range.'
+        assert (Matisse.THIN_ETALON_LOWER_LIMIT < pos < Matisse.THIN_ETALON_UPPER_LIMIT), \
+            f"Can't set thin etalon motor position to {pos}, this is out of range."
         # Wait for motor to be ready to accept commands
         while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass

@@ -5,6 +5,7 @@ class Constants:
     BIREFRINGENT_SCAN_STEP = 3
     THIN_ETALON_SCAN_RANGE = 1000  # TODO: Decrease this, it takes too long
     THIN_ETALON_SCAN_STEP = 10
+    THIN_ETALON_NM_PER_STEP = 7.08589e-05
 
     # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
     THIN_ETALON_NUDGE = -50
