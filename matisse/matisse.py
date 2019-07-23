@@ -101,22 +101,27 @@ class Matisse(Constants):
         # TODO: self.optimize_reference_cell() and then redo BiFi/TE scans
         print('All done.')
 
-    def birefringent_filter_scan(self):
+    def birefringent_filter_scan(self, scan_range: int = None):
         """
         Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.
 
         Additionally, plot the power data and motor position selection.
+
+        :param scan_range: the desired range of the scan
         """
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
+        if scan_range is None:
+            scan_range = Matisse.BIREFRINGENT_SCAN_RANGE
 
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
-        lower_limit = center_pos - Matisse.BIREFRINGENT_SCAN_RANGE
-        upper_limit = center_pos + Matisse.BIREFRINGENT_SCAN_RANGE
-        assert (0 < lower_limit < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT and 0 < upper_limit < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT and lower_limit < upper_limit), \
-            'Conditions for BiFi scan invalid. Motor position must be between ' + \
-            f"{Matisse.BIREFRINGENT_SCAN_RANGE} and {Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT - Matisse.BIREFRINGENT_SCAN_RANGE}"
-        positions = np.array(range(lower_limit, upper_limit, Matisse.BIREFRINGENT_SCAN_STEP))
+        lower_end = center_pos - scan_range
+        upper_end = center_pos + scan_range
+        assert (0 < lower_end < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
+                and 0 < upper_end < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
+                and lower_end < upper_end), 'Conditions for BiFi scan invalid. Motor position must be between ' + \
+                                            f"{scan_range} and {Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT - scan_range}"
+        positions = np.array(range(lower_end, upper_end, Matisse.BIREFRINGENT_SCAN_STEP))
         voltages = np.array([])
         print('Starting BiFi scan... ', end='')
         for pos in positions:
@@ -173,8 +178,7 @@ class Matisse(Constants):
         """Return the last 8 bits of the BiFi motor status."""
         return int(self.query('MOTBI:STATUS?', numeric_result=True)) & 0b000000011111111
 
-    # TODO: If wavemeter wavelength < or > target wavelength, do the scan ONLY going right or left, not both
-    def thin_etalon_scan(self):
+    def thin_etalon_scan(self, scan_range: int = None):
         """
         Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
 
@@ -183,14 +187,18 @@ class Matisse(Constants):
         """
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
+        if scan_range is None:
+            scan_range = Matisse.THIN_ETALON_SCAN_RANGE
 
         center_pos = int(self.query('MOTTE:POS?', numeric_result=True))
-        lower_limit = center_pos - Matisse.THIN_ETALON_SCAN_RANGE
-        upper_limit = center_pos + Matisse.THIN_ETALON_SCAN_RANGE
-        assert (0 < lower_limit < Matisse.THIN_ETALON_UPPER_LIMIT and 0 < upper_limit < Matisse.THIN_ETALON_UPPER_LIMIT and lower_limit < upper_limit), \
+        lower_end = center_pos - scan_range
+        upper_end = center_pos + scan_range
+        assert (0 < lower_end < Matisse.THIN_ETALON_UPPER_LIMIT
+                and 0 < upper_end < Matisse.THIN_ETALON_UPPER_LIMIT
+                and lower_end < upper_end), \
             'Conditions for thin etalon scan invalid. Motor position must be between ' + \
-            f"{Matisse.THIN_ETALON_SCAN_RANGE} and {Matisse.THIN_ETALON_UPPER_LIMIT - Matisse.THIN_ETALON_SCAN_RANGE}"
-        positions = np.array(range(lower_limit, upper_limit, Matisse.THIN_ETALON_SCAN_STEP))
+            f"{scan_range} and {Matisse.THIN_ETALON_UPPER_LIMIT - scan_range}"
+        positions = np.array(range(lower_end, upper_end, Matisse.THIN_ETALON_SCAN_STEP))
         voltages = np.array([])
         print('Starting thin etalon scan... ', end='')
         for pos in positions:
