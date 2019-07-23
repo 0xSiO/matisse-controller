@@ -146,3 +146,10 @@ Make a configuration window where you can manually set some of the constants you
 timeout or the scan parameters.
 
 Scan plots aren't showing, there's probably some issue with which thread we're on when we have to show the plots.
+
+When BiFi goes up, wavelength goes down. When thin etalon goes down, wavelength goes down. When piezo etalon goes down,
+wavelength goes up. When scanning the reference cell, the piezo etalon and thin etalon change too (the piezo etalon
+moves opposite the reference cell, and the thin etalon moves with the reference cell). Double checked the usefulness of
+the 'flank' option in Matisse Commander, didn't see any change or difficulty in setting the laser if flank was 'correct'
+or not. Just setting the position of the reference cell while the laser is unlocked doesn't change any other piezo. It's
+important to specifically do a scan instead.
