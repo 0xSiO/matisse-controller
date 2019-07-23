@@ -114,24 +114,21 @@ class Matisse(Constants):
             self.birefringent_filter_scan()
             self.set_thin_etalon_wavelength(wavelength)
             self.thin_etalon_scan()
-            # TODO: Double check these small ranges
-            self.birefringent_filter_scan(scan_range=100)
-            self.thin_etalon_scan(scan_range=500)
+            self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
+            self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
         elif 0.15 < diff <= 0.4:
             # Small BiFi scan
-            self.birefringent_filter_scan(scan_range=100)
+            self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
             self.set_thin_etalon_wavelength(wavelength)
             self.thin_etalon_scan()
-            # TODO: Double check these small ranges
-            self.birefringent_filter_scan(scan_range=100)
-            self.thin_etalon_scan(scan_range=500)
+            self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
+            self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
         elif 0.02 < diff <= 0.15:
             # No BiFi scan, TE scan only
             self.set_thin_etalon_wavelength(wavelength)
             self.thin_etalon_scan()
-            # TODO: Double check these small ranges
-            self.birefringent_filter_scan(scan_range=100)
-            self.thin_etalon_scan(scan_range=500)
+            self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
+            self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
         else:
             # No BiFi, no TE. Scan device only.
             pass
