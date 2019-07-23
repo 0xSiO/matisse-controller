@@ -1,5 +1,5 @@
-import threading
 import queue
+import threading
 
 import numpy as np
 from pyvisa import ResourceManager, VisaIOError
@@ -7,8 +7,8 @@ from scipy.signal import savgol_filter, argrelextrema
 
 from matisse.constants import Constants
 from matisse.lock_correction_thread import LockCorrectionThread
-from matisse.scan_plots import ScanPlots
 from matisse.stabilization_thread import StabilizationThread
+from matisse.threading import BirefringentFilterScanPlotThread, ThinEtalonScanPlotThread
 from wavemaster import WaveMaster
 
 
@@ -31,7 +31,6 @@ class Matisse(Constants):
             self.lock_correction_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.wavemeter = WaveMaster(wavemeter_port)
-            self.scan_plots = ScanPlots()
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
@@ -177,10 +176,9 @@ class Matisse(Constants):
         self.set_bifi_motor_pos(best_pos)
         print('Done.')
 
-        self.scan_plots.plot_birefringent_scan(positions, voltages, smoothed_data)
-        self.scan_plots.plot_birefringent_selection(best_pos)
-        self.scan_plots.plot_birefringent_maxima(positions[maxima], smoothed_data[maxima])
-        self.scan_plots.add_bifi_scan_legend()
+        self.birefringent_filter_scan_plot_thread = BirefringentFilterScanPlotThread(positions, voltages, smoothed_data,
+                                                                                     maxima, best_pos, daemon=True)
+        self.birefringent_filter_scan_plot_thread.start()
 
     def set_bifi_motor_pos(self, pos: int):
         assert 0 < pos < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, 'Target motor position out of range.'
@@ -257,10 +255,9 @@ class Matisse(Constants):
         self.set_thin_etalon_motor_pos(best_pos)
         print('Done.')
 
-        self.scan_plots.plot_thin_etalon_scan(positions, voltages, smoothed_data)
-        self.scan_plots.plot_thin_etalon_selection(best_pos)
-        self.scan_plots.plot_thin_etalon_minima(positions[minima], smoothed_data[minima])
-        self.scan_plots.add_thin_etalon_scan_legend()
+        self.thin_etalon_scan_plot_thread = ThinEtalonScanPlotThread(positions, voltages, smoothed_data, minima,
+                                                                     best_pos, daemon=True)
+        self.thin_etalon_scan_plot_thread.start()
 
     def set_thin_etalon_motor_pos(self, pos: int):
         assert (Matisse.THIN_ETALON_LOWER_LIMIT < pos < Matisse.THIN_ETALON_UPPER_LIMIT), \
