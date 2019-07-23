@@ -7,7 +7,7 @@ from scipy.signal import savgol_filter, argrelextrema
 
 from matisse.constants import Constants
 from matisse.lock_correction_thread import LockCorrectionThread
-from matisse.scans_plot import ScansPlot
+from matisse.scan_plots import ScanPlots
 from matisse.stabilization_thread import StabilizationThread
 from wavemaster import WaveMaster
 
@@ -31,7 +31,7 @@ class Matisse(Constants):
             self.lock_correction_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.wavemeter = WaveMaster(wavemeter_port)
-            self.scans_plot = None
+            self.scan_plots = ScanPlots()
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
@@ -95,8 +95,6 @@ class Matisse(Constants):
 
         :param wavelength: the desired wavelength
         """
-        del self.scans_plot
-        self.scans_plot = ScansPlot()
         self.target_wavelength = wavelength
 
         lock_when_done = self.is_lock_correction_on()
@@ -179,13 +177,10 @@ class Matisse(Constants):
         self.set_bifi_motor_pos(best_pos)
         print('Done.')
 
-        # TODO: When plot window is closed, this doesn't just become None.
-        if self.scans_plot is None:
-            self.scans_plot = ScansPlot()
-        self.scans_plot.plot_birefringent_scan(positions, voltages, smoothed_data)
-        self.scans_plot.plot_birefringent_selection(best_pos)
-        self.scans_plot.plot_birefringent_maxima(positions[maxima], smoothed_data[maxima])
-        self.scans_plot.add_bifi_scan_legend()
+        self.scan_plots.plot_birefringent_scan(positions, voltages, smoothed_data)
+        self.scan_plots.plot_birefringent_selection(best_pos)
+        self.scan_plots.plot_birefringent_maxima(positions[maxima], smoothed_data[maxima])
+        self.scan_plots.add_bifi_scan_legend()
 
     def set_bifi_motor_pos(self, pos: int):
         assert 0 < pos < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, 'Target motor position out of range.'
@@ -262,12 +257,10 @@ class Matisse(Constants):
         self.set_thin_etalon_motor_pos(best_pos)
         print('Done.')
 
-        if self.scans_plot is None:
-            self.scans_plot = ScansPlot()
-        self.scans_plot.plot_thin_etalon_scan(positions, voltages, smoothed_data)
-        self.scans_plot.plot_thin_etalon_selection(best_pos)
-        self.scans_plot.plot_thin_etalon_minima(positions[minima], smoothed_data[minima])
-        self.scans_plot.add_thin_etalon_scan_legend()
+        self.scan_plots.plot_thin_etalon_scan(positions, voltages, smoothed_data)
+        self.scan_plots.plot_thin_etalon_selection(best_pos)
+        self.scan_plots.plot_thin_etalon_minima(positions[minima], smoothed_data[minima])
+        self.scan_plots.add_thin_etalon_scan_legend()
 
     def set_thin_etalon_motor_pos(self, pos: int):
         assert (Matisse.THIN_ETALON_LOWER_LIMIT < pos < Matisse.THIN_ETALON_UPPER_LIMIT), \
