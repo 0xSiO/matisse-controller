@@ -99,14 +99,45 @@ class Matisse(Constants):
         del self.scans_plot
         self.scans_plot = ScansPlot()
         self.target_wavelength = wavelength
-        print(f"Setting BiFi to ~{wavelength} nm... ", end='')
-        self.set_bifi_wavelength(wavelength)
-        print('Done.')
-        self.birefringent_filter_scan()
-        self.thin_etalon_scan()
-        # TODO: self.optimize_piezo_etalon()
-        # TODO: self.optimize_reference_cell() and then redo BiFi/TE scans
-        print('All done.')
+
+        lock_when_done = self.is_lock_correction_on()
+        if self.is_lock_correction_on():
+            self.stop_laser_lock_correction()
+        if self.is_stabilizing():
+            self.stabilize_off()
+        diff = abs(wavelength - self.wavemeter_wavelength())
+
+        if diff > 0.4:
+            # Normal BiFi scan
+            print(f"Setting BiFi to ~{wavelength} nm.")
+            self.set_bifi_wavelength(wavelength)
+            self.birefringent_filter_scan()
+            # TODO: self.set_thin_etalon_wavelength(wavelength)
+            self.thin_etalon_scan()
+            # TODO: Double check these small ranges
+            self.birefringent_filter_scan(scan_range=100)
+            self.thin_etalon_scan(scan_range=500)
+        elif 0.15 < diff <= 0.4:
+            # Small BiFi scan
+            self.birefringent_filter_scan(scan_range=100)
+            # TODO: self.set_thin_etalon_wavelength(wavelength)
+            self.thin_etalon_scan()
+            # TODO: Double check these small ranges
+            self.birefringent_filter_scan(scan_range=100)
+            self.thin_etalon_scan(scan_range=500)
+        elif 0.02 < diff <= 0.15:
+            # No BiFi scan, TE scan only
+            # TODO: self.set_thin_etalon_wavelength(wavelength)
+            self.thin_etalon_scan()
+            # TODO: Double check these small ranges
+            self.birefringent_filter_scan(scan_range=100)
+            self.thin_etalon_scan(scan_range=500)
+        else:
+            # No BiFi, no TE. Scan device only.
+            pass
+        if lock_when_done:
+            self.start_laser_lock_correction()
+        self.stabilize_on()
 
     def birefringent_filter_scan(self, scan_range: int = None):
         """
@@ -249,10 +280,6 @@ class Matisse(Constants):
     def thin_etalon_motor_status(self):
         """Return the last 8 bits of the TE motor status."""
         return int(self.query('MOTTE:STATUS?', numeric_result=True)) & 0b000000011111111
-
-    def optimize_piezo_etalon(self):
-        # TODO: Just use a binary search method to pick the right value?
-        raise NotImplementedError
 
     def set_slow_piezo_control(self, enable: bool):
         self.query(f"SLOWPIEZO:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
