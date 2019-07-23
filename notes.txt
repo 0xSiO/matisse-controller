@@ -153,3 +153,21 @@ moves opposite the reference cell, and the thin etalon moves with the reference 
 the 'flank' option in Matisse Commander, didn't see any change or difficulty in setting the laser if flank was 'correct'
 or not. Just setting the position of the reference cell while the laser is unlocked doesn't change any other piezo. It's
 important to specifically do a scan instead.
+
+Distance between each BiFi scan maximum is about 0.45 nm.
+Distance between each thin etalon scan minimum is about 0.033 nm.
+
+New and improved scanning process:
+1. Initial BiFi set and possible scan
+2. Initial TE set and possible scan
+3. Small BiFi scan to keep it on the peak
+4. Small TE scan to keep it on the dip
+
+Check wavelength difference between current and target.
+If it's greater than about 0.4 nm, do a large birefringent scan to choose a better peak.
+If it's between about 0.15 nm and 0.4 nm, do a small birefringent scan to keep it on the peak.
+If it's between 0.02 nm and 0.15 nm, skip the first birefringent scan and go right to the thin etalon scan.
+If it's less than 0.02 nm, skip all BiFi and TE scans, and just do a RefCell scan.
+
+For the thin etalon scan: figure out how to move the wavelength a certain amount with just the motor. Move to this
+approximate position and then do the TE scan.
