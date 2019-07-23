@@ -10,6 +10,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication
 
 from gui import utils
+from gui.dialogs import ConfigurationDialog
 from gui.logging_stream import LoggingStream
 from gui.utils import handled_function, handled_slot
 from gui.widgets import LoggingArea, StatusMonitor
@@ -61,6 +62,7 @@ class ControlApplication(QApplication):
 
         console_menu = menu_bar.addMenu('Console')
         self.clear_log_area_action = console_menu.addAction('Clear Log')
+        self.configuration_action = console_menu.addAction('Configuration')
         self.open_idle_action = console_menu.addAction('Open Python Shell...')
         self.restart_action = console_menu.addAction('Restart')
 
@@ -98,6 +100,7 @@ class ControlApplication(QApplication):
     def setup_slots(self):
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
+        self.configuration_action.triggered.connect(self.open_configuration)
         self.open_idle_action.triggered.connect(self.open_idle)
         self.restart_action.triggered.connect(self.restart)
 
@@ -167,6 +170,11 @@ class ControlApplication(QApplication):
     @handled_slot(bool)
     def clear_log_area(self, checked):
         self.log_area.clear()
+
+    @handled_slot(bool)
+    def open_configuration(self, checked):
+        dialog = ConfigurationDialog()
+        dialog.exec()
 
     @handled_slot(bool)
     def open_idle(self, checked):
