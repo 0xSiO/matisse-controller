@@ -1,4 +1,4 @@
-import configparser
+import json
 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
@@ -16,7 +16,7 @@ class ConfigurationDialog(QDialog):
         self.add_options()
         self.add_buttons()
         # TODO: Load defaults
-        self.config = configparser.ConfigParser()
+        self.config = {}
 
     def add_options(self):
         scan_options = self.create_scan_options()
@@ -76,11 +76,31 @@ class ConfigurationDialog(QDialog):
         button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.cancel)
         self.layout.addWidget(button_box)
 
+    def set_configuration(self):
+        # TODO: Extract values from form
+        self.config['scanning'] = {
+            'birefringent_filter': {
+                'scan_range': 0,
+                'scan_range_small': 0,
+                'step': 0
+            },
+            'thin_etalon': {
+                'scan_range': 0,
+                'scan_range_small': 0,
+                'step': 0,
+                'nudge': 0
+            }
+        }
+        self.config['locking'] = {
+            'timeout': 0
+        }
+
     @pyqtSlot(bool)
     def save_configuration(self, checked):
         print('Saving configuration.')
-        with open('config.txt', 'w') as config_file:
-            self.config.write(config_file)
+        self.set_configuration()
+        with open('config.json', 'w') as config_file:
+            config_file.write(json.dumps(self.config, indent=4))
         self.close()
 
     @pyqtSlot(bool)

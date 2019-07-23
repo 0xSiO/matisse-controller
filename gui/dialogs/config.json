@@ -1,0 +1,18 @@
+{
+    "scanning": {
+        "birefringent_filter": {
+            "scan_range": 0,
+            "scan_range_small": 0,
+            "step": 0
+        },
+        "thin_etalon": {
+            "scan_range": 0,
+            "scan_range_small": 0,
+            "step": 0,
+            "nudge": 0
+        }
+    },
+    "locking": {
+        "timeout": 0
+    }
+}
