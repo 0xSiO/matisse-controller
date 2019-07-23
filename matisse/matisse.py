@@ -323,11 +323,11 @@ class Matisse(Constants):
     def is_any_limit_reached(self):
         """Returns true if the RefCell, slow piezo, or piezo etalon are very close to one of their limits."""
 
-        current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos = self.get_stabilizing_piezo_positions()
+        refcell_pos, pz_eta_pos, slow_pz_pos = self.get_stabilizing_piezo_positions()
         offset = 0.05
-        return not (self.REFERENCE_CELL_LOWER_LIMIT + offset < current_refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
-               and self.SLOW_PIEZO_LOWER_LIMIT + offset < current_slow_pz_pos < self.SLOW_PIEZO_UPPER_LIMIT - offset
-               and self.PIEZO_ETALON_LOWER_LIMIT + offset < current_pz_eta_pos < self.PIEZO_ETALON_UPPER_LIMIT - offset)
+        return not (self.REFERENCE_CELL_LOWER_LIMIT + offset < refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
+                    and self.SLOW_PIEZO_LOWER_LIMIT + offset < slow_pz_pos < self.SLOW_PIEZO_UPPER_LIMIT - offset
+                    and self.PIEZO_ETALON_LOWER_LIMIT + offset < pz_eta_pos < self.PIEZO_ETALON_UPPER_LIMIT - offset)
 
     def reset_stabilization_piezos(self):
         """
