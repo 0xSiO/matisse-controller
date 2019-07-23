@@ -79,24 +79,21 @@ class ControlApplication(QApplication):
 
         stabilization_menu = menu_bar.addMenu('Stabilization')
         toggle_control_loop_menu = stabilization_menu.addMenu('Toggle Control Loop')
-        # TODO: Rename all these 'lock' actions
-        self.lock_all_action = stabilization_menu.addAction('Lock Laser')
-        self.lock_all_action.setCheckable(True)
-        self.lock_slow_piezo_action = toggle_control_loop_menu.addAction('Slow Piezo')
-        self.lock_slow_piezo_action.setCheckable(True)
-        self.lock_thin_etalon_action = toggle_control_loop_menu.addAction('Thin Etalon')
-        self.lock_thin_etalon_action.setCheckable(True)
-        self.lock_piezo_etalon_action = toggle_control_loop_menu.addAction('Piezo Etalon')
-        self.lock_piezo_etalon_action.setCheckable(True)
-        self.lock_fast_piezo_action = toggle_control_loop_menu.addAction('Fast Piezo')
-        self.lock_fast_piezo_action.setCheckable(True)
+        self.slow_pz_control_action = toggle_control_loop_menu.addAction('Slow Piezo')
+        self.slow_pz_control_action.setCheckable(True)
+        self.thin_eta_control_action = toggle_control_loop_menu.addAction('Thin Etalon')
+        self.thin_eta_control_action.setCheckable(True)
+        self.piezo_eta_control_action = toggle_control_loop_menu.addAction('Piezo Etalon')
+        self.piezo_eta_control_action.setCheckable(True)
+        self.fast_pz_control_action = toggle_control_loop_menu.addAction('Fast Piezo')
+        self.fast_pz_control_action.setCheckable(True)
+        self.lock_laser_action = stabilization_menu.addAction('Lock Laser')
+        self.lock_laser_action.setCheckable(True)
+        self.auto_stabilize_action = stabilization_menu.addAction('Automatic Stabilization')
+        self.auto_stabilize_action.setCheckable(True)
 
-        refcell_menu = menu_bar.addMenu('RefCell')
-        self.refcell_stabilization_action = refcell_menu.addAction('Stabilize Wavelength')
-        self.refcell_stabilization_action.setCheckable(True)
-
-        self.lock_actions = [self.lock_slow_piezo_action, self.lock_thin_etalon_action, self.lock_piezo_etalon_action,
-                             self.lock_fast_piezo_action]
+        self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
+                                     self.piezo_eta_control_action, self.fast_pz_control_action]
 
     def setup_slots(self):
         # Console
@@ -117,15 +114,13 @@ class ControlApplication(QApplication):
         self.bifi_scan_action.triggered.connect(self.start_bifi_scan)
         self.thin_eta_scan_action.triggered.connect(self.start_thin_etalon_scan)
 
-        # Lock
-        self.lock_all_action.triggered.connect(self.toggle_lock_all)
-        self.lock_slow_piezo_action.triggered.connect(self.toggle_slow_piezo_lock)
-        self.lock_thin_etalon_action.triggered.connect(self.toggle_thin_etalon_lock)
-        self.lock_piezo_etalon_action.triggered.connect(self.toggle_piezo_etalon_lock)
-        self.lock_fast_piezo_action.triggered.connect(self.toggle_fast_piezo_lock)
-
-        # RefCell
-        self.refcell_stabilization_action.triggered.connect(self.toggle_refcell_stabilization)
+        # Stabilization
+        self.lock_laser_action.triggered.connect(self.toggle_lock_laser)
+        self.slow_pz_control_action.triggered.connect(self.toggle_slow_piezo_control)
+        self.thin_eta_control_action.triggered.connect(self.toggle_thin_etalon_control)
+        self.piezo_eta_control_action.triggered.connect(self.toggle_piezo_etalon_control)
+        self.fast_pz_control_action.triggered.connect(self.toggle_fast_piezo_control)
+        self.auto_stabilize_action.triggered.connect(self.toggle_auto_stabilization)
 
     @handled_function
     def setup_widgets(self):
@@ -255,51 +250,51 @@ class ControlApplication(QApplication):
         self.thin_etalon_scan_thread.start()
 
     @handled_slot(bool)
-    def toggle_lock_all(self, checked):
-        self.lock_all_action.setChecked(not checked)
+    def toggle_lock_laser(self, checked):
+        self.lock_laser_action.setChecked(not checked)
         if checked:
             self.matisse.start_laser_lock_correction()
-            [action.setEnabled(False) for action in self.lock_actions]
-            [action.setChecked(True) for action in self.lock_actions]
+            [action.setEnabled(False) for action in self.control_loop_actions]
+            [action.setChecked(True) for action in self.control_loop_actions]
         else:
             self.matisse.stop_laser_lock_correction()
-            [action.setEnabled(True) for action in self.lock_actions]
-            [action.setChecked(False) for action in self.lock_actions]
-        self.lock_all_action.setChecked(checked)
+            [action.setEnabled(True) for action in self.control_loop_actions]
+            [action.setChecked(False) for action in self.control_loop_actions]
+        self.lock_laser_action.setChecked(checked)
 
     @handled_slot(bool)
-    def toggle_slow_piezo_lock(self, checked):
+    def toggle_slow_piezo_control(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} slow piezo.")
-        self.lock_slow_piezo_action.setChecked(not checked)
+        self.slow_pz_control_action.setChecked(not checked)
         self.matisse.set_slow_piezo_control(checked)
-        self.lock_slow_piezo_action.setChecked(checked)
+        self.slow_pz_control_action.setChecked(checked)
 
     @handled_slot(bool)
-    def toggle_thin_etalon_lock(self, checked):
+    def toggle_thin_etalon_control(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} thin etalon.")
-        self.lock_thin_etalon_action.setChecked(not checked)
+        self.thin_eta_control_action.setChecked(not checked)
         self.matisse.set_thin_etalon_control(checked)
-        self.lock_thin_etalon_action.setChecked(checked)
+        self.thin_eta_control_action.setChecked(checked)
 
     @handled_slot(bool)
-    def toggle_piezo_etalon_lock(self, checked):
+    def toggle_piezo_etalon_control(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} piezo etalon.")
-        self.lock_piezo_etalon_action.setChecked(not checked)
+        self.piezo_eta_control_action.setChecked(not checked)
         self.matisse.set_piezo_etalon_control(checked)
-        self.lock_piezo_etalon_action.setChecked(checked)
+        self.piezo_eta_control_action.setChecked(checked)
 
     @handled_slot(bool)
-    def toggle_fast_piezo_lock(self, checked):
+    def toggle_fast_piezo_control(self, checked):
         print(f"{'Locking' if checked else 'Unlocking'} fast piezo.")
-        self.lock_fast_piezo_action.setChecked(not checked)
+        self.fast_pz_control_action.setChecked(not checked)
         self.matisse.set_piezo_etalon_control(checked)
-        self.lock_fast_piezo_action.setChecked(checked)
+        self.fast_pz_control_action.setChecked(checked)
 
     @handled_slot(bool)
-    def toggle_refcell_stabilization(self, checked):
-        self.refcell_stabilization_action.setChecked(not checked)
+    def toggle_auto_stabilization(self, checked):
+        self.auto_stabilize_action.setChecked(not checked)
         if checked:
             self.matisse.stabilize_on()
         else:
             self.matisse.stabilize_off()
-        self.refcell_stabilization_action.setChecked(checked)
+        self.auto_stabilize_action.setChecked(checked)
