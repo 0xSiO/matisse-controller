@@ -1,9 +1,12 @@
+# TODO: Check the 'small' scan ranges
 class Constants:
     # How far to each side should we scan the BiFi?
     BIREFRINGENT_SCAN_RANGE = 300
+    BIREFRINGENT_SCAN_RANGE_SMALL = 150
     # How far apart should each point be spaced when measuring the diode power?
     BIREFRINGENT_SCAN_STEP = 3
-    THIN_ETALON_SCAN_RANGE = 1000  # TODO: Decrease this, it takes too long
+    THIN_ETALON_SCAN_RANGE = 1000
+    THIN_ETALON_SCAN_RANGE_SMALL = 500
     THIN_ETALON_SCAN_STEP = 10
     THIN_ETALON_NM_PER_STEP = 7.08589e-05
 
