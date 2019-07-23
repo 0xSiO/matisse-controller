@@ -1,4 +1,5 @@
 # TODO: Check the 'small' scan ranges
+# TODO: Some of these constants must stay constant, others can be optionally configured
 class Constants:
     # Scanning ################################################################
 

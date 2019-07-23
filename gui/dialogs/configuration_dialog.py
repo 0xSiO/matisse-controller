@@ -1,3 +1,4 @@
+from matisse import Matisse
 from PyQt5.QtWidgets import *
 
 
@@ -5,7 +6,7 @@ class ConfigurationDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle('Configuration')
-        self.resize(600, 200)
+        self.resize(700, 200)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.add_options()
@@ -13,6 +14,17 @@ class ConfigurationDialog(QDialog):
         # TODO: Load defaults
 
     def add_options(self):
+        scan_options = self.create_scan_options()
+        locking_options = self.create_locking_options()
+
+        form = QWidget()
+        form_layout = QHBoxLayout()
+        form.setLayout(form_layout)
+        form_layout.addWidget(scan_options)
+        form_layout.addWidget(locking_options)
+        self.layout.addWidget(form)
+
+    def create_scan_options(self):
         scan_options = QGroupBox('Scanning')
         scan_layout = QFormLayout()
         scan_options.setLayout(scan_layout)
@@ -30,12 +42,28 @@ class ConfigurationDialog(QDialog):
         scan_layout.addRow('Thin Etalon Scan Step:', thin_eta_scan_step_field)
         thin_eta_nudge_field = QSpinBox()
         scan_layout.addRow('Thin Etalon Scan Nudge:', thin_eta_nudge_field)
+        return scan_options
 
-        form = QWidget()
-        form_layout = QHBoxLayout()
-        form.setLayout(form_layout)
-        form_layout.addWidget(scan_options)
-        self.layout.addWidget(form)
+    def create_locking_options(self):
+        locking_options = QGroupBox('Locking/Stabilization')
+        locking_layout = QFormLayout()
+        locking_options.setLayout(locking_layout)
+        locking_timeout_field = QDoubleSpinBox()
+        locking_timeout_field.setMinimum(0)
+        locking_layout.addRow('Locking timeout: ', locking_timeout_field)
+        pz_eta_correction_pos_field = QDoubleSpinBox()
+        pz_eta_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+        pz_eta_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        locking_layout.addRow('Piezo Etalon Correction Pos: ', pz_eta_correction_pos_field)
+        slow_pz_correction_pos_field = QDoubleSpinBox()
+        slow_pz_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+        slow_pz_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        locking_layout.addRow('Slow Piezo Correction Pos: ', slow_pz_correction_pos_field)
+        refcell_correction_pos_field = QDoubleSpinBox()
+        refcell_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        refcell_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow('RefCell Correction Pos: ', refcell_correction_pos_field)
+        return locking_options
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
