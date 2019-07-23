@@ -5,6 +5,7 @@ from serial import Serial, SerialException
 
 class WaveMaster:
     wavemeter_lock = threading.Lock()
+    PRECISION = 3
 
     def __init__(self, port: str):
         try:

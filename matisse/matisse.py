@@ -296,6 +296,13 @@ class Matisse(Constants):
         else:
             print('WARNING: Stabilization thread is not running.')
 
+    def start_scan(self, mode):
+        self.query(f"SCAN:MODE {mode}")
+        self.query(f"SCAN:STATUS RUN")
+
+    def stop_scan(self):
+        self.query(f"SCAN:STATUS STOP")
+
     def is_stabilizing(self):
         return self.stabilization_thread is not None and self.stabilization_thread.is_alive()
 
