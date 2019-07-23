@@ -75,17 +75,24 @@ class Matisse(Constants):
         """
         Configure the Matisse to output a given wavelength.
 
-        This is the process I'll follow:
-        1. Set approx. wavelength using BiFi. This is good to about +-1 nm.
-        2. Scan the BiFi back and forth and measure the total laser power at each point. Power looks like upside-down
-           parabolas.
-        3. Find all local maxima of the laser power data. Move the BiFi to the maximum that's closest to the desired
-           wavelength.
-        4. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
-        5. Find all local minima of the reflex data. Move the TE to the minimum that's closest to the desired
-           wavelength.
-        6. Shift the TE to the left or right a little bit. We want to be on the "flank" of the chosen parabola.
-        7. Adjust the piezo etalon until desired wavelength is reached.
+        First I'll check the difference between the current wavelength and the target wavelength.
+        If it's greater than about 0.4 nm, do a large birefringent scan to choose a better peak.
+        If it's between about 0.15 nm and 0.4 nm, do a small birefringent scan to keep it on the peak.
+        If it's between 0.02 nm and 0.15 nm, skip the first birefringent scan and go right to the thin etalon scan.
+        If it's less than 0.02 nm, skip all BiFi and TE scans, and just do a RefCell scan.
+
+        This is generally the process I'll follow:
+        1. Decide whether to skip any scans, as described above.
+        2. Set approx. wavelength using BiFi. This is good to about +-1 nm.
+        3. Scan the BiFi back and forth and measure the total laser power at each point.
+        4. Find all local maxima, move the BiFi to the maximum that's closest to the desired wavelength.
+        5. Move the thin etalon motor directly to a position close to the target wavelength.
+        6. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
+        7. Find all local minima. Move the TE to the minimum that's closest to the desired wavelength.
+        8. Shift the TE to the left or right a little bit. We want to be on the "flank" of the chosen parabola.
+        9. Do a small BiFi scan to make sure we're still on the location with maximum power.
+        10. Do a small thin etalon scan to make sure we're still on the flank of the right parabola.
+        11. Enable RefCell stabilization, which scans the device up or down until the desired wavelength is reached.
 
         :param wavelength: the desired wavelength
         """
