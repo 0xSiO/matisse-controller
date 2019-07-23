@@ -12,6 +12,7 @@ from matisse.stabilization_thread import StabilizationThread
 from wavemaster import WaveMaster
 
 
+# TODO: Make sure that, for any operation requiring a target wavelength, if there is none specified, use the current one
 class Matisse(Constants):
     matisse_lock = threading.Lock()
 
@@ -298,22 +299,49 @@ class Matisse(Constants):
     def is_stabilizing(self):
         return self.stabilization_thread is not None and self.stabilization_thread.is_alive()
 
-    def is_any_limit_reached(self):
-        """Returns true if the RefCell, slow piezo, or piezo etalon are very close to one of their limits."""
-
+    def get_stabilizing_piezo_positions(self):
         current_refcell_pos = self.query('SCAN:NOW?', numeric_result=True)
         current_slow_pz_pos = self.query('SLOWPIEZO:NOW?', numeric_result=True)
         current_pz_eta_pos = self.query('PIEZOETALON:BASELINE?', numeric_result=True)
+        return current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos
 
+    def is_any_limit_reached(self):
+        """Returns true if the RefCell, slow piezo, or piezo etalon are very close to one of their limits."""
+
+        current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos = self.get_stabilizing_piezo_positions()
         offset = 0.05
         return not (self.REFERENCE_CELL_LOWER_LIMIT + offset < current_refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
                and self.SLOW_PIEZO_LOWER_LIMIT + offset < current_slow_pz_pos < self.SLOW_PIEZO_UPPER_LIMIT - offset
                and self.PIEZO_ETALON_LOWER_LIMIT + offset < current_pz_eta_pos < self.PIEZO_ETALON_UPPER_LIMIT - offset)
 
     def reset_stabilization_piezos(self):
-        self.query(f"PIEZOETALON:BASELINE {Matisse.PIEZO_ETALON_CORRECTION_POS}")
+        """
+        Reset the slow piezo to the center, and the RefCell and piezo etalon according to the following rules:
+            If RefCell is at upper limit, piezo etalon is likely near lower limit
+                If wavelength is still too low, move RefCell down lower than usual and piezo etalon higher than usual
+            If RefCell is at lower limit, piezo etalon is likely near upper limit
+                If wavelength is still too high, move RefCell up higher than usual and piezo etalon lower than usual
+            Else,
+                Move RefCell and piezo etalon to their center positions.
+        """
+        current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos = self.get_stabilizing_piezo_positions()
+        current_wavelength = self.wavemeter_wavelength()
+
+        # TODO: Extract constants
+        offset = 0.05
+        if (current_refcell_pos > Matisse.REFERENCE_CELL_UPPER_LIMIT - offset
+                and current_wavelength < self.target_wavelength):
+            self.query(f"SCAN:NOW {0.2}")
+            self.query(f"PIEZOETALON:BASELINE {0.8}")
+        elif (current_refcell_pos < Matisse.REFERENCE_CELL_LOWER_LIMIT + offset
+              and current_wavelength > self.target_wavelength):
+            self.query(f"SCAN:NOW {0.5}")
+            self.query(f"PIEZOETALON:BASELINE {-0.8}")
+        else:
+            # TODO: Maybe check if we really need to move the piezo etalon
+            self.query(f"PIEZOETALON:BASELINE {Matisse.PIEZO_ETALON_CORRECTION_POS}")
+
         self.query(f"SLOWPIEZO:NOW {Matisse.SLOW_PIEZO_CORRECTION_POS}")
-        self.query(f"SCAN:NOW {Matisse.REFCELL_CORRECTION_POS}")
 
     def get_reference_cell_transmission_spectrum(self):
         # TODO: Look into the REFCELL:TABLE? command to do a scan and measure the transmission spectrum
