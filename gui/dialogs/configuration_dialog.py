@@ -1,5 +1,9 @@
-from matisse import Matisse
+import configparser
+
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
+
+from matisse import Matisse
 
 
 class ConfigurationDialog(QDialog):
@@ -12,6 +16,7 @@ class ConfigurationDialog(QDialog):
         self.add_options()
         self.add_buttons()
         # TODO: Load defaults
+        self.config = configparser.ConfigParser()
 
     def add_options(self):
         scan_options = self.create_scan_options()
@@ -67,7 +72,20 @@ class ConfigurationDialog(QDialog):
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
+        button_box.button(QDialogButtonBox.Save).clicked.connect(self.save_configuration)
+        button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.cancel)
         self.layout.addWidget(button_box)
+
+    @pyqtSlot(bool)
+    def save_configuration(self, checked):
+        print('Saving configuration.')
+        with open('config.txt', 'w') as config_file:
+            self.config.write(config_file)
+        self.close()
+
+    @pyqtSlot(bool)
+    def cancel(self, checked):
+        self.close()
 
 
 if __name__ == '__main__':
