@@ -184,3 +184,14 @@ Approx. conversion from nm to thin eta pos: pos = 17006.868*nm - 12541923.113
 Large scans of thin etalon sometimes cause large jumps in wavelength, this happens when BiFi falls into a valley.
 Check difference in wavelength at each minimum and if one is very large then do a small BiFi scan to get back on track.
 Also do directional scans based on the wavelength difference. No need to scan up if the wavelength needs to go down.
+
+Suggestion for when wavelength starts to jump a lot during a thin etalon scan due to the BiFi being stuck in a valley:
+Jump over to the next mode (approximately) on the BiFi by using a nm/pos constant, redo the thin etalon scan. The BiFi
+should do another small scan afterwards to keep it on the top of the new mode.
+
+It's safe to say that during ANY thin etalon scan, if the wavelength makes very large jumps due to the BiFi getting
+stuck, then you can adjust the BiFi as described above.
+
+Good default for cancelling set_wavelength. If wavelength difference is more than 10 nm, confirm if they're sure they
+want such a large change. Make the default option on that dialog to cancel, for safety reasons. Also make the precision
+for setting the wavelength go to 3 decimal places!

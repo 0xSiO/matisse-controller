@@ -18,6 +18,7 @@ from matisse import Matisse
 
 
 # TODO: UpdateGuiState thread to make sure menus are checked correctly
+# TODO: Use concurrent.futures to execute scans in parallel so you can catch errors in those threads
 class ControlApplication(QApplication):
     EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
 
@@ -194,9 +195,11 @@ class ControlApplication(QApplication):
         current_wavelength = self.matisse.target_wavelength
         if current_wavelength is None:
             current_wavelength = self.matisse.wavemeter_wavelength()
+        # TODO: Precision should be 3 decimal places
         target_wavelength, success = QInputDialog.getDouble(self.window, 'Set Wavelength', 'Wavelength (nm): ',
                                                             current_wavelength)
         if success:
+            # TODO: If difference is large, confirm with the uesr
             print(f"Setting wavelength to {target_wavelength} nm...")
             self.set_wavelength_thread = threading.Thread(target=self.matisse.set_wavelength, args=[target_wavelength],
                                                           daemon=True)
