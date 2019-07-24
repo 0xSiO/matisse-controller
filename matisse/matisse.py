@@ -104,7 +104,7 @@ class Matisse(Constants):
         diff = abs(wavelength - self.wavemeter_wavelength())
 
         # TODO: After a scan, check the difference again to see if you should run another scan of the same type
-        if diff > 0.4:
+        if diff > Matisse.LARGE_WAVELENGTH_DRIFT:
             # Normal BiFi scan
             print(f"Setting BiFi to ~{wavelength} nm.")
             self.set_bifi_wavelength(wavelength)
@@ -113,14 +113,14 @@ class Matisse(Constants):
             self.thin_etalon_scan()
             self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
             self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
-        elif 0.15 < diff <= 0.4:
+        elif Matisse.MEDIUM_WAVELENGTH_DRIFT < diff <= Matisse.LARGE_WAVELENGTH_DRIFT:
             # Small BiFi scan
             self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
             self.set_thin_etalon_wavelength(wavelength)
             self.thin_etalon_scan()
             self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
             self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
-        elif 0.02 < diff <= 0.15:
+        elif Matisse.SMALL_WAVELENGTH_DRIFT < diff <= Matisse.MEDIUM_WAVELENGTH_DRIFT:
             # No BiFi scan, TE scan only
             self.set_thin_etalon_wavelength(wavelength)
             self.thin_etalon_scan()
@@ -254,6 +254,11 @@ class Matisse(Constants):
         self.thin_etalon_scan_plot_thread = ThinEtalonScanPlotThread(positions, voltages, smoothed_data, minima,
                                                                      best_pos, daemon=True)
         # self.thin_etalon_scan_plot_thread.start()
+
+        new_diff = self.target_wavelength - self.wavemeter_wavelength()
+        if Matisse.SMALL_WAVELENGTH_DRIFT < abs(new_diff) < Matisse.LARGE_WAVELENGTH_DRIFT:
+            print('Wavelength still too far away from target value. Starting another scan.')
+            self.thin_etalon_scan()
 
     def limits_for_thin_etalon_scan(self, current_pos: int, scan_range: int):
         lower_limit = current_pos - scan_range
