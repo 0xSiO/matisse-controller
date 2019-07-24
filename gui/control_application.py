@@ -66,6 +66,7 @@ class ControlApplication(QApplication):
         self.clear_log_area_action = console_menu.addAction('Clear Log')
         self.configuration_action = console_menu.addAction('Configuration')
         self.open_idle_action = console_menu.addAction('Open Python Shell...')
+        self.reset_action = console_menu.addAction('Reset')
         self.restart_action = console_menu.addAction('Restart')
 
         set_menu = menu_bar.addMenu('Set')
@@ -104,6 +105,7 @@ class ControlApplication(QApplication):
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
         self.configuration_action.triggered.connect(self.open_configuration)
         self.open_idle_action.triggered.connect(self.open_idle)
+        self.reset_action.triggered.connect(self.reset)
         self.restart_action.triggered.connect(self.restart)
 
         # Set
@@ -147,7 +149,6 @@ class ControlApplication(QApplication):
         self.status_monitor.clean_up()
         self.log_area.clean_up()
 
-        # Reset Matisse to a 'good' default state
         if self.matisse is not None:
             self.matisse.stabilize_off()
             self.matisse.stop_laser_lock_correction()
@@ -185,6 +186,14 @@ class ControlApplication(QApplication):
         subprocess.Popen('python -m idlelib -t "Matisse Controller - Python Shell" -c "from matisse import Matisse; ' +
                          f"matisse = Matisse(device_id='{sys.argv[1]}', wavemeter_port='{sys.argv[2]}'); " +
                          f"print(\\\"Access the Matisse using 'matisse.[method]'\\\")\"")
+
+    # TODO: Gently stop by setting an exit flag on the Matisse and returning from scan/stabilize functions early
+    @handled_slot(bool)
+    def reset(self, checked=False):
+        """Reset Matisse to a 'good' default state."""
+        if self.matisse is not None:
+            self.matisse.stabilize_off()
+            self.matisse.stop_laser_lock_correction()
 
     @handled_slot(bool)
     def restart(self, checked):
