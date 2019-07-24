@@ -106,8 +106,9 @@ class Matisse(Constants):
 
         if diff > Matisse.LARGE_WAVELENGTH_DRIFT:
             # Normal BiFi scan
-            print(f"Setting BiFi to ~{wavelength} nm.")
+            print(f"Setting BiFi to ~{wavelength} nm... ", end='')
             self.set_bifi_wavelength(wavelength)
+            print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm.")
             self.birefringent_filter_scan(repeat=True)
             self.thin_etalon_scan(repeat=True)
             self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
