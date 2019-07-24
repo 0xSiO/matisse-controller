@@ -15,8 +15,6 @@ class Constants:
     THIN_ETALON_SCAN_RANGE_SMALL = 1000
     THIN_ETALON_SCAN_STEP = 10
 
-    # Approximate change in wavelength per unit motor movement
-    THIN_ETALON_NM_PER_STEP = 5.797738e-05
     # Approximate change in wavelength per thin etalon mode
     THIN_ETALON_NM_PER_MODE = 0.033
 

@@ -2,7 +2,42 @@ import json
 import operator
 from functools import reduce
 
-CONFIGURATION = {}
+CONFIGURATION = {
+    'matisse': {
+        'device_id': 'USB0::0x17E7::0x0102::07-40-01::INSTR',
+        'scanning': {
+            'wavelength_drift': {
+                'large': 0.4,
+                'medium': 0.2,
+                'small': 0.02
+            },
+            'birefringent_filter': {
+                'scan_range': 400,
+                'scan_range_small': 200,
+                'step': 4
+            },
+            'thin_etalon': {
+                'scan_range': 2000,
+                'scan_range_small': 1000,
+                'step': 10,
+                'nudge': 50
+            }
+        },
+        'locking': {
+            'timeout': 7.0
+        },
+        'correction': {
+            'piezo_etalon_pos': 0.0,
+            'slow_piezo_pos': 0.35,
+            'refcell_pos': 0.35
+        }
+    },
+    'wavemeter': {
+        'port': 'COM5',
+        'precision': 3
+    },
+    'gui': {}
+}
 
 
 def get(name):
@@ -10,8 +45,8 @@ def get(name):
     return reduce(operator.getitem, keys, CONFIGURATION)
 
 
-def load():
-    with open('config.json', 'r') as config_file:
+def load(filename):
+    with open(filename, 'r') as config_file:
         global CONFIGURATION
         CONFIGURATION = json.load(config_file)
 
