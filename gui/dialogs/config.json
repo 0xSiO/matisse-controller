@@ -1,18 +1,36 @@
 {
-    "scanning": {
-        "birefringent_filter": {
-            "scan_range": 0,
-            "scan_range_small": 0,
-            "step": 0
+    "matisse": {
+        "device_id": "USB0::0x17E7::0x0102::07-40-01::INSTR",
+        "scanning": {
+            "wavelength_drift": {
+                "large": 0.0,
+                "medium": 0.0,
+                "small": 0.0
+            },
+            "birefringent_filter": {
+                "scan_range": 0,
+                "scan_range_small": 0,
+                "step": 0
+            },
+            "thin_etalon": {
+                "scan_range": 0,
+                "scan_range_small": 0,
+                "step": 0,
+                "nudge": 0
+            }
         },
-        "thin_etalon": {
-            "scan_range": 0,
-            "scan_range_small": 0,
-            "step": 0,
-            "nudge": 0
+        "locking": {
+            "timeout": 0.0
+        },
+        "correction": {
+            "piezo_etalon_pos": 0.0,
+            "slow_piezo_pos": 0.0,
+            "refcell_pos": 0.0
         }
     },
-    "locking": {
-        "timeout": 0
-    }
+    "wavemeter": {
+        "port": "COM5",
+        "precision": 3
+    },
+    "gui": {}
 }
