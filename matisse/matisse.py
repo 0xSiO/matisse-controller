@@ -101,29 +101,26 @@ class Matisse(Constants):
             self.stop_laser_lock_correction()
         if self.is_stabilizing():
             self.stabilize_off()
+
         diff = abs(wavelength - self.wavemeter_wavelength())
 
-        # TODO: After a scan, check the difference again to see if you should run another scan of the same type
         if diff > Matisse.LARGE_WAVELENGTH_DRIFT:
             # Normal BiFi scan
             print(f"Setting BiFi to ~{wavelength} nm.")
             self.set_bifi_wavelength(wavelength)
-            self.birefringent_filter_scan()
-            self.set_thin_etalon_wavelength(wavelength)
-            self.thin_etalon_scan()
+            self.birefringent_filter_scan(repeat=True)
+            self.thin_etalon_scan(repeat=True)
             self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
             self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
         elif Matisse.MEDIUM_WAVELENGTH_DRIFT < diff <= Matisse.LARGE_WAVELENGTH_DRIFT:
             # Small BiFi scan
             self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
-            self.set_thin_etalon_wavelength(wavelength)
-            self.thin_etalon_scan()
+            self.thin_etalon_scan(repeat=True)
             self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
             self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
         elif Matisse.SMALL_WAVELENGTH_DRIFT < diff <= Matisse.MEDIUM_WAVELENGTH_DRIFT:
             # No BiFi scan, TE scan only
-            self.set_thin_etalon_wavelength(wavelength)
-            self.thin_etalon_scan()
+            self.thin_etalon_scan(repeat=True)
             self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
             self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
         else:
@@ -133,7 +130,7 @@ class Matisse(Constants):
             self.start_laser_lock_correction()
         self.stabilize_on()
 
-    def birefringent_filter_scan(self, scan_range: int = None):
+    def birefringent_filter_scan(self, scan_range: int = None, repeat=False):
         """
         Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.
 
@@ -181,6 +178,12 @@ class Matisse(Constants):
                                                                                      maxima, best_pos, daemon=True)
         # self.birefringent_filter_scan_plot_thread.start()
 
+        if repeat:
+            new_diff = abs(self.target_wavelength - self.wavemeter_wavelength())
+            if abs(new_diff) > Matisse.LARGE_WAVELENGTH_DRIFT:
+                print('Wavelength still too far away from target value. Starting another scan.')
+                self.birefringent_filter_scan(scan_range)
+
     def set_bifi_motor_pos(self, pos: int):
         assert 0 < pos < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, 'Target motor position out of range.'
         # Wait for motor to be ready to accept commands
@@ -206,13 +209,7 @@ class Matisse(Constants):
         """Return the last 8 bits of the BiFi motor status."""
         return int(self.query('MOTBI:STATUS?', numeric_result=True)) & 0b000000011111111
 
-    def set_thin_etalon_wavelength(self, wavelength: float):
-        diff = wavelength - self.wavemeter_wavelength()
-        motor_steps = int(diff / Matisse.THIN_ETALON_NM_PER_STEP)
-        current_pos = int(self.query('MOTTE:POS?', numeric_result=True))
-        self.set_thin_etalon_motor_pos(current_pos + motor_steps)
-
-    def thin_etalon_scan(self, scan_range: int = None):
+    def thin_etalon_scan(self, scan_range: int = None, repeat=False):
         """
         Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
 
@@ -245,6 +242,7 @@ class Matisse(Constants):
         wavelength_differences = np.array([])
         for pos in positions[minima]:
             self.set_thin_etalon_motor_pos(pos)
+            # TODO: Check for large wavelength differences in case we need to readjust the BiFi
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[minima][np.argmin(wavelength_differences)] + Matisse.THIN_ETALON_NUDGE
@@ -255,10 +253,11 @@ class Matisse(Constants):
                                                                      best_pos, daemon=True)
         # self.thin_etalon_scan_plot_thread.start()
 
-        new_diff = self.target_wavelength - self.wavemeter_wavelength()
-        if Matisse.SMALL_WAVELENGTH_DRIFT < abs(new_diff) < Matisse.LARGE_WAVELENGTH_DRIFT:
-            print('Wavelength still too far away from target value. Starting another scan.')
-            self.thin_etalon_scan()
+        if repeat:
+            new_diff = abs(self.target_wavelength - self.wavemeter_wavelength())
+            if Matisse.SMALL_WAVELENGTH_DRIFT < abs(new_diff) <= Matisse.LARGE_WAVELENGTH_DRIFT:
+                print('Wavelength still too far away from target value. Starting another scan.')
+                self.thin_etalon_scan(scan_range)
 
     def limits_for_thin_etalon_scan(self, current_pos: int, scan_range: int):
         lower_limit = current_pos - scan_range
@@ -267,11 +266,11 @@ class Matisse(Constants):
         # Adjust scan limits if we're off by more than 1 mode
         if abs(diff) > Matisse.THIN_ETALON_NM_PER_MODE:
             if diff < 0:
-                lower_limit = int(current_pos + 1.5 * (diff / Matisse.THIN_ETALON_NM_PER_STEP))
+                lower_limit = current_pos - scan_range
                 upper_limit = current_pos
             else:
                 lower_limit = current_pos
-                upper_limit = int(current_pos + 1.5 * (diff / Matisse.THIN_ETALON_NM_PER_STEP))
+                upper_limit = current_pos + scan_range
 
         assert (0 < lower_limit < Matisse.THIN_ETALON_UPPER_LIMIT
                 and 0 < upper_limit < Matisse.THIN_ETALON_UPPER_LIMIT
