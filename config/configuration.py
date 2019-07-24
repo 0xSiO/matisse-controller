@@ -1,12 +1,21 @@
+import json
 import operator
 from functools import reduce
 
+CONFIGURATION = {}
 
-class Configuration(dict):
-    def get(self, name):
-        keys = name.split('.')
-        return reduce(operator.getitem, keys, self)
 
-    def set(self, name, value):
-        keys = name.split('.')
-        self.get('.'.join(keys[:-1]))[keys[-1]] = value
+def get(name):
+    keys = name.split('.')
+    return reduce(operator.getitem, keys, CONFIGURATION)
+
+
+def load():
+    with open('config.json', 'r') as config_file:
+        global CONFIGURATION
+        CONFIGURATION = json.load(config_file)
+
+
+def save():
+    with open('config.json', 'w') as config_file:
+        json.dump(CONFIGURATION, config_file, indent=4)
