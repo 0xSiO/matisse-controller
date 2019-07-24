@@ -16,6 +16,7 @@ class ConfigurationDialog(QDialog):
         self.set_current_values_from_config()
         self.add_buttons()
 
+    # TODO: Tooltips
     def add_options(self):
         scan_options = self.create_scan_options()
         locking_options = self.create_locking_options()
@@ -32,14 +33,18 @@ class ConfigurationDialog(QDialog):
         scan_layout = QFormLayout()
         scan_options.setLayout(scan_layout)
         self.bifi_scan_range_field = QSpinBox()
+        self.bifi_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
         scan_layout.addRow('BiFi Normal Scan Range:', self.bifi_scan_range_field)
         self.bifi_small_scan_range_field = QSpinBox()
+        self.bifi_small_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
         scan_layout.addRow('BiFi Small Scan Range:', self.bifi_small_scan_range_field)
         self.bifi_scan_step_field = QSpinBox()
         scan_layout.addRow('BiFi Scan Step:', self.bifi_scan_step_field)
         self.thin_eta_scan_range_field = QSpinBox()
+        self.thin_eta_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 2)
         scan_layout.addRow('Thin Etalon Normal Scan Range:', self.thin_eta_scan_range_field)
         self.thin_eta_small_scan_range_field = QSpinBox()
+        self.thin_eta_small_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 4)
         scan_layout.addRow('Thin Etalon Small Scan Range:', self.thin_eta_small_scan_range_field)
         self.thin_eta_scan_step_field = QSpinBox()
         scan_layout.addRow('Thin Etalon Scan Step:', self.thin_eta_scan_step_field)
