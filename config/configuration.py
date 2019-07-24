@@ -2,16 +2,13 @@ import copy
 import json
 import operator
 from functools import reduce
+from os import path
 
+CONFIGURATION = {}
 DEFAULTS = {
     'matisse': {
         'device_id': 'USB0::0x17E7::0x0102::07-40-01::INSTR',
         'scanning': {
-            'wavelength_drift': {
-                'large': 0.4,
-                'medium': 0.2,
-                'small': 0.02
-            },
             'birefringent_filter': {
                 'range': 400,
                 'range_small': 200,
@@ -22,7 +19,12 @@ DEFAULTS = {
                 'range_small': 1000,
                 'step': 10,
                 'nudge': 50
-            }
+            },
+            'wavelength_drift': {
+                'large': 0.4,
+                'medium': 0.2,
+                'small': 0.02
+            },
         },
         'locking': {
             'timeout': 7.0
@@ -39,8 +41,6 @@ DEFAULTS = {
     },
     'gui': {}
 }
-
-CONFIGURATION = copy.deepcopy(DEFAULTS)
 
 
 def get(name):
@@ -67,3 +67,11 @@ def save():
 def restore_defaults():
     global CONFIGURATION
     CONFIGURATION = copy.deepcopy(DEFAULTS)
+
+
+if path.exists('config.json'):
+    print('loading file')
+    load('config.json')
+else:
+    print('restoring defaults')
+    restore_defaults()
