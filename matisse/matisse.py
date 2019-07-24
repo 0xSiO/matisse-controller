@@ -103,6 +103,7 @@ class Matisse(Constants):
             self.stabilize_off()
         diff = abs(wavelength - self.wavemeter_wavelength())
 
+        # TODO: After a scan, check the difference again to see if you should run another scan of the same type
         if diff > 0.4:
             # Normal BiFi scan
             print(f"Setting BiFi to ~{wavelength} nm.")
@@ -178,7 +179,7 @@ class Matisse(Constants):
 
         self.birefringent_filter_scan_plot_thread = BirefringentFilterScanPlotThread(positions, voltages, smoothed_data,
                                                                                      maxima, best_pos, daemon=True)
-        self.birefringent_filter_scan_plot_thread.start()
+        # self.birefringent_filter_scan_plot_thread.start()
 
     def set_bifi_motor_pos(self, pos: int):
         assert 0 < pos < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, 'Target motor position out of range.'
@@ -257,7 +258,7 @@ class Matisse(Constants):
 
         self.thin_etalon_scan_plot_thread = ThinEtalonScanPlotThread(positions, voltages, smoothed_data, minima,
                                                                      best_pos, daemon=True)
-        self.thin_etalon_scan_plot_thread.start()
+        # self.thin_etalon_scan_plot_thread.start()
 
     def set_thin_etalon_motor_pos(self, pos: int):
         assert (Matisse.THIN_ETALON_LOWER_LIMIT < pos < Matisse.THIN_ETALON_UPPER_LIMIT), \
