@@ -30,6 +30,7 @@ class Matisse(Constants):
             self.stabilization_thread = None
             self.lock_correction_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
+            # TODO: Clear individual motor errors?
             self.wavemeter = WaveMaster(wavemeter_port)
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
