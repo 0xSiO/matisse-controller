@@ -224,21 +224,16 @@ class Matisse(Constants):
         if scan_range is None:
             scan_range = Matisse.THIN_ETALON_SCAN_RANGE
 
-        center_pos = int(self.query('MOTTE:POS?', numeric_result=True))
-        lower_end = center_pos - scan_range
-        upper_end = center_pos + scan_range
-        assert (0 < lower_end < Matisse.THIN_ETALON_UPPER_LIMIT
-                and 0 < upper_end < Matisse.THIN_ETALON_UPPER_LIMIT
-                and lower_end < upper_end), \
-            'Conditions for thin etalon scan invalid. Motor position must be between ' + \
-            f"{scan_range} and {Matisse.THIN_ETALON_UPPER_LIMIT - scan_range}"
+        old_pos = int(self.query('MOTTE:POS?', numeric_result=True))
+        lower_end, upper_end = self.limits_for_thin_etalon_scan(old_pos, scan_range)
+
         positions = np.array(range(lower_end, upper_end, Matisse.THIN_ETALON_SCAN_STEP))
         voltages = np.array([])
         print('Starting thin etalon scan... ', end='')
         for pos in positions:
             self.set_thin_etalon_motor_pos(pos)
             voltages = np.append(voltages, self.query('TE:DC?', numeric_result=True))
-        self.set_thin_etalon_motor_pos(center_pos)  # return back to where we started, just in case something goes wrong
+        self.set_thin_etalon_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
         print('Done.')
 
         print('Analyzing scan data... ', end='')
@@ -259,6 +254,26 @@ class Matisse(Constants):
         self.thin_etalon_scan_plot_thread = ThinEtalonScanPlotThread(positions, voltages, smoothed_data, minima,
                                                                      best_pos, daemon=True)
         # self.thin_etalon_scan_plot_thread.start()
+
+    def limits_for_thin_etalon_scan(self, current_pos: int, scan_range: int):
+        lower_limit = current_pos - scan_range
+        upper_limit = current_pos + scan_range
+        diff = self.target_wavelength - self.wavemeter_wavelength()
+        # Adjust scan limits if we're off by more than 1 mode
+        if abs(diff) > Matisse.THIN_ETALON_NM_PER_MODE:
+            if diff < 0:
+                lower_limit = int(current_pos + 1.5 * (diff / Matisse.THIN_ETALON_NM_PER_STEP))
+                upper_limit = current_pos
+            else:
+                lower_limit = current_pos
+                upper_limit = int(current_pos + 1.5 * (diff / Matisse.THIN_ETALON_NM_PER_STEP))
+
+        assert (0 < lower_limit < Matisse.THIN_ETALON_UPPER_LIMIT
+                and 0 < upper_limit < Matisse.THIN_ETALON_UPPER_LIMIT
+                and lower_limit < upper_limit), \
+            'Conditions for thin etalon scan invalid. Continuing would put the motor at its upper or lower limit.'
+
+        return lower_limit, upper_limit
 
     def set_thin_etalon_motor_pos(self, pos: int):
         assert (Matisse.THIN_ETALON_LOWER_LIMIT < pos < Matisse.THIN_ETALON_UPPER_LIMIT), \
