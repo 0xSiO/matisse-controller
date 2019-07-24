@@ -1,8 +1,9 @@
+import copy
 import json
 import operator
 from functools import reduce
 
-CONFIGURATION = {
+DEFAULTS = {
     'matisse': {
         'device_id': 'USB0::0x17E7::0x0102::07-40-01::INSTR',
         'scanning': {
@@ -39,6 +40,8 @@ CONFIGURATION = {
     'gui': {}
 }
 
+CONFIGURATION = copy.deepcopy(DEFAULTS)
+
 
 def get(name):
     keys = name.split('.')
@@ -54,3 +57,8 @@ def load(filename):
 def save():
     with open('config.json', 'w') as config_file:
         json.dump(CONFIGURATION, config_file, indent=4)
+
+
+def restore_defaults():
+    global CONFIGURATION
+    CONFIGURATION = copy.deepcopy(DEFAULTS)
