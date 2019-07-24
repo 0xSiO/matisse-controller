@@ -7,12 +7,14 @@ class Constants:
     BIREFRINGENT_SCAN_RANGE_SMALL = 150
     BIREFRINGENT_SCAN_STEP = 3
 
-    THIN_ETALON_SCAN_RANGE = 1000
-    THIN_ETALON_SCAN_RANGE_SMALL = 500
+    THIN_ETALON_SCAN_RANGE = 2000
+    THIN_ETALON_SCAN_RANGE_SMALL = 1000
     THIN_ETALON_SCAN_STEP = 10
 
     # Approximate change in wavelength per unit motor movement
-    THIN_ETALON_NM_PER_STEP = 7.08589e-05
+    THIN_ETALON_NM_PER_STEP = 5.797738e-05
+    # Approximate change in wavelength per thin etalon mode
+    THIN_ETALON_NM_PER_MODE = 0.033
 
     # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
     THIN_ETALON_NUDGE = -50
