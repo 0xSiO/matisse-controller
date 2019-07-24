@@ -13,9 +13,8 @@ class ConfigurationDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.add_options()
+        self.set_current_values_from_config()
         self.add_buttons()
-        # TODO: Load defaults
-        self.config = {}
 
     def add_options(self):
         scan_options = self.create_scan_options()
@@ -75,56 +74,61 @@ class ConfigurationDialog(QDialog):
         locking_layout.addRow('RefCell Correction Pos: ', self.refcell_correction_pos_field)
         return locking_options
 
+    def set_current_values_from_config(self):
+        self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
+        self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+        self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
+
+        self.thin_eta_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE))
+        self.thin_eta_small_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+        self.thin_eta_scan_step_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_STEP))
+        self.thin_eta_nudge_field.setValue(cfg.get(cfg.THIN_ETA_NUDGE))
+
+        self.large_wavelength_drift_field.setValue(cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+        self.medium_wavelength_drift_field.setValue(cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT))
+        self.small_wavelength_drift_field.setValue(cfg.get(cfg.SMALL_WAVELENGTH_DRIFT))
+
+        self.locking_timeout_field.setValue(cfg.get(cfg.LOCKING_TIMEOUT))
+
+        self.pz_eta_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_CORRECTION_POS))
+        self.slow_pz_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_CORRECTION_POS))
+        self.refcell_correction_pos_field.setValue(cfg.get(cfg.REFCELL_CORRECTION_POS))
+
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         button_box.button(QDialogButtonBox.Save).clicked.connect(self.save_configuration)
         button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.cancel)
         self.layout.addWidget(button_box)
 
-    def parse_config(self):
-        return {
-            'matisse': {
-                # TODO: create separate UI section for device ID
-                'device_id': 'USB0::0x17E7::0x0102::07-40-01::INSTR',
-                'scanning': {
-                    'wavelength_drift': {
-                        'large': self.large_wavelength_drift_field.value(),
-                        'medium': self.medium_wavelength_drift_field.value(),
-                        'small': self.small_wavelength_drift_field.value()
-                    },
-                    'birefringent_filter': {
-                        'scan_range': self.bifi_scan_range_field.value(),
-                        'scan_range_small': self.bifi_small_scan_range_field.value(),
-                        'step': self.bifi_scan_step_field.value()
-                    },
-                    'thin_etalon': {
-                        'scan_range': self.thin_eta_scan_range_field.value(),
-                        'scan_range_small': self.thin_eta_small_scan_range_field.value(),
-                        'step': self.thin_eta_scan_step_field.value(),
-                        'nudge': self.thin_eta_nudge_field.value()
-                    }
-                },
-                'locking': {
-                    'timeout': self.locking_timeout_field.value()
-                },
-                'correction': {
-                    'piezo_etalon_pos': self.pz_eta_correction_pos_field.value(),
-                    'slow_piezo_pos': self.slow_pz_correction_pos_field.value(),
-                    'refcell_pos': self.refcell_correction_pos_field.value()
-                }
-            },
-            'wavemeter': {
-                'port': 'COM5',
-                'precision': 3
-            },
-            'gui': {}
-        }
-
     @pyqtSlot(bool)
     def save_configuration(self, checked):
         print('Saving configuration.')
-        new_config = self.parse_config()
-        cfg.configuration.CONFIGURATION = new_config
+        # TODO: create separate UI section for device ID
+        cfg.set(cfg.MATISSE_DEVICE_ID, 'USB0::0x17E7::0x0102::07-40-01::INSTR')
+
+        cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
+        cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
+        cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())
+
+        cfg.set(cfg.THIN_ETA_SCAN_RANGE, self.thin_eta_scan_range_field.value())
+        cfg.set(cfg.THIN_ETA_SCAN_RANGE_SMALL, self.thin_eta_small_scan_range_field.value())
+        cfg.set(cfg.THIN_ETA_SCAN_STEP, self.thin_eta_scan_step_field.value())
+        cfg.set(cfg.THIN_ETA_NUDGE, self.thin_eta_nudge_field.value())
+
+        cfg.set(cfg.LARGE_WAVELENGTH_DRIFT, self.large_wavelength_drift_field.value())
+        cfg.set(cfg.MEDIUM_WAVELENGTH_DRIFT, self.medium_wavelength_drift_field.value())
+        cfg.set(cfg.SMALL_WAVELENGTH_DRIFT, self.small_wavelength_drift_field.value())
+
+        cfg.set(cfg.LOCKING_TIMEOUT, self.locking_timeout_field.value())
+
+        cfg.set(cfg.PIEZO_ETA_CORRECTION_POS, self.pz_eta_correction_pos_field.value())
+        cfg.set(cfg.SLOW_PIEZO_CORRECTION_POS, self.slow_pz_correction_pos_field.value())
+        cfg.set(cfg.REFCELL_CORRECTION_POS, self.refcell_correction_pos_field.value())
+
+        # TODO: wavemeter and GUI config
+        cfg.set('wavemeter', {})
+        cfg.set('gui', {})
+
         cfg.save()
         self.close()
 

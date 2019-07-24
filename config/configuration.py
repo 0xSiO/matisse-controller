@@ -13,13 +13,13 @@ DEFAULTS = {
                 'small': 0.02
             },
             'birefringent_filter': {
-                'scan_range': 400,
-                'scan_range_small': 200,
+                'range': 400,
+                'range_small': 200,
                 'step': 4
             },
             'thin_etalon': {
-                'scan_range': 2000,
-                'scan_range_small': 1000,
+                'range': 2000,
+                'range_small': 1000,
                 'step': 10,
                 'nudge': 50
             }
@@ -46,6 +46,11 @@ CONFIGURATION = copy.deepcopy(DEFAULTS)
 def get(name):
     keys = name.split('.')
     return reduce(operator.getitem, keys, CONFIGURATION)
+
+
+def set(name, value):
+    keys = name.split('.')
+    CONFIGURATION.get('.'.join(keys[:-1]))[keys[-1]] = value
 
 
 def load(filename):

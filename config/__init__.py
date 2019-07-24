@@ -1,1 +1,2 @@
-from .configuration import get, load, save
+from .configuration import get, set, load, save
+from .names import *
