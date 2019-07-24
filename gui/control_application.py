@@ -21,6 +21,7 @@ from matisse import Matisse
 # TODO: Use concurrent.futures to execute scans in parallel so you can catch errors in those threads
 class ControlApplication(QApplication):
     EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
+    CONFIRM_WAVELENGTH_CHANGE_THRESHOLD = 10
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -195,11 +196,19 @@ class ControlApplication(QApplication):
         current_wavelength = self.matisse.target_wavelength
         if current_wavelength is None:
             current_wavelength = self.matisse.wavemeter_wavelength()
-        # TODO: Precision should be 3 decimal places
+        # TODO: Set min and max to reasonable values
         target_wavelength, success = QInputDialog.getDouble(self.window, 'Set Wavelength', 'Wavelength (nm): ',
-                                                            current_wavelength)
+                                                            current_wavelength, decimals=3)
         if success:
-            # TODO: If difference is large, confirm with the uesr
+            if abs(current_wavelength - target_wavelength) >= ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD:
+                answer = QMessageBox.warning(self.window, 'Large Wavelength Change',
+                                             f"The desired wavelength, {target_wavelength} nm, is more than "
+                                             f"{ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD} nm "
+                                             'away from the current wavelength. Are you sure?',
+                                             QMessageBox.Yes | QMessageBox.No, defaultButton=QMessageBox.No)
+                if answer == QMessageBox.No:
+                    return
+
             print(f"Setting wavelength to {target_wavelength} nm...")
             self.set_wavelength_thread = threading.Thread(target=self.matisse.set_wavelength, args=[target_wavelength],
                                                           daemon=True)
