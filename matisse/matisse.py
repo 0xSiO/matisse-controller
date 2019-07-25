@@ -30,7 +30,7 @@ class Matisse(Constants):
             self.target_wavelength = None
             self.stabilization_thread = None
             self.lock_correction_thread = None
-            self.early_exit_flag = False
+            self.exit_flag = False
             self.query('ERROR:CLEAR')  # start with a clean slate
             # TODO: Clear individual motor errors?
             self.wavemeter = WaveMaster(cfg.get(cfg.WAVEMETER_PORT))
@@ -130,7 +130,7 @@ class Matisse(Constants):
         else:
             # No BiFi, no TE. Scan device only.
             pass
-        if self.early_exit_flag:
+        if self.exit_flag:
             return
         if lock_when_done:
             self.start_laser_lock_correction()
@@ -144,7 +144,7 @@ class Matisse(Constants):
 
         :param scan_range: the desired range of the scan
         """
-        if self.early_exit_flag:
+        if self.exit_flag:
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
@@ -224,7 +224,7 @@ class Matisse(Constants):
         Nudges the motor position a little bit away from the minimum to ensure good locking later.
         Additionally, plot the reflex data and motor position selection.
         """
-        if self.early_exit_flag:
+        if self.exit_flag:
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
