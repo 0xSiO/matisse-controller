@@ -50,7 +50,10 @@ def get(name):
 
 def set(name, value):
     keys = name.split('.')
-    CONFIGURATION.get('.'.join(keys[:-1]))[keys[-1]] = value
+    cfg = CONFIGURATION
+    for key in keys[:-1]:
+        cfg = cfg.get(key)
+    cfg[keys[-1]] = value
 
 
 def load(filename):
@@ -70,8 +73,6 @@ def restore_defaults():
 
 
 if path.exists('config.json'):
-    print('loading file')
     load('config.json')
 else:
-    print('restoring defaults')
     restore_defaults()
