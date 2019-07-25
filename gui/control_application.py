@@ -1,6 +1,5 @@
 import os
 import queue
-import subprocess
 import sys
 import threading
 import traceback
@@ -65,7 +64,6 @@ class ControlApplication(QApplication):
         console_menu = menu_bar.addMenu('Console')
         self.clear_log_area_action = console_menu.addAction('Clear Log')
         self.configuration_action = console_menu.addAction('Configuration')
-        self.open_idle_action = console_menu.addAction('Open Python Shell...')
         self.reset_action = console_menu.addAction('Reset')
         self.restart_action = console_menu.addAction('Restart')
 
@@ -104,7 +102,6 @@ class ControlApplication(QApplication):
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
         self.configuration_action.triggered.connect(self.open_configuration)
-        self.open_idle_action.triggered.connect(self.open_idle)
         self.reset_action.triggered.connect(self.reset)
         self.restart_action.triggered.connect(self.restart)
 
@@ -178,14 +175,6 @@ class ControlApplication(QApplication):
     def open_configuration(self, checked):
         dialog = ConfigurationDialog()
         dialog.exec()
-
-    @handled_slot(bool)
-    def open_idle(self, checked):
-        print('Opening IDLE.')
-        # TODO: Can't open wavemeter, access is denied
-        subprocess.Popen('python -m idlelib -t "Matisse Controller - Python Shell" -c "from matisse import Matisse; ' +
-                         f"matisse = Matisse(device_id='{sys.argv[1]}', wavemeter_port='{sys.argv[2]}'); " +
-                         f"print(\\\"Access the Matisse using 'matisse.[method]'\\\")\"")
 
     # TODO: Gently stop by setting an exit flag on the Matisse and returning from scan/stabilize functions early
     @handled_slot(bool)
