@@ -43,12 +43,14 @@ DEFAULTS = {
 }
 
 
-def get(name):
+def get(name: str):
+    """Fetch the global configuration value represented by the specified name."""
     keys = name.split('.')
     return reduce(operator.getitem, keys, CONFIGURATION)
 
 
-def set(name, value):
+def set(name: str, value):
+    """Set the global configuration value represented by the specified name."""
     keys = name.split('.')
     cfg = CONFIGURATION
     for key in keys[:-1]:
@@ -56,18 +58,21 @@ def set(name, value):
     cfg[keys[-1]] = value
 
 
-def load(filename):
+def load(filename: str):
+    """Load configuration data from a file into the global configuration dictionary."""
     with open(filename, 'r') as config_file:
         global CONFIGURATION
         CONFIGURATION = json.load(config_file)
 
 
 def save():
+    """Save the global configuration data to a config.json file."""
     with open('config.json', 'w') as config_file:
         json.dump(CONFIGURATION, config_file, indent=4)
 
 
 def restore_defaults():
+    """Overwrite the global configuration with the defaults, specified by configuration.DEFAULTS."""
     global CONFIGURATION
     CONFIGURATION = copy.deepcopy(DEFAULTS)
 
