@@ -16,7 +16,6 @@ from gui.widgets import LoggingArea, StatusMonitor
 from matisse import Matisse
 
 
-# TODO: UpdateGuiState thread to make sure menus are checked correctly
 class ControlApplication(QApplication):
     EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
     CONFIRM_WAVELENGTH_CHANGE_THRESHOLD = 10
@@ -91,10 +90,8 @@ class ControlApplication(QApplication):
         self.piezo_eta_control_action.setCheckable(True)
         self.fast_pz_control_action = toggle_control_loop_menu.addAction('Fast Piezo')
         self.fast_pz_control_action.setCheckable(True)
-        self.lock_laser_action = stabilization_menu.addAction('Lock Laser')
-        self.lock_laser_action.setCheckable(True)
-        self.auto_stabilize_action = stabilization_menu.addAction('Automatic Stabilization')
-        self.auto_stabilize_action.setCheckable(True)
+        self.lock_laser_action = stabilization_menu.addAction('Toggle Lock Laser')
+        self.auto_stabilize_action = stabilization_menu.addAction('Toggle Auto Stabilization')
 
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
                                      self.piezo_eta_control_action, self.fast_pz_control_action]
@@ -178,6 +175,7 @@ class ControlApplication(QApplication):
     @handled_slot(bool)
     def reset_matisse(self, checked=False):
         """Reset Matisse to a 'good' default state."""
+        print('Starting reset.')
         if self.matisse is not None:
             self.matisse.exit_flag = True
             if self.matisse_worker is not None and self.matisse_worker.running():
@@ -187,6 +185,7 @@ class ControlApplication(QApplication):
             self.matisse.stabilize_off()
             self.matisse.stop_laser_lock_correction()
             self.matisse.exit_flag = False
+        print('Reset complete.')
 
     @handled_slot(bool)
     def restart(self, checked):
@@ -269,16 +268,14 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def toggle_lock_laser(self, checked):
-        self.lock_laser_action.setChecked(not checked)
-        if checked:
-            self.matisse.start_laser_lock_correction()
-            [action.setEnabled(False) for action in self.control_loop_actions]
-            [action.setChecked(True) for action in self.control_loop_actions]
-        else:
+        if self.matisse.is_lock_correction_on():
             self.matisse.stop_laser_lock_correction()
             [action.setEnabled(True) for action in self.control_loop_actions]
             [action.setChecked(False) for action in self.control_loop_actions]
-        self.lock_laser_action.setChecked(checked)
+        else:
+            self.matisse.start_laser_lock_correction()
+            [action.setEnabled(False) for action in self.control_loop_actions]
+            [action.setChecked(True) for action in self.control_loop_actions]
 
     @handled_slot(bool)
     def toggle_slow_piezo_control(self, checked):
@@ -310,12 +307,10 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def toggle_auto_stabilization(self, checked):
-        self.auto_stabilize_action.setChecked(not checked)
-        if checked:
-            self.matisse.stabilize_on()
-        else:
+        if self.matisse.is_stabilizing():
             self.matisse.stabilize_off()
-        self.auto_stabilize_action.setChecked(checked)
+        else:
+            self.matisse.stabilize_on()
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
