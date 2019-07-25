@@ -1,3 +1,6 @@
+# These names specify keys in the configuration.CONFIGURATION dictionary. Make sure that any new entries have a default
+# value set in configuration.DEFAULTS, otherwise you'll get a KeyError when trying to access them.
+
 MATISSE_DEVICE_ID = 'matisse.device_id'
 
 BIFI_SCAN_RANGE = 'matisse.scanning.birefringent_filter.range'
