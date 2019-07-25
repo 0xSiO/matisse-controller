@@ -138,7 +138,7 @@ class ControlApplication(QApplication):
     @handled_function
     def setup_matisse(self):
         try:
-            self.matisse: Matisse = Matisse(device_id=sys.argv[1], wavemeter_port=sys.argv[2])
+            self.matisse: Matisse = Matisse()
         except Exception as err:
             self.matisse: Matisse = None
             raise err

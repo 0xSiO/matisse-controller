@@ -11,14 +11,14 @@ DEFAULTS = {
         'scanning': {
             'birefringent_filter': {
                 'range': 400,
-                'range_small': 200,
+                'range_small': 200,  # TODO: Check the 'small' scan ranges
                 'step': 4
             },
             'thin_etalon': {
                 'range': 2000,
                 'range_small': 1000,
                 'step': 10,
-                'nudge': 50
+                'nudge': 50  # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
             },
             'wavelength_drift': {
                 'large': 0.4,
