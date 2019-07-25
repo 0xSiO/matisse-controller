@@ -1,9 +1,9 @@
-import threading
+import multiprocessing
 
 import matplotlib.pyplot as plt
 
 
-class ThinEtalonScanPlotThread(threading.Thread):
+class ThinEtalonScanPlotProcess(multiprocessing.Process):
     def __init__(self, positions, voltages, smoothed_data, minima, best_pos, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.positions = positions

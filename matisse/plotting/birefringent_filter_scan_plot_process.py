@@ -1,9 +1,9 @@
-import threading
+import multiprocessing
 
 import matplotlib.pyplot as plt
 
 
-class BirefringentFilterScanPlotThread(threading.Thread):
+class BirefringentFilterScanPlotProcess(multiprocessing.Process):
     def __init__(self, positions, voltages, smoothed_data, maxima, best_pos, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.positions = positions

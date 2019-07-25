@@ -8,8 +8,8 @@ from scipy.signal import savgol_filter, argrelextrema
 import config as cfg
 from matisse.constants import Constants
 from matisse.lock_correction_thread import LockCorrectionThread
+from matisse.plotting import BirefringentFilterScanPlotProcess, ThinEtalonScanPlotProcess
 from matisse.stabilization_thread import StabilizationThread
-from matisse.threading import BirefringentFilterScanPlotThread, ThinEtalonScanPlotThread
 from wavemaster import WaveMaster
 
 
@@ -30,6 +30,7 @@ class Matisse(Constants):
             self.target_wavelength = None
             self.stabilization_thread = None
             self.lock_correction_thread = None
+            self.plotting_processes = []
             self.exit_flag = False
             self.query('ERROR:CLEAR')  # start with a clean slate
             # TODO: Clear individual motor errors?
@@ -182,9 +183,10 @@ class Matisse(Constants):
         self.set_bifi_motor_pos(best_pos)
         print('Done.')
 
-        self.birefringent_filter_scan_plot_thread = BirefringentFilterScanPlotThread(positions, voltages, smoothed_data,
-                                                                                     maxima, best_pos, daemon=True)
-        # self.birefringent_filter_scan_plot_thread.start()
+        plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, best_pos,
+                                                         daemon=True)
+        self.plotting_processes.append(plot_process)
+        plot_process.start()
 
         if repeat:
             new_diff = abs(self.target_wavelength - self.wavemeter_wavelength())
@@ -259,9 +261,9 @@ class Matisse(Constants):
         self.set_thin_etalon_motor_pos(best_pos)
         print('Done.')
 
-        self.thin_etalon_scan_plot_thread = ThinEtalonScanPlotThread(positions, voltages, smoothed_data, minima,
-                                                                     best_pos, daemon=True)
-        # self.thin_etalon_scan_plot_thread.start()
+        plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, best_pos, daemon=True)
+        self.plotting_processes.append(plot_process)
+        plot_process.start()
 
         if repeat:
             new_diff = abs(self.target_wavelength - self.wavemeter_wavelength())
