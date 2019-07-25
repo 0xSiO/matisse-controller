@@ -6,6 +6,8 @@ from matisse import Matisse
 
 
 class ConfigurationDialog(QDialog):
+    """A dialog for displaying and modifying selected configurable options that affect the behavior of the program."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle('Configuration')
@@ -142,6 +144,7 @@ class ConfigurationDialog(QDialog):
         self.close()
 
 
+# TODO: Remove this
 if __name__ == '__main__':
     app = QApplication([])
     d = ConfigurationDialog()
