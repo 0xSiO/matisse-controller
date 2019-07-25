@@ -8,13 +8,13 @@ from PyQt5.QtCore import pyqtSlot
 # https://stackoverflow.com/questions/18740884/preventing-pyqt-to-silence-exceptions-occurring-in-slots
 def handled_function(function):
     @wraps(function)
-    def wrapper(*args, **kwargs):
+    def handled_function_wrapper(*args, **kwargs):
         try:
             function(*args, **kwargs)
         except Exception:
             args[0].error_dialog()
 
-    return wrapper
+    return handled_function_wrapper
 
 
 def handled_slot(*args):
