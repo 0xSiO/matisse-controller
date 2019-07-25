@@ -17,7 +17,6 @@ from matisse import Matisse
 
 
 # TODO: UpdateGuiState thread to make sure menus are checked correctly
-# TODO: Use concurrent.futures to execute scans in parallel so you can catch errors in those threads
 class ControlApplication(QApplication):
     EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
     CONFIRM_WAVELENGTH_CHANGE_THRESHOLD = 10
@@ -36,6 +35,7 @@ class ControlApplication(QApplication):
 
         # Other setup
         self.aboutToQuit.connect(self.clean_up)
+        self.matisse_worker_thread: threading.Thread = None
 
         container = QWidget()
         container.setLayout(self.layout)
@@ -102,7 +102,7 @@ class ControlApplication(QApplication):
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
         self.configuration_action.triggered.connect(self.open_configuration)
-        self.reset_action.triggered.connect(self.reset)
+        self.reset_action.triggered.connect(self.reset_matisse)
         self.restart_action.triggered.connect(self.restart)
 
         # Set
@@ -142,13 +142,11 @@ class ControlApplication(QApplication):
 
     @pyqtSlot()
     def clean_up(self):
+        self.reset_matisse()
+
         # Clean up widgets with running threads.
         self.status_monitor.clean_up()
         self.log_area.clean_up()
-
-        if self.matisse is not None:
-            self.matisse.stabilize_off()
-            self.matisse.stop_laser_lock_correction()
 
         self.log_redirector.__exit__(None, None, None)
 
@@ -176,13 +174,17 @@ class ControlApplication(QApplication):
         dialog = ConfigurationDialog()
         dialog.exec()
 
-    # TODO: Gently stop by setting an exit flag on the Matisse and returning from scan/stabilize functions early
     @handled_slot(bool)
-    def reset(self, checked=False):
+    def reset_matisse(self, checked=False):
         """Reset Matisse to a 'good' default state."""
         if self.matisse is not None:
+            self.matisse.exit_flag = True
+            if self.matisse_worker_thread is not None:
+                print('Waiting for running tasks to complete.')
+                self.matisse_worker_thread.join()
             self.matisse.stabilize_off()
             self.matisse.stop_laser_lock_correction()
+            self.matisse.exit_flag = False
 
     @handled_slot(bool)
     def restart(self, checked):
@@ -208,9 +210,7 @@ class ControlApplication(QApplication):
                     return
 
             print(f"Setting wavelength to {target_wavelength} nm...")
-            self.set_wavelength_thread = threading.Thread(target=self.matisse.set_wavelength, args=[target_wavelength],
-                                                          daemon=True)
-            self.set_wavelength_thread.start()
+            self.run_matisse_task(target=self.matisse.set_wavelength, args=[target_wavelength], daemon=True)
 
     @handled_slot(bool)
     def set_bifi_approx_wavelength_dialog(self, checked):
@@ -259,13 +259,11 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
-        self.bifi_scan_thread = threading.Thread(target=self.matisse.birefringent_filter_scan, daemon=True)
-        self.bifi_scan_thread.start()
+        self.run_matisse_task(target=self.matisse.birefringent_filter_scan, daemon=True)
 
     @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
-        self.thin_etalon_scan_thread = threading.Thread(target=self.matisse.thin_etalon_scan, daemon=True)
-        self.thin_etalon_scan_thread.start()
+        self.run_matisse_task(target=self.matisse.thin_etalon_scan, daemon=True)
 
     @handled_slot(bool)
     def toggle_lock_laser(self, checked):
@@ -316,3 +314,15 @@ class ControlApplication(QApplication):
         else:
             self.matisse.stabilize_off()
         self.auto_stabilize_action.setChecked(checked)
+
+    # TODO: Use concurrent.futures to execute tasks in parallel so you can catch errors in those threads
+    def run_matisse_task(self, *args, **kwargs):
+        """
+        Run a task on the worker thread. Only one task may be run at a time. Any task run using this method MUST exit
+        gracefully at some point by checking the Matisse exit_flag.
+        """
+        if self.matisse_worker_thread is not None and self.matisse_worker_thread.is_alive():
+            print("WARNING: Cannot perform requested action. A task is currently running.")
+        else:
+            self.matisse_worker_thread = threading.Thread(*args, **kwargs)
+            self.matisse_worker_thread.start()
