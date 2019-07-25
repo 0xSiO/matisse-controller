@@ -2,7 +2,7 @@ from queue import Queue
 
 
 class LoggingStream:
-    """A basic stream that is meant to replace sys.stdout."""
+    """A basic stream-like class with a message queue, meant to replace sys.stdout for logging purposes."""
 
     def __init__(self, queue: Queue):
         self.queue = queue
