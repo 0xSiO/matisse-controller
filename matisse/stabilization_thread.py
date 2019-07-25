@@ -1,6 +1,7 @@
 import threading
 import time
 from queue import Queue
+import config as cfg
 
 
 class StabilizationThread(threading.Thread):
@@ -35,7 +36,7 @@ class StabilizationThread(threading.Thread):
         while True:
             if self.messages.qsize() == 0:
                 drift = self._matisse.target_wavelength - self._matisse.wavemeter_wavelength()
-                drift = round(drift, self._matisse.wavemeter.PRECISION)
+                drift = round(drift, cfg.get(cfg.WAVEMETER_PRECISION))
                 if abs(drift) > self._tolerance:
                     if drift < 0:
                         # measured wavelength is too high
