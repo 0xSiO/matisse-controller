@@ -9,7 +9,24 @@ from gui.threading import LoggingThread, ExitFlag
 
 
 class LoggingArea(QTextEdit):
+    """
+    A QTextEdit that can append HTML messages to the end of the text area. Messages that contain the word
+    'WARNING' will be colored.
+
+    On initialization, a LoggingThread is started, which emits messages from a queue. Emitted messages from this thread
+    are logged to the text area via a Qt slot, which runs in the creating thread for instances of this class.
+    """
+
     def __init__(self, messages: Queue, *args, **kwargs):
+        """
+        Initialize an instance of LoggingArea.
+
+        :param messages: a message queue. Messages pushed to this queue will be emitted from the LoggingThread and then
+        appended to the text area.
+        :param args: args to pass to QTextEdit.__init__
+        :param kwargs: kwargs to pass to QTextEdit.__init__
+        """
+
         super().__init__(*args, **kwargs)
         self.messages = messages
         self.update_thread = LoggingThread(messages)
