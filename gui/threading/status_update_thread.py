@@ -8,17 +8,26 @@ from gui.threading import ExitFlag
 
 
 class StatusUpdateThread(QThread):
+    """
+    A QThread that periodically reads several pieces of state data and emits all of it in one HTML-formatted string.
+    The interval between successive updates is specified by INTERVAL.
+
+    Some messages are colored, like for components that are at or nearing their limits.
+
+    Note: Any Qt slots implemented in this class will be executed in the creating thread for instances of this class.
+    """
     status_read = pyqtSignal(str)
+    INTERVAL = 1
 
     def __init__(self, matisse, messages: Queue, *args, **kwargs):
         """
-        TODO: Documentation
+        Initialize an instance of StatusUpdateThread.
 
-        :param matisse:
+        :param matisse: an instance of Matisse
         :type matisse: matisse.Matisse
-        :param messages:
-        :param args:
-        :param kwargs:
+        :param messages: a message queue
+        :param args: args to pass to QThread.__init__
+        :param kwargs: kwargs to pass to QThread.__init__
         """
         super().__init__(*args, **kwargs)
         self.matisse = matisse
@@ -46,6 +55,7 @@ class StatusUpdateThread(QThread):
                     locked_text = f"{green_text('LOCKED') if is_locked else red_text('NO LOCK')}"
                     wavemeter_text = f"Wavemeter:{wavemeter_value}"
 
+                    # TODO: Make these constants configurable
                     limit_offset = 0.05
                     refcell_at_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset < refcell_pos < self.matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
                     slow_pz_at_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset < slow_pz_pos < self.matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
@@ -74,7 +84,7 @@ class StatusUpdateThread(QThread):
                 except Exception:
                     status = red_text('Error reading system status. Please restart if this issue persists.')
                 self.status_read.emit(status)
-                time.sleep(1)
+                time.sleep(StatusUpdateThread.INTERVAL)
             else:
                 break
 

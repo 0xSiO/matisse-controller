@@ -8,9 +8,9 @@ from gui.threading import ExitFlag
 class LoggingThread(QThread):
     """
     A QThread which waits for data to come through a Queue. It blocks until data is available, then sends it to the UI
-    thread by emitting a Qt signal.
+    thread by emitting a Qt signal. The thread exits when an instance of ExitFlag is pushed to the message queue.
 
-    Do not implement Qt slots in this class as they will be executed in the creating thread for this class.
+    Note: Any Qt slots implemented in this class will be executed in the creating thread for instances of this class.
     """
     message_received = pyqtSignal(str)
 
