@@ -5,6 +5,7 @@ import numpy as np
 from pyvisa import ResourceManager, VisaIOError
 from scipy.signal import savgol_filter, argrelextrema
 
+import config as cfg
 from matisse.constants import Constants
 from matisse.lock_correction_thread import LockCorrectionThread
 from matisse.stabilization_thread import StabilizationThread
@@ -16,7 +17,7 @@ from wavemaster import WaveMaster
 class Matisse(Constants):
     matisse_lock = threading.Lock()
 
-    def __init__(self, device_id: str, wavemeter_port: str):
+    def __init__(self):
         """
         Initialize VISA resource manager, connect to Matisse, clear any errors.
 
@@ -24,14 +25,14 @@ class Matisse(Constants):
         """
         try:
             # TODO: Add access modifiers on all these instance variables
-            self.instrument = ResourceManager().open_resource(device_id)
+            self.instrument = ResourceManager().open_resource(cfg.get(cfg.MATISSE_DEVICE_ID))
             # TODO: Make this a method
             self.target_wavelength = None
             self.stabilization_thread = None
             self.lock_correction_thread = None
             self.query('ERROR:CLEAR')  # start with a clean slate
             # TODO: Clear individual motor errors?
-            self.wavemeter = WaveMaster(wavemeter_port)
+            self.wavemeter = WaveMaster(cfg.get(cfg.WAVEMETER_PORT))
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
@@ -105,26 +106,26 @@ class Matisse(Constants):
 
         diff = abs(wavelength - self.wavemeter_wavelength())
 
-        if diff > Matisse.LARGE_WAVELENGTH_DRIFT:
+        if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
             # Normal BiFi scan
             print(f"Setting BiFi to ~{wavelength} nm... ", end='')
             self.set_bifi_wavelength(wavelength)
             print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm.")
             self.birefringent_filter_scan(repeat=True)
             self.thin_etalon_scan(repeat=True)
-            self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
-            self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
-        elif Matisse.MEDIUM_WAVELENGTH_DRIFT < diff <= Matisse.LARGE_WAVELENGTH_DRIFT:
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+        elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
             # Small BiFi scan
-            self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
             self.thin_etalon_scan(repeat=True)
-            self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
-            self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
-        elif Matisse.SMALL_WAVELENGTH_DRIFT < diff <= Matisse.MEDIUM_WAVELENGTH_DRIFT:
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+        elif cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
             # No BiFi scan, TE scan only
             self.thin_etalon_scan(repeat=True)
-            self.birefringent_filter_scan(scan_range=Matisse.BIREFRINGENT_SCAN_RANGE_SMALL)
-            self.thin_etalon_scan(scan_range=Matisse.THIN_ETALON_SCAN_RANGE_SMALL)
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
         else:
             # No BiFi, no TE. Scan device only.
             pass
@@ -143,7 +144,7 @@ class Matisse(Constants):
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
         if scan_range is None:
-            scan_range = Matisse.BIREFRINGENT_SCAN_RANGE
+            scan_range = cfg.get(cfg.BIFI_SCAN_RANGE)
 
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
         lower_end = center_pos - scan_range
@@ -152,7 +153,7 @@ class Matisse(Constants):
                 and 0 < upper_end < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
                 and lower_end < upper_end), 'Conditions for BiFi scan invalid. Motor position must be between ' + \
                                             f"{scan_range} and {Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT - scan_range}"
-        positions = np.array(range(lower_end, upper_end, Matisse.BIREFRINGENT_SCAN_STEP))
+        positions = np.array(range(lower_end, upper_end, cfg.get(cfg.BIFI_SCAN_STEP)))
         voltages = np.array([])
         print('Starting BiFi scan... ', end='')
         for pos in positions:
@@ -182,7 +183,7 @@ class Matisse(Constants):
 
         if repeat:
             new_diff = abs(self.target_wavelength - self.wavemeter_wavelength())
-            if abs(new_diff) > Matisse.LARGE_WAVELENGTH_DRIFT:
+            if abs(new_diff) > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
                 print('Wavelength still too far away from target value. Starting another scan.')
                 self.birefringent_filter_scan(scan_range)
 
@@ -221,12 +222,12 @@ class Matisse(Constants):
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
         if scan_range is None:
-            scan_range = Matisse.THIN_ETALON_SCAN_RANGE
+            scan_range = cfg.get(cfg.THIN_ETA_SCAN_RANGE)
 
         old_pos = int(self.query('MOTTE:POS?', numeric_result=True))
         lower_end, upper_end = self.limits_for_thin_etalon_scan(old_pos, scan_range)
 
-        positions = np.array(range(lower_end, upper_end, Matisse.THIN_ETALON_SCAN_STEP))
+        positions = np.array(range(lower_end, upper_end, cfg.get(cfg.THIN_ETA_SCAN_STEP)))
         voltages = np.array([])
         print('Starting thin etalon scan... ', end='')
         for pos in positions:
@@ -247,7 +248,7 @@ class Matisse(Constants):
             # TODO: Check for large wavelength differences in case we need to readjust the BiFi
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
-        best_pos = positions[minima][np.argmin(wavelength_differences)] + Matisse.THIN_ETALON_NUDGE
+        best_pos = positions[minima][np.argmin(wavelength_differences)] + cfg.get(cfg.THIN_ETA_NUDGE)
         self.set_thin_etalon_motor_pos(best_pos)
         print('Done.')
 
@@ -257,7 +258,7 @@ class Matisse(Constants):
 
         if repeat:
             new_diff = abs(self.target_wavelength - self.wavemeter_wavelength())
-            if Matisse.SMALL_WAVELENGTH_DRIFT < abs(new_diff) <= Matisse.LARGE_WAVELENGTH_DRIFT:
+            if cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) < abs(new_diff) <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
                 print('Wavelength still too far away from target value. Starting another scan.')
                 self.thin_etalon_scan(scan_range)
 
@@ -403,9 +404,9 @@ class Matisse(Constants):
             self.query(f"PIEZOETALON:BASELINE {-0.8}")
         else:
             # TODO: Maybe check if we really need to move the piezo etalon
-            self.query(f"PIEZOETALON:BASELINE {Matisse.PIEZO_ETALON_CORRECTION_POS}")
+            self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_CORRECTION_POS)}")
 
-        self.query(f"SLOWPIEZO:NOW {Matisse.SLOW_PIEZO_CORRECTION_POS}")
+        self.query(f"SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_CORRECTION_POS)}")
 
     def get_reference_cell_transmission_spectrum(self):
         # TODO: Look into the REFCELL:TABLE? command to do a scan and measure the transmission spectrum
@@ -420,7 +421,7 @@ class Matisse(Constants):
             print('WARNING: Lock correction is already running.')
         else:
             print('Starting laser lock.')
-            self.lock_correction_thread = LockCorrectionThread(self, Matisse.LOCKING_TIMEOUT, queue.Queue(),
+            self.lock_correction_thread = LockCorrectionThread(self, cfg.get(cfg.LOCKING_TIMEOUT), queue.Queue(),
                                                                daemon=True)
             self.lock_correction_thread.start()
 
