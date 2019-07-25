@@ -1,8 +1,8 @@
-import os
 import queue
 import sys
-import threading
 import traceback
+from concurrent.futures import Future
+from concurrent.futures.thread import ThreadPoolExecutor
 from contextlib import redirect_stdout
 
 from PyQt5.QtCore import pyqtSlot
@@ -35,7 +35,8 @@ class ControlApplication(QApplication):
 
         # Other setup
         self.aboutToQuit.connect(self.clean_up)
-        self.matisse_worker_thread: threading.Thread = None
+        self.work_executor = ThreadPoolExecutor()
+        self.matisse_worker: Future = None
 
         container = QWidget()
         container.setLayout(self.layout)
@@ -157,7 +158,7 @@ class ControlApplication(QApplication):
         description = stack.pop()
         print(utils.red_text(description), end='')
         # Remove entries for handled_function decorator, for clarity
-        stack = filter(lambda item: os.path.join('gui', 'utils.py') not in item, stack)
+        stack = filter(lambda item: 'in handled_function_wrapper' not in item, stack)
         dialog = QMessageBox(icon=QMessageBox.Critical)
         dialog.setWindowTitle('Error')
         # Adding the underscores is a hack to resize the QMessageBox because it's not normally resizable.
@@ -179,9 +180,10 @@ class ControlApplication(QApplication):
         """Reset Matisse to a 'good' default state."""
         if self.matisse is not None:
             self.matisse.exit_flag = True
-            if self.matisse_worker_thread is not None:
+            if self.matisse_worker is not None and self.matisse_worker.running():
                 print('Waiting for running tasks to complete.')
-                self.matisse_worker_thread.join()
+                self.matisse_worker.result()
+            self.matisse_worker = None
             self.matisse.stabilize_off()
             self.matisse.stop_laser_lock_correction()
             self.matisse.exit_flag = False
@@ -210,7 +212,7 @@ class ControlApplication(QApplication):
                     return
 
             print(f"Setting wavelength to {target_wavelength} nm...")
-            self.run_matisse_task(target=self.matisse.set_wavelength, args=[target_wavelength], daemon=True)
+            self.run_matisse_task(self.matisse.set_wavelength, target_wavelength)
 
     @handled_slot(bool)
     def set_bifi_approx_wavelength_dialog(self, checked):
@@ -259,11 +261,11 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_bifi_scan(self, checked):
-        self.run_matisse_task(target=self.matisse.birefringent_filter_scan, daemon=True)
+        self.run_matisse_task(self.matisse.birefringent_filter_scan)
 
     @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
-        self.run_matisse_task(target=self.matisse.thin_etalon_scan, daemon=True)
+        self.run_matisse_task(self.matisse.thin_etalon_scan)
 
     @handled_slot(bool)
     def toggle_lock_laser(self, checked):
@@ -315,14 +317,26 @@ class ControlApplication(QApplication):
             self.matisse.stabilize_off()
         self.auto_stabilize_action.setChecked(checked)
 
-    # TODO: Use concurrent.futures to execute tasks in parallel so you can catch errors in those threads
-    def run_matisse_task(self, *args, **kwargs):
+    def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
-        Run a task on the worker thread. Only one task may be run at a time. Any task run using this method MUST exit
-        gracefully at some point by checking the Matisse exit_flag.
+        Run an asynchronous Matisse-related task in the worker thread pool. Only one such task may be run at a time.
+        Any task run using this method MUST exit gracefully at some point by checking the Matisse exit_flag.
+
+        :param function: the function to run in the thread pool
+        :param args: positional arguments to pass to the given function
+        :param kwargs: keyword arguments to pass to the given function
+        :return: whether the task was successfully started
         """
-        if self.matisse_worker_thread is not None and self.matisse_worker_thread.is_alive():
-            print("WARNING: Cannot perform requested action. A task is currently running.")
+        if self.matisse_worker is not None and self.matisse_worker.running():
+            print("WARNING: Cannot perform requested action. A Matisse-related task is currently running.")
+            return False
         else:
-            self.matisse_worker_thread = threading.Thread(*args, **kwargs)
-            self.matisse_worker_thread.start()
+            self.matisse_worker = self.work_executor.submit(function, *args, **kwargs)
+            self.matisse_worker.add_done_callback(self.raise_error_from_future)
+            return True
+
+    @handled_function
+    def raise_error_from_future(self, future: Future):
+        async_task_error = future.exception()
+        if async_task_error is not None:
+            raise async_task_error
