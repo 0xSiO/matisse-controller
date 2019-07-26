@@ -192,9 +192,12 @@ class ConfigurationDialog(QDialog):
         self.close()
 
 
-# TODO: Remove this
-if __name__ == '__main__':
+def main():
     app = QApplication([])
     d = ConfigurationDialog()
     d.exec()
-    app.exit(0)
+    app.exit()
+
+
+if __name__ == '__main__':
+    main()
