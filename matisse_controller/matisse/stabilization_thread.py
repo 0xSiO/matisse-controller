@@ -7,7 +7,7 @@ import matisse_controller.config as cfg
 class StabilizationThread(threading.Thread):
     def __init__(self, matisse, messages: Queue, *args, **kwargs):
         """
-        Initialize stabilization thread with parameters for stabilization loop.
+        Initialize stabilization thread.
 
         :param matisse: instance of Matisse to which we should send commands
         :type matisse: matisse.Matisse
@@ -18,6 +18,8 @@ class StabilizationThread(threading.Thread):
         self.messages = messages
         # Stop any running scans just in case
         self._matisse.stop_scan()
+        self._matisse.query(f"SCAN:RISINGSPEED {cfg.get(cfg.STABILIZATION_RISING_SPEED)}")
+        self._matisse.query(f"SCAN:FALLINGSPEED {cfg.get(cfg.STABILIZATION_FALLING_SPEED)}")
 
     def run(self):
         """

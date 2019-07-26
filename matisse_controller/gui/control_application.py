@@ -8,6 +8,7 @@ from contextlib import redirect_stdout
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication
 
+import matisse_controller.config as cfg
 from matisse_controller.gui import utils
 from matisse_controller.gui.dialogs import ConfigurationDialog
 from matisse_controller.gui.logging_stream import LoggingStream
@@ -281,6 +282,8 @@ class ControlApplication(QApplication):
         if self.matisse.is_stabilizing():
             print('WARNING: Auto-stabilize is on. Disable it and try again.')
         else:
+            self._matisse.query(f"SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}")
+            self._matisse.query(f"SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}")
             self.matisse.start_scan(Matisse.SCAN_MODE_UP)
 
     @handled_slot(bool)
@@ -288,6 +291,8 @@ class ControlApplication(QApplication):
         if self.matisse.is_stabilizing():
             print('WARNING: Auto-stabilize is on. Disable it and try again.')
         else:
+            self._matisse.query(f"SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}")
+            self._matisse.query(f"SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}")
             self.matisse.start_scan(Matisse.SCAN_MODE_DOWN)
 
     @handled_slot(bool)
