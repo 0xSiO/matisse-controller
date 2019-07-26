@@ -32,7 +32,8 @@ setup(name='matisse-controller',
       # TODO: Test other python versions
       python_requires='~=3.7',
       entry_points={
-            'gui_scripts': [
-                  'matisse-controller = matisse_controller:main'
-            ]
+          'gui_scripts': [
+              'matisse-controller = matisse_controller:main',
+              'matisse-config = matisse_controller.gui.dialogs.configuration_dialog:main'
+          ]
       })
