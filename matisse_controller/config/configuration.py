@@ -20,6 +20,10 @@ DEFAULTS = {
                 'step': 10,
                 'nudge': 50  # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
             },
+            'refcell': {
+                'rising_speed': 0.01,
+                'falling_speed': 0.01
+            },
             'wavelength_drift': {
                 'large': 0.4,
                 'medium': 0.2,
@@ -28,6 +32,11 @@ DEFAULTS = {
         },
         'locking': {
             'timeout': 7.0
+        },
+        'stabilization': {
+            'rising_speed': 0.01,
+            'falling_speed': 0.01,
+            'delay': 0.5
         },
         'correction': {
             'piezo_etalon_pos': 0.0,
