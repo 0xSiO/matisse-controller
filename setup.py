@@ -33,7 +33,7 @@ setup(name='matisse-controller',
       python_requires='~=3.7',
       entry_points={
           'gui_scripts': [
-              'matisse-controller = matisse_controller:main',
+              'matisse-controller = matisse_controller.gui.control_application:main',
               'matisse-config = matisse_controller.gui.dialogs.configuration_dialog:main'
           ]
       })

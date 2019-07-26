@@ -2,7 +2,7 @@ from queue import Queue
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from matisse_controller.gui.threading import ExitFlag
+from matisse_controller.gui.threads import ExitFlag
 
 
 class LoggingThread(QThread):
