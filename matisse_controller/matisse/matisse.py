@@ -5,12 +5,12 @@ import numpy as np
 from pyvisa import ResourceManager, VisaIOError
 from scipy.signal import savgol_filter, argrelextrema
 
-import config as cfg
-from matisse.constants import Constants
-from matisse.lock_correction_thread import LockCorrectionThread
-from matisse.plotting import BirefringentFilterScanPlotProcess, ThinEtalonScanPlotProcess
-from matisse.stabilization_thread import StabilizationThread
-from wavemaster import WaveMaster
+import matisse_controller.config as cfg
+from matisse_controller.matisse.constants import Constants
+from matisse_controller.matisse.lock_correction_thread import LockCorrectionThread
+from matisse_controller.matisse.plotting import BirefringentFilterScanPlotProcess, ThinEtalonScanPlotProcess
+from matisse_controller.matisse.stabilization_thread import StabilizationThread
+from matisse_controller.wavemaster import WaveMaster
 
 
 # TODO: Make sure that, for any operation requiring a target wavelength, if there is none specified, use the current one

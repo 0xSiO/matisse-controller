@@ -2,7 +2,7 @@ import threading
 import time
 from queue import Queue
 
-from matisse.control_loops_on import ControlLoopsOn
+from matisse_controller.matisse.control_loops_on import ControlLoopsOn
 
 
 class LockCorrectionThread(threading.Thread):
