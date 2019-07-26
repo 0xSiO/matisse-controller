@@ -24,6 +24,7 @@ LOCKING_TIMEOUT = 'matisse.locking.timeout'
 STABILIZATION_RISING_SPEED = 'matisse.stabilization.rising_speed'
 STABILIZATION_FALLING_SPEED = 'matisse.stabilization.falling_speed'
 STABILIZATION_DELAY = 'matisse.stabilization.delay'
+STABILIZATION_TOLERANCE = 'matisse.stabilization.tolerance'
 
 PIEZO_ETA_CORRECTION_POS = 'matisse.correction.piezo_etalon_pos'
 SLOW_PIEZO_CORRECTION_POS = 'matisse.correction.slow_piezo_pos'

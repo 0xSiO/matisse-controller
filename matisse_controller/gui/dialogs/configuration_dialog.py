@@ -106,6 +106,11 @@ class ConfigurationDialog(QDialog):
         self.stabilization_delay_field = QDoubleSpinBox()
         self.stabilization_delay_field.setMinimum(0.1)
         locking_layout.addRow('Auto-stabilization delay: ', self.stabilization_delay_field)
+        self.stabilization_tolerance_field = QDoubleSpinBox()
+        self.stabilization_tolerance_field.setDecimals(4)
+        self.stabilization_tolerance_field.setSingleStep(0.0001)
+        self.stabilization_tolerance_field.setMinimum(0.0001)
+        locking_layout.addRow('Auto-stabilization tolerance: ', self.stabilization_tolerance_field)
         return locking_options
 
     def set_current_values_from_config(self):
@@ -134,6 +139,7 @@ class ConfigurationDialog(QDialog):
         self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
         self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
         self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
+        self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
@@ -172,6 +178,7 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
         cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
         cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
+        cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
 
         # TODO: wavemeter and GUI config
         cfg.set('wavemeter', {})
