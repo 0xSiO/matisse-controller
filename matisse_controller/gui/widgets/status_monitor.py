@@ -2,7 +2,7 @@ from queue import Queue
 
 from PyQt5.QtWidgets import QLabel
 
-from matisse_controller.gui.threading import StatusUpdateThread, ExitFlag
+from matisse_controller.gui.threads import StatusUpdateThread, ExitFlag
 
 
 class StatusMonitor(QLabel):

@@ -371,3 +371,15 @@ class ControlApplication(QApplication):
         async_task_error = future.exception()
         if async_task_error is not None:
             raise async_task_error
+
+
+def main():
+    exit_code = ControlApplication.EXIT_CODE_RESTART
+    while exit_code == ControlApplication.EXIT_CODE_RESTART:
+        gui = ControlApplication([])
+        exit_code = gui.exec()
+        del gui
+
+
+if __name__ == '__main__':
+    main()

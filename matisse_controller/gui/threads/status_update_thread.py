@@ -4,7 +4,7 @@ from queue import Queue
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from matisse_controller.gui.utils import red_text, orange_text, green_text
-from matisse_controller.gui.threading import ExitFlag
+from matisse_controller.gui.threads import ExitFlag
 
 
 class StatusUpdateThread(QThread):
