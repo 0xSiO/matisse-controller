@@ -195,3 +195,5 @@ stuck, then you can adjust the BiFi as described above.
 Good default for cancelling set_wavelength. If wavelength difference is more than 10 nm, confirm if they're sure they
 want such a large change. Make the default option on that dialog to cancel, for safety reasons. Also make the precision
 for setting the wavelength go to 3 decimal places!
+
+Add interface to initiate small scans of the device with a given speed and direction, for PLE data collection.
