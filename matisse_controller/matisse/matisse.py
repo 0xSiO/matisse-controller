@@ -414,9 +414,9 @@ class Matisse(Constants):
             self.query(f"PIEZOETALON:BASELINE {-0.8}")
         else:
             # TODO: Maybe check if we really need to move the piezo etalon
-            self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_CORRECTION_POS)}")
+            self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_MID_CORRECTION_POS)}")
 
-        self.query(f"SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_CORRECTION_POS)}")
+        self.query(f"SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS)}")
 
     def get_reference_cell_transmission_spectrum(self):
         # TODO: Look into the REFCELL:TABLE? command to do a scan and measure the transmission spectrum
