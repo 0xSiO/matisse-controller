@@ -6,8 +6,6 @@ import matisse_controller.config as cfg
 
 class StabilizationThread(threading.Thread):
     REFCELL_ADJUSTMENT_STEP = 0.001
-    SCAN_MODE_UP = 0
-    SCAN_MODE_DOWN = 1
 
     def __init__(self, matisse, tolerance: float, delay: float, messages: Queue, *args, **kwargs):
         """
@@ -42,7 +40,7 @@ class StabilizationThread(threading.Thread):
                         # measured wavelength is too high
                         print(f"Too high, decreasing. Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
-                            self._matisse.start_scan(StabilizationThread.SCAN_MODE_DOWN)
+                            self._matisse.start_scan(self._matisse.SCAN_MODE_DOWN)
                         else:
                             print('WARNING: A component has hit a limit while adjusting the RefCell. '
                                   'Attempting automatic corrections.')
@@ -52,7 +50,7 @@ class StabilizationThread(threading.Thread):
                         # measured wavelength is too low
                         print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
-                            self._matisse.start_scan(StabilizationThread.SCAN_MODE_UP)
+                            self._matisse.start_scan(self._matisse.SCAN_MODE_UP)
                         else:
                             print('WARNING: A component has hit a limit while adjusting the RefCell. '
                                   'Attempting automatic corrections.')

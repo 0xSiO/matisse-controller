@@ -1,6 +1,9 @@
 class Constants:
     # Scanning ################################################################
 
+    SCAN_MODE_UP = 0
+    SCAN_MODE_DOWN = 1
+
     # Approximate change in wavelength per thin etalon mode
     THIN_ETALON_NM_PER_MODE = 0.033
 
