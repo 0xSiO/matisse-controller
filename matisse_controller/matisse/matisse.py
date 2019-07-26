@@ -31,7 +31,8 @@ class Matisse(Constants):
             self.plotting_processes = []
             self.exit_flag = False
             self.query('ERROR:CLEAR')  # start with a clean slate
-            # TODO: Clear individual motor errors?
+            self.query('MOTORBIREFRINGENT:CLEAR')
+            self.query('MOTORTHINETALON:CLEAR')
             self.wavemeter = WaveMaster(cfg.get(cfg.WAVEMETER_PORT))
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
