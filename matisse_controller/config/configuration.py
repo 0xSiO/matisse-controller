@@ -36,7 +36,8 @@ DEFAULTS = {
         'stabilization': {
             'rising_speed': 0.01,
             'falling_speed': 0.01,
-            'delay': 0.5
+            'delay': 0.5,
+            'tolerance': 0.0005
         },
         'correction': {
             'piezo_etalon_pos': 0.0,
