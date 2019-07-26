@@ -14,6 +14,10 @@ To launch the GUI, connect the Matisse and a supported wavemeter, and then run:
 
     $ matisse-controller
 
+To configure the behavior of the program, click the 'Configuration' menu option from the main GUI, or run:
+
+    $ matisse-config
+
 The GUI uses a Python API to control the Matisse. If you only care about using the API, just
 `import matisse_controller`. The `matisse` and `wavemeter` subpackages contain the APIs you'll want.
 
