@@ -80,6 +80,11 @@ class ControlApplication(QApplication):
         self.bifi_scan_action = scan_menu.addAction('Birefringent Filter')
         self.thin_eta_scan_action = scan_menu.addAction('Thin Etalon')
 
+        ple_menu = menu_bar.addMenu('PLE')
+        self.scan_device_up_action = ple_menu.addAction('Scan Up')
+        self.scan_device_down_action = ple_menu.addAction('Scan Down')
+        self.stop_scan_device_action = ple_menu.addAction('Stop Scanning')
+
         stabilization_menu = menu_bar.addMenu('Stabilization')
         toggle_control_loop_menu = stabilization_menu.addMenu('Toggle Control Loop')
         self.slow_pz_control_action = toggle_control_loop_menu.addAction('Slow Piezo')
@@ -115,6 +120,11 @@ class ControlApplication(QApplication):
         # Scan
         self.bifi_scan_action.triggered.connect(self.start_bifi_scan)
         self.thin_eta_scan_action.triggered.connect(self.start_thin_etalon_scan)
+
+        # PLE
+        self.scan_device_up_action.triggered.connect(self.scan_device_up)
+        self.scan_device_down_action.triggered.connect(self.scan_device_down)
+        self.stop_scan_device_action.triggered.connect(self.stop_scanning_device)
 
         # Stabilization
         self.lock_laser_action.triggered.connect(self.toggle_lock_laser)
@@ -265,6 +275,27 @@ class ControlApplication(QApplication):
     @handled_slot(bool)
     def start_thin_etalon_scan(self, checked):
         self.run_matisse_task(self.matisse.thin_etalon_scan)
+
+    @handled_slot(bool)
+    def scan_device_up(self, checked):
+        if self.matisse.is_stabilizing():
+            print('WARNING: Auto-stabilize is on. Disable it and try again.')
+        else:
+            self.matisse.start_scan(Matisse.SCAN_MODE_UP)
+
+    @handled_slot(bool)
+    def scan_device_down(self, checked):
+        if self.matisse.is_stabilizing():
+            print('WARNING: Auto-stabilize is on. Disable it and try again.')
+        else:
+            self.matisse.start_scan(Matisse.SCAN_MODE_DOWN)
+
+    @handled_slot(bool)
+    def stop_scanning_device(self, checked):
+        if self.matisse.is_stabilizing():
+            print('WARNING: Auto-stabilize is on. Disable it and try again.')
+        else:
+            self.matisse.stop_scan()
 
     @handled_slot(bool)
     def toggle_lock_laser(self, checked):

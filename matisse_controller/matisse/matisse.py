@@ -370,6 +370,9 @@ class Matisse(Constants):
     def stop_scan(self):
         self.query(f"SCAN:STATUS STOP")
 
+    def is_scanning(self):
+        return 'RUN' in self.query('SCAN:STATUS?')
+
     def is_stabilizing(self):
         return self.stabilization_thread is not None and self.stabilization_thread.is_alive()
 
