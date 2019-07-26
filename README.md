@@ -28,8 +28,12 @@ recommended.
 
 To install this package onto your local machine, run `pip install -e .`.
 
+Useful documentation: [PyVISA](https://pyvisa.readthedocs.io/en/latest/introduction/index.html),
+[pySerial](https://pythonhosted.org/pyserial/), [SciPy](https://docs.scipy.org/doc/scipy/reference/), 
+[matplotlib](https://matplotlib.org/api/index.html), [Qt 5](https://doc.qt.io/qt-5/index.html)
+
 ### Adding features to the Matisse class
-The standard way of interacting with the Matisse outside of the existing API is to use the Matisse.query method. The
+The standard way of interacting with the Matisse outside of the existing API is to use the `Matisse.query` method. The
 Matisse implements several commands that run asynchronously, like motor movements, so if you want to run these
 synchronously, you must do it on your own (like checking the motor status until it's idle again).
 
@@ -38,9 +42,9 @@ Currently, fetching a measurement from the wavemeter is a relatively expensive p
 possible.
 
 ### Adding another wavemeter
-Currently I've implemented an interface for the WaveMaster, but any class will do, as long as it implements the
-`get_raw_value` and `get_wavelength` functions. The `get_raw_value` function should return a value representing exactly
-what is seen on the wavemeter display (this might not be a measurement), and the `get_wavelength` function should always
+Currently I've only implemented an interface for the WaveMaster, but any class will do, as long as it implements the
+`get_raw_value` and `get_wavelength` methods. The `get_raw_value` method should return a value representing exactly
+what is seen on the wavemeter display (this might not be a measurement), and the `get_wavelength` method should always
 return a floating-point number representing the latest measurement from the wavemeter. The WaveMaster implementation
 blocks the thread until a value is returned from the instrument. Additionally, please ensure any code you write that
 communicates with instruments is thread-safe.
@@ -54,7 +58,7 @@ slot (see LoggingThread, StatusUpdateThread for examples).
 - For long-running tasks that do not need access to the UI, submit a runnable object to the ControlApplication's
 instance of ThreadPoolExecutor. Hold a reference to the Future it gives you and call `add_done_callback` on it, passing
 in `ControlApplication.raise_error_from_future` if you want to display errors from that thread in a dialog box. For an
-example of a method that runs tasks one-by-one on the Matisse, see the `run_matisse_task` method.
+example of a method that runs tasks one-by-one on the Matisse, see `ControlApplication.run_matisse_task`.
 
 ## Contributing
 
