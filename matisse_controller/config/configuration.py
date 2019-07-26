@@ -21,7 +21,7 @@ DEFAULTS = {
                 'nudge': 50  # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
             },
             'refcell': {
-                'rising_speed': 0.01,
+                'rising_speed': 0.01,  # TODO: Confirm sensible defaults for all rising/falling speeds
                 'falling_speed': 0.01
             },
             'wavelength_drift': {
