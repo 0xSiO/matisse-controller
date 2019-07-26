@@ -200,7 +200,6 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def restart(self, checked):
-        # TODO: Check if clean_up is called here
         self.exit(ControlApplication.EXIT_CODE_RESTART)
 
     @handled_slot(bool)
