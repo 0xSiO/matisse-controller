@@ -1,7 +1,7 @@
 import threading
 import time
 from queue import Queue
-import config as cfg
+import matisse_controller.config as cfg
 
 
 class StabilizationThread(threading.Thread):

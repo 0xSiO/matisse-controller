@@ -1,8 +1,8 @@
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
 
-import config as cfg
-from matisse import Matisse
+import matisse_controller.config as cfg
+from matisse_controller.matisse import Matisse
 
 
 class ConfigurationDialog(QDialog):

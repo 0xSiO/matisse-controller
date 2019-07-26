@@ -8,12 +8,12 @@ from contextlib import redirect_stdout
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication
 
-from gui import utils
-from gui.dialogs import ConfigurationDialog
-from gui.logging_stream import LoggingStream
-from gui.utils import handled_function, handled_slot
-from gui.widgets import LoggingArea, StatusMonitor
-from matisse import Matisse
+from matisse_controller.gui import utils
+from matisse_controller.gui.dialogs import ConfigurationDialog
+from matisse_controller.gui.logging_stream import LoggingStream
+from matisse_controller.gui.utils import handled_function, handled_slot
+from matisse_controller.gui.widgets import LoggingArea, StatusMonitor
+from matisse_controller.matisse import Matisse
 
 
 class ControlApplication(QApplication):

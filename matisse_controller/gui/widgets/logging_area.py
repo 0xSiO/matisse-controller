@@ -4,8 +4,8 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QTextEdit
 
-from gui import utils
-from gui.threading import LoggingThread, ExitFlag
+from matisse_controller.gui import utils
+from matisse_controller.gui.threading import LoggingThread, ExitFlag
 
 
 class LoggingArea(QTextEdit):

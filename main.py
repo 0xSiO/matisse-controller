@@ -1,4 +1,4 @@
-from gui import ControlApplication
+from matisse_controller import ControlApplication
 
 
 def main():
