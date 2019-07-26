@@ -406,12 +406,12 @@ class Matisse(Constants):
         offset = 0.05
         if (current_refcell_pos > Matisse.REFERENCE_CELL_UPPER_LIMIT - offset
                 and current_wavelength < self.target_wavelength):
-            self.query(f"SCAN:NOW {0.2}")
-            self.query(f"PIEZOETALON:BASELINE {0.8}")
+            self.query(f"SCAN:NOW {cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS)}")
+            self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS)}")
         elif (current_refcell_pos < Matisse.REFERENCE_CELL_LOWER_LIMIT + offset
               and current_wavelength > self.target_wavelength):
-            self.query(f"SCAN:NOW {0.5}")
-            self.query(f"PIEZOETALON:BASELINE {-0.8}")
+            self.query(f"SCAN:NOW {cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS)}")
+            self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_LOWER_CORRECTION_POS)}")
         else:
             # TODO: Maybe check if we really need to move the piezo etalon
             self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_MID_CORRECTION_POS)}")
