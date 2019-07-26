@@ -43,6 +43,7 @@ class StatusUpdateThread(QThread):
                     slow_pz_pos = self.matisse.query('SLOWPIEZO:NOW?', numeric_result=True)
                     refcell_pos = self.matisse.query('SCAN:NOW?', numeric_result=True)
                     is_stabilizing = self.matisse.is_stabilizing()
+                    is_scanning = self.matisse.is_scanning()
                     is_locked = self.matisse.laser_locked()
                     wavemeter_value = self.matisse.wavemeter.get_raw_value()
 
@@ -52,6 +53,7 @@ class StatusUpdateThread(QThread):
                     slow_pz_pos_text = f"Slow Pz:{slow_pz_pos}"
                     refcell_pos_text = f"RefCell:{refcell_pos}"
                     stabilizing_text = f"Stabilize:{green_text('ON') if is_stabilizing else red_text('OFF')}"
+                    scanning_text = f"Scanning:{green_text('ON') if is_stabilizing else red_text('OFF')}"
                     locked_text = f"{green_text('LOCKED') if is_locked else red_text('NO LOCK')}"
                     wavemeter_text = f"Wavemeter:{wavemeter_value}"
 
@@ -80,7 +82,7 @@ class StatusUpdateThread(QThread):
                     elif pz_eta_near_limit:
                         pz_eta_pos_text = orange_text(pz_eta_pos_text)
 
-                    status = f"{bifi_pos_text} | {thin_eta_pos_text} | {pz_eta_pos_text} | {slow_pz_pos_text} | {refcell_pos_text} | {stabilizing_text} | {locked_text} | {wavemeter_text}"
+                    status = f"{bifi_pos_text} | {thin_eta_pos_text} | {pz_eta_pos_text} | {slow_pz_pos_text} | {refcell_pos_text} | {stabilizing_text} | {scanning_text} | {locked_text} | {wavemeter_text}"
                 except Exception:
                     status = red_text('Error reading system status. Please restart if this issue persists.')
                 self.status_read.emit(status)
