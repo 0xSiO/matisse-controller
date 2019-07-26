@@ -13,7 +13,6 @@ from matisse_controller.matisse.stabilization_thread import StabilizationThread
 from matisse_controller.wavemaster import WaveMaster
 
 
-# TODO: Make sure that, for any operation requiring a target wavelength, if there is none specified, use the current one
 class Matisse(Constants):
     matisse_lock = threading.Lock()
 
@@ -26,7 +25,6 @@ class Matisse(Constants):
         try:
             # TODO: Add access modifiers on all these instance variables
             self.instrument = ResourceManager().open_resource(cfg.get(cfg.MATISSE_DEVICE_ID))
-            # TODO: Make this a method
             self.target_wavelength = None
             self.stabilization_thread = None
             self.lock_correction_thread = None
@@ -397,6 +395,8 @@ class Matisse(Constants):
                 If wavelength is still too high, move RefCell up higher than usual and piezo etalon lower than usual
             Else,
                 Move RefCell and piezo etalon to their center positions.
+
+        A target wavelength must already be set in order to run this method.
         """
         current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos = self.get_stabilizing_piezo_positions()
         current_wavelength = self.wavemeter_wavelength()
@@ -432,6 +432,8 @@ class Matisse(Constants):
             print('Starting laser lock.')
             self.lock_correction_thread = LockCorrectionThread(self, cfg.get(cfg.LOCKING_TIMEOUT), queue.Queue(),
                                                                daemon=True)
+            if self.target_wavelength is None:
+                self.target_wavelength = self.wavemeter_wavelength()
             self.lock_correction_thread.start()
 
     def stop_laser_lock_correction(self):
