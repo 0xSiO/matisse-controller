@@ -46,6 +46,9 @@ class ConfigurationDialog(QDialog):
         self.wavemeter_precision_field = QSpinBox()
         self.wavemeter_precision_field.setMinimum(0)
         general_layout.addRow('Wavemeter precision: ', self.wavemeter_precision_field)
+        self.component_limit_offset_field = QDoubleSpinBox()
+        self.component_limit_offset_field.setMinimum(0)
+        general_layout.addRow('Component limit offset: ', self.component_limit_offset_field)
         self.wavelength_lower_limit_field = QDoubleSpinBox()
         self.wavelength_lower_limit_field.setMinimum(0)
         self.wavelength_lower_limit_field.setMaximum(2000)
@@ -196,6 +199,7 @@ class ConfigurationDialog(QDialog):
         self.matisse_device_id_field.setToolTip(tooltips.MATISSE_DEVICE_ID)
         self.wavemeter_port_field.setToolTip(tooltips.WAVEMETER_PORT)
         self.wavemeter_precision_field.setToolTip(tooltips.WAVEMETER_PRECISION)
+        self.component_limit_offset_field.setToolTip(tooltips.COMPONENT_LIMIT_OFFSET)
         self.wavelength_lower_limit_field.setToolTip(tooltips.WAVELENGTH_LOWER_LIMIT)
         self.wavelength_upper_limit_field.setToolTip(tooltips.WAVELENGTH_UPPER_LIMIT)
 
@@ -227,6 +231,7 @@ class ConfigurationDialog(QDialog):
         self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
         self.wavemeter_port_field.setText(cfg.get(cfg.WAVEMETER_PORT))
         self.wavemeter_precision_field.setValue(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.component_limit_offset_field.setValue(cfg.get(cfg.COMPONENT_LIMIT_OFFSET))
         self.wavelength_lower_limit_field.setValue(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
         self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
 
@@ -288,6 +293,7 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.MATISSE_DEVICE_ID, self.matisse_device_id_field.text())
         cfg.set(cfg.WAVEMETER_PORT, self.wavemeter_port_field.text())
         cfg.set(cfg.WAVEMETER_PRECISION, self.wavemeter_precision_field.value())
+        cfg.set(cfg.COMPONENT_LIMIT_OFFSET, self.component_limit_offset_field.value())
         cfg.set(cfg.WAVELENGTH_LOWER_LIMIT, self.wavelength_lower_limit_field.value())
         cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
 

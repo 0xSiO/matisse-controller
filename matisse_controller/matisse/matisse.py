@@ -397,7 +397,7 @@ class Matisse(Constants):
         """Returns true if the RefCell, slow piezo, or piezo etalon are very close to one of their limits."""
 
         refcell_pos, pz_eta_pos, slow_pz_pos = self.get_stabilizing_piezo_positions()
-        offset = 0.05
+        offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
         return not (self.REFERENCE_CELL_LOWER_LIMIT + offset < refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
                     and self.SLOW_PIEZO_LOWER_LIMIT + offset < slow_pz_pos < self.SLOW_PIEZO_UPPER_LIMIT - offset
                     and self.PIEZO_ETALON_LOWER_LIMIT + offset < pz_eta_pos < self.PIEZO_ETALON_UPPER_LIMIT - offset)
@@ -417,8 +417,7 @@ class Matisse(Constants):
         current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos = self.get_stabilizing_piezo_positions()
         current_wavelength = self.wavemeter_wavelength()
 
-        # TODO: Extract constants
-        offset = 0.05
+        offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
         if (current_refcell_pos > Matisse.REFERENCE_CELL_UPPER_LIMIT - offset
                 and current_wavelength < self.target_wavelength):
             self.query(f"SCAN:NOW {cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS)}")

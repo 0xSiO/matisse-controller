@@ -5,6 +5,8 @@ MATISSE_DEVICE_ID = 'matisse.device_id'
 WAVEMETER_PORT = 'wavemeter.port'
 WAVEMETER_PRECISION = 'wavemeter.precision'
 
+COMPONENT_LIMIT_OFFSET = 'matisse.component_limit_offset'
+
 WAVELENGTH_LOWER_LIMIT = 'matisse.wavelength.lower_limit'
 WAVELENGTH_UPPER_LIMIT = 'matisse.wavelength.upper_limit'
 
