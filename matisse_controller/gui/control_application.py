@@ -367,6 +367,7 @@ class ControlApplication(QApplication):
 
     @handled_function
     def raise_error_from_future(self, future: Future):
+        # TODO: This seems to just hang the error dialog
         async_task_error = future.exception()
         if async_task_error is not None:
             raise async_task_error
