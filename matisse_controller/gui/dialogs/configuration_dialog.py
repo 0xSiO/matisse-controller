@@ -212,10 +212,17 @@ class ConfigurationDialog(QDialog):
         self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
 
     def add_buttons(self):
-        button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.RestoreDefaults | QDialogButtonBox.Save |
+                                      QDialogButtonBox.Cancel)
+        button_box.button(QDialogButtonBox.RestoreDefaults).clicked.connect(self.restore_defaults)
         button_box.button(QDialogButtonBox.Save).clicked.connect(self.save_configuration)
         button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.cancel)
         self.layout.addWidget(button_box)
+
+    @pyqtSlot(bool)
+    def restore_defaults(self, checked):
+        cfg.restore_defaults()
+        self.set_current_values_from_config()
 
     @pyqtSlot(bool)
     def save_configuration(self, checked):
