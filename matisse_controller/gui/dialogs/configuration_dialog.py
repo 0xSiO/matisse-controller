@@ -67,6 +67,14 @@ class ConfigurationDialog(QDialog):
         scan_layout.addRow('BiFi small scan range:', self.bifi_small_scan_range_field)
         self.bifi_scan_step_field = QSpinBox()
         scan_layout.addRow('BiFi scan step:', self.bifi_scan_step_field)
+        self.bifi_smoothing_window_field = QSpinBox()
+        self.bifi_smoothing_window_field.setMinimum(1)
+        self.bifi_smoothing_window_field.setSingleStep(2)
+        self.bifi_smoothing_window_field.valueChanged.connect(self.ensure_odd_value)
+        scan_layout.addRow('BiFi smoothing filter window: ', self.bifi_smoothing_window_field)
+        self.bifi_smoothing_polyorder_field = QSpinBox()
+        self.bifi_smoothing_polyorder_field.setMinimum(1)
+        scan_layout.addRow('BiFi smoothing filter polyorder: ', self.bifi_smoothing_polyorder_field)
         self.thin_eta_scan_range_field = QSpinBox()
         self.thin_eta_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 2)
         scan_layout.addRow('Thin etalon normal scan range:', self.thin_eta_scan_range_field)
@@ -77,6 +85,14 @@ class ConfigurationDialog(QDialog):
         scan_layout.addRow('Thin etalon scan step:', self.thin_eta_scan_step_field)
         self.thin_eta_nudge_field = QSpinBox()
         scan_layout.addRow('Thin etalon scan nudge:', self.thin_eta_nudge_field)
+        self.thin_eta_smoothing_window_field = QSpinBox()
+        self.thin_eta_smoothing_window_field.setMinimum(1)
+        self.thin_eta_smoothing_window_field.setSingleStep(2)
+        self.thin_eta_smoothing_window_field.valueChanged.connect(self.ensure_odd_value)
+        scan_layout.addRow('Thin etalon smoothing filter window: ', self.thin_eta_smoothing_window_field)
+        self.thin_eta_smoothing_polyorder_field = QSpinBox()
+        self.thin_eta_smoothing_polyorder_field.setMinimum(1)
+        scan_layout.addRow('Thin etalon smoothing filter polyorder: ', self.thin_eta_smoothing_polyorder_field)
         self.refcell_rising_speed_field = QDoubleSpinBox()
         self.refcell_rising_speed_field.setDecimals(3)
         self.refcell_rising_speed_field.setSingleStep(0.001)
@@ -181,11 +197,15 @@ class ConfigurationDialog(QDialog):
         self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
         self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
         self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
+        self.bifi_smoothing_window_field.setValue(cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW))
+        self.bifi_smoothing_polyorder_field.setValue(cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER))
 
         self.thin_eta_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE))
         self.thin_eta_small_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
         self.thin_eta_scan_step_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_STEP))
         self.thin_eta_nudge_field.setValue(cfg.get(cfg.THIN_ETA_NUDGE))
+        self.thin_eta_smoothing_window_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW))
+        self.thin_eta_smoothing_polyorder_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
 
         self.refcell_rising_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_RISING_SPEED))
         self.refcell_falling_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED))
@@ -236,11 +256,15 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())
+        cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW, self.bifi_smoothing_window_field.value())
+        cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER, self.bifi_smoothing_polyorder_field.value())
 
         cfg.set(cfg.THIN_ETA_SCAN_RANGE, self.thin_eta_scan_range_field.value())
         cfg.set(cfg.THIN_ETA_SCAN_RANGE_SMALL, self.thin_eta_small_scan_range_field.value())
         cfg.set(cfg.THIN_ETA_SCAN_STEP, self.thin_eta_scan_step_field.value())
         cfg.set(cfg.THIN_ETA_NUDGE, self.thin_eta_nudge_field.value())
+        cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW, self.thin_eta_smoothing_window_field.value())
+        cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER, self.thin_eta_smoothing_polyorder_field.value())
 
         cfg.set(cfg.REFCELL_SCAN_RISING_SPEED, self.refcell_rising_speed_field.value())
         cfg.set(cfg.REFCELL_SCAN_FALLING_SPEED, self.refcell_falling_speed_field.value())
@@ -275,6 +299,12 @@ class ConfigurationDialog(QDialog):
     @pyqtSlot(bool)
     def cancel(self, checked):
         self.close()
+
+    @pyqtSlot(int)
+    def ensure_odd_value(self, value):
+        field: QSpinBox = self.sender()
+        if value % 2 == 0:
+            field.setValue(value - 1)
 
 
 def main():

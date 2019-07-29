@@ -16,13 +16,21 @@ DEFAULTS = {
             'birefringent_filter': {
                 'range': 400,
                 'range_small': 200,  # TODO: Check the 'small' scan ranges
-                'step': 4
+                'step': 4,
+                'smoothing_filter': {
+                    'window': 31,
+                    'polyorder': 3
+                }
             },
             'thin_etalon': {
                 'range': 2000,
                 'range_small': 1000,
                 'step': 20,
-                'nudge': 50  # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
+                'nudge': 50,  # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
+                'smoothing_filter': {
+                    'window': 21,
+                    'polyorder': 3
+                }
             },
             'refcell': {
                 'rising_speed': 0.005,
