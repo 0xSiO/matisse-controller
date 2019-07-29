@@ -54,7 +54,7 @@ class StatusUpdateThread(QThread):
                     slow_pz_pos_text = f"Slow Pz:{slow_pz_pos:.3f}"
                     refcell_pos_text = f"RefCell:{refcell_pos:.3f}"
                     stabilizing_text = f"Stabilize:{green_text('ON') if is_stabilizing else red_text('OFF')}"
-                    scanning_text = f"Scanning:{green_text('ON') if is_stabilizing else red_text('OFF')}"
+                    scanning_text = f"Scanning:{green_text('ON') if is_scanning else red_text('OFF')}"
                     locked_text = f"{green_text('LOCKED') if is_locked else red_text('NO LOCK')}"
                     wavemeter_text = f"Wavemeter:{wavemeter_value}"
 

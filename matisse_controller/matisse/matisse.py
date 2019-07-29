@@ -374,7 +374,6 @@ class Matisse(Constants):
             print('WARNING: Stabilization thread is not running.')
 
     def start_scan(self, mode):
-        # TODO: This didn't seem to trigger the status indicator
         self.query(f"SCAN:MODE {mode}")
         self.query(f"SCAN:STATUS RUN")
 
