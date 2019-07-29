@@ -207,9 +207,10 @@ class ControlApplication(QApplication):
         current_wavelength = self.matisse.target_wavelength
         if current_wavelength is None:
             current_wavelength = self.matisse.wavemeter_wavelength()
-        # TODO: Set min and max to reasonable values
         target_wavelength, success = QInputDialog.getDouble(self.window, 'Set Wavelength', 'Wavelength (nm): ',
-                                                            current_wavelength, decimals=3)
+                                                            current_wavelength, decimals=3,
+                                                            min=cfg.get(cfg.WAVELENGTH_LOWER_LIMIT),
+                                                            max=cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
         if success:
             if abs(current_wavelength - target_wavelength) >= ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD:
                 answer = QMessageBox.warning(self.window, 'Large Wavelength Change',

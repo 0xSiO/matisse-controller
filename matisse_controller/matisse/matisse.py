@@ -98,6 +98,9 @@ class Matisse(Constants):
 
         :param wavelength: the desired wavelength
         """
+        assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) < wavelength < cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
+            'Target wavelength out of range.'
+
         self.target_wavelength = wavelength
 
         lock_when_done = self.is_lock_correction_on()
@@ -148,8 +151,6 @@ class Matisse(Constants):
         Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.
 
         Additionally, plot the power data and motor position selection.
-
-        :param scan_range: the desired range of the scan
         """
         if self.exit_flag:
             return
@@ -176,7 +177,8 @@ class Matisse(Constants):
 
         print('Analyzing scan data... ', end='')
         # Smooth out the data and find extrema
-        smoothed_data = savgol_filter(voltages, window_length=31, polyorder=3)
+        smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW),
+                                      polyorder=cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER))
         maxima = argrelextrema(smoothed_data, np.greater, order=5)
 
         # Find the position of the extremum closest to the target wavelength
@@ -212,8 +214,8 @@ class Matisse(Constants):
             pass
 
     def set_bifi_wavelength(self, value: float):
-        # TODO: Figure out min and max values
-        assert 720 < value < 800, 'Target wavelength out of range.'
+        assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) < value < cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
+            'Target wavelength out of range.'
         # Wait for motor to be ready to accept commands
         while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
             pass
@@ -254,8 +256,8 @@ class Matisse(Constants):
 
         print('Analyzing scan data... ', end='')
         # Smooth out the data and find extrema
-        # TODO: Make savgol window configurable
-        smoothed_data = savgol_filter(voltages, window_length=21, polyorder=3)
+        smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW),
+                                      polyorder=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
         minima = argrelextrema(smoothed_data, np.less, order=5)
 
         # Find the position of the extremum closest to the target wavelength
@@ -263,7 +265,6 @@ class Matisse(Constants):
         for pos in positions[minima]:
             self.set_thin_etalon_motor_pos(pos)
             time.sleep(0.01)
-            # TODO: Check for large wavelength differences in case we need to readjust the BiFi
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[minima][np.argmin(wavelength_differences)] + cfg.get(cfg.THIN_ETA_NUDGE)

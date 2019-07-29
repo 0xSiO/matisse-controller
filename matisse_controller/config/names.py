@@ -5,8 +5,8 @@ MATISSE_DEVICE_ID = 'matisse.device_id'
 WAVEMETER_PORT = 'wavemeter.port'
 WAVEMETER_PRECISION = 'wavemeter.precision'
 
-WAVELENGTH_UPPER_LIMIT = 'matisse.wavelength.upper_limit'
 WAVELENGTH_LOWER_LIMIT = 'matisse.wavelength.lower_limit'
+WAVELENGTH_UPPER_LIMIT = 'matisse.wavelength.upper_limit'
 
 BIFI_SCAN_RANGE = 'matisse.scanning.birefringent_filter.range'
 BIFI_SCAN_RANGE_SMALL = 'matisse.scanning.birefringent_filter.range_small'
