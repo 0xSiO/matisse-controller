@@ -17,7 +17,7 @@ DEFAULTS = {
             'thin_etalon': {
                 'range': 2000,
                 'range_small': 1000,
-                'step': 10,
+                'step': 20,
                 'nudge': 50  # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
             },
             'refcell': {
@@ -25,8 +25,8 @@ DEFAULTS = {
                 'falling_speed': 0.005
             },
             'wavelength_drift': {
-                'large': 0.4,
-                'medium': 0.2,
+                'large': 0.3,
+                'medium': 0.1,
                 'small': 0.02
             },
         },
