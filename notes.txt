@@ -197,3 +197,6 @@ want such a large change. Make the default option on that dialog to cancel, for 
 for setting the wavelength go to 3 decimal places!
 
 Add interface to initiate small scans of the device with a given speed and direction, for PLE data collection.
+
+Throwing errors from other threads seems to hang the error dialog. Trying to run a BiFi/TE scan while stabilizing makes
+GUI hang and cannot exit.

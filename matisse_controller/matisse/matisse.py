@@ -1,5 +1,6 @@
 import queue
 import threading
+import time
 
 import numpy as np
 from pyvisa import ResourceManager, VisaIOError
@@ -108,25 +109,26 @@ class Matisse(Constants):
         diff = abs(wavelength - self.wavemeter_wavelength())
 
         if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+            self.reset_motors()
             # Normal BiFi scan
             print(f"Setting BiFi to ~{wavelength} nm... ", end='')
             self.set_bifi_wavelength(wavelength)
             print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm.")
             self.birefringent_filter_scan(repeat=True)
             self.thin_etalon_scan(repeat=True)
-            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
-            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
         elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
             # Small BiFi scan
-            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
             self.thin_etalon_scan(repeat=True)
-            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
-            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
         elif cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
             # No BiFi scan, TE scan only
             self.thin_etalon_scan(repeat=True)
-            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
-            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
         else:
             # No BiFi, no TE. Scan device only.
             pass
@@ -135,6 +137,10 @@ class Matisse(Constants):
         if lock_when_done:
             self.start_laser_lock_correction()
         self.stabilize_on()
+
+    def reset_motors(self):
+        self.query(f"MOTBI:POS {100000}")
+        self.query(f"MOTTE:POS {18000}")
 
     def birefringent_filter_scan(self, scan_range: int = None, repeat=False):
         """
@@ -176,14 +182,15 @@ class Matisse(Constants):
         wavelength_differences = np.array([])
         for pos in positions[maxima]:
             self.set_bifi_motor_pos(pos)
+            time.sleep(0.01)
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[maxima][np.argmin(wavelength_differences)]
         self.set_bifi_motor_pos(best_pos)
-        print('Done.')
+        print('Done. ' + str(wavelength_differences))
 
-        plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, best_pos,
-                                                         daemon=True)
+        plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, center_pos,
+                                                         best_pos, daemon=True)
         self.plotting_processes.append(plot_process)
         plot_process.start()
 
@@ -246,21 +253,24 @@ class Matisse(Constants):
 
         print('Analyzing scan data... ', end='')
         # Smooth out the data and find extrema
-        smoothed_data = savgol_filter(voltages, window_length=41, polyorder=3)
+        # TODO: Make savgol window configurable
+        smoothed_data = savgol_filter(voltages, window_length=21, polyorder=3)
         minima = argrelextrema(smoothed_data, np.less, order=5)
 
         # Find the position of the extremum closest to the target wavelength
         wavelength_differences = np.array([])
         for pos in positions[minima]:
             self.set_thin_etalon_motor_pos(pos)
+            time.sleep(0.01)
             # TODO: Check for large wavelength differences in case we need to readjust the BiFi
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[minima][np.argmin(wavelength_differences)] + cfg.get(cfg.THIN_ETA_NUDGE)
         self.set_thin_etalon_motor_pos(best_pos)
-        print('Done.')
+        print('Done. ' + str(wavelength_differences))
 
-        plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, best_pos, daemon=True)
+        plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, old_pos, best_pos,
+                                                 daemon=True)
         self.plotting_processes.append(plot_process)
         plot_process.start()
 
