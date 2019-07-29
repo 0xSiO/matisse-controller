@@ -200,7 +200,7 @@ class Matisse(Constants):
 
         if repeat:
             new_diff = np.min(wavelength_differences)
-            if abs(new_diff) > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+            if abs(new_diff) > cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
                 print('Wavelength still too far away from target value. Starting another scan.')
                 self.birefringent_filter_scan(scan_range, repeat=True)
 
@@ -280,7 +280,7 @@ class Matisse(Constants):
 
         if repeat:
             new_diff = np.min(wavelength_differences)
-            if cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) < abs(new_diff) <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+            if new_diff > cfg.get(cfg.SMALL_WAVELENGTH_DRIFT):
                 print('Wavelength still too far away from target value. Starting another scan.')
                 self.thin_etalon_scan(scan_range, repeat=True)
 

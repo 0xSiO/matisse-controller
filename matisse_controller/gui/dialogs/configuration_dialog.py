@@ -2,6 +2,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
 
 import matisse_controller.config as cfg
+import matisse_controller.config.tooltips as tooltips
 from matisse_controller.matisse import Matisse
 
 
@@ -18,11 +19,11 @@ class ConfigurationDialog(QDialog):
         self.set_current_values_from_config()
         self.add_buttons()
 
-    # TODO: Tooltips
     def add_options(self):
         general_options = self.create_general_options()
         scan_options = self.create_scan_options()
         locking_options = self.create_locking_options()
+        self.set_tooltips()
 
         form = QWidget()
         form_layout = QHBoxLayout()
@@ -40,14 +41,14 @@ class ConfigurationDialog(QDialog):
         general_options.setLayout(general_layout)
         self.matisse_device_id_field = QLineEdit()
         general_layout.addRow('Matisse device ID: ', self.matisse_device_id_field)
-        self.wavelength_lower_limit_field = QDoubleSpinBox()
-        self.wavelength_lower_limit_field.setMinimum(0)
-        self.wavelength_lower_limit_field.setMaximum(2000)
         self.wavemeter_port_field = QLineEdit()
         general_layout.addRow('Wavemeter port: ', self.wavemeter_port_field)
         self.wavemeter_precision_field = QSpinBox()
         self.wavemeter_precision_field.setMinimum(0)
         general_layout.addRow('Wavemeter precision: ', self.wavemeter_precision_field)
+        self.wavelength_lower_limit_field = QDoubleSpinBox()
+        self.wavelength_lower_limit_field.setMinimum(0)
+        self.wavelength_lower_limit_field.setMaximum(2000)
         general_layout.addRow('Wavelength lower limit: ', self.wavelength_lower_limit_field)
         self.wavelength_upper_limit_field = QDoubleSpinBox()
         self.wavelength_upper_limit_field.setMinimum(0)
@@ -190,6 +191,37 @@ class ConfigurationDialog(QDialog):
         self.stabilization_tolerance_field.setMinimum(0.0001)
         locking_layout.addRow('Auto-stabilization tolerance: ', self.stabilization_tolerance_field)
         return locking_options
+
+    def set_tooltips(self):
+        self.matisse_device_id_field.setToolTip(tooltips.MATISSE_DEVICE_ID)
+        self.wavemeter_port_field.setToolTip(tooltips.WAVEMETER_PORT)
+        self.wavemeter_precision_field.setToolTip(tooltips.WAVEMETER_PRECISION)
+        self.wavelength_lower_limit_field.setToolTip(tooltips.WAVELENGTH_LOWER_LIMIT)
+        self.wavelength_upper_limit_field.setToolTip(tooltips.WAVELENGTH_UPPER_LIMIT)
+
+        self.bifi_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE)
+        self.bifi_small_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE_SMALL)
+        self.bifi_scan_step_field.setToolTip(tooltips.BIFI_SCAN_STEP)
+        self.bifi_scan_show_plots_field.setToolTip(tooltips.BIFI_SCAN_SHOW_PLOTS)
+        self.bifi_smoothing_window_field.setToolTip(tooltips.BIFI_SMOOTHING_FILTER_WINDOW)
+        self.bifi_smoothing_polyorder_field.setToolTip(tooltips.BIFI_SMOOTHING_FILTER_POLYORDER)
+
+        self.thin_eta_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE)
+        self.thin_eta_small_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE_SMALL)
+        self.thin_eta_scan_step_field.setToolTip(tooltips.THIN_ETA_SCAN_STEP)
+        self.thin_eta_nudge_field.setToolTip(tooltips.THIN_ETA_NUDGE)
+        self.thin_eta_scan_show_plots_field.setToolTip(tooltips.THIN_ETA_SHOW_PLOTS)
+        self.thin_eta_smoothing_window_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_WINDOW)
+        self.thin_eta_smoothing_polyorder_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_POLYORDER)
+
+        self.refcell_rising_speed_field.setToolTip(tooltips.REFCELL_SCAN_RISING_SPEED)
+        self.refcell_falling_speed_field.setToolTip(tooltips.REFCELL_SCAN_FALLING_SPEED)
+
+        self.large_wavelength_drift_field.setToolTip(tooltips.LARGE_WAVELENGTH_DRIFT)
+        self.medium_wavelength_drift_field.setToolTip(tooltips.MEDIUM_WAVELENGTH_DRIFT)
+        self.small_wavelength_drift_field.setToolTip(tooltips.SMALL_WAVELENGTH_DRIFT)
+
+        self.locking_timeout_field.setToolTip(tooltips.LOCKING_TIMEOUT)
 
     def set_current_values_from_config(self):
         self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
