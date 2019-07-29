@@ -17,6 +17,7 @@ DEFAULTS = {
                 'range': 400,
                 'range_small': 200,  # TODO: Check the 'small' scan ranges
                 'step': 4,
+                'show_plots': True,
                 'smoothing_filter': {
                     'window': 31,
                     'polyorder': 3
@@ -27,6 +28,7 @@ DEFAULTS = {
                 'range_small': 1000,
                 'step': 20,
                 'nudge': 50,  # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
+                'show_plots': True,
                 'smoothing_filter': {
                     'window': 21,
                     'polyorder': 3
