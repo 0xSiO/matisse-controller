@@ -113,6 +113,7 @@ class Matisse(Constants):
             # Normal BiFi scan
             print(f"Setting BiFi to ~{wavelength} nm... ", end='')
             self.set_bifi_wavelength(wavelength)
+            time.sleep(0.1)
             print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm.")
             self.birefringent_filter_scan(repeat=True)
             self.thin_etalon_scan(repeat=True)
@@ -195,10 +196,10 @@ class Matisse(Constants):
         plot_process.start()
 
         if repeat:
-            new_diff = abs(self.target_wavelength - self.wavemeter_wavelength())
+            new_diff = np.min(wavelength_differences)
             if abs(new_diff) > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
                 print('Wavelength still too far away from target value. Starting another scan.')
-                self.birefringent_filter_scan(scan_range)
+                self.birefringent_filter_scan(scan_range, repeat=True)
 
     def set_bifi_motor_pos(self, pos: int):
         assert 0 < pos < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, 'Target motor position out of range.'
@@ -275,10 +276,10 @@ class Matisse(Constants):
         plot_process.start()
 
         if repeat:
-            new_diff = abs(self.target_wavelength - self.wavemeter_wavelength())
+            new_diff = np.min(wavelength_differences)
             if cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) < abs(new_diff) <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
                 print('Wavelength still too far away from target value. Starting another scan.')
-                self.thin_etalon_scan(scan_range)
+                self.thin_etalon_scan(scan_range, repeat=True)
 
     def limits_for_thin_etalon_scan(self, current_pos: int, scan_range: int):
         lower_limit = current_pos - scan_range
