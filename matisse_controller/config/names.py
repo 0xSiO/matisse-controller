@@ -2,6 +2,11 @@
 # value set in configuration.DEFAULTS, otherwise you'll get a KeyError when trying to access them.
 
 MATISSE_DEVICE_ID = 'matisse.device_id'
+WAVEMETER_PORT = 'wavemeter.port'
+WAVEMETER_PRECISION = 'wavemeter.precision'
+
+WAVELENGTH_UPPER_LIMIT = 'matisse.wavelength.upper_limit'
+WAVELENGTH_LOWER_LIMIT = 'matisse.wavelength.lower_limit'
 
 BIFI_SCAN_RANGE = 'matisse.scanning.birefringent_filter.range'
 BIFI_SCAN_RANGE_SMALL = 'matisse.scanning.birefringent_filter.range_small'
@@ -35,6 +40,3 @@ REFCELL_MID_CORRECTION_POS = 'matisse.correction.refcell_pos_mid'
 PIEZO_ETA_LOWER_CORRECTION_POS = 'matisse.correction.piezo_etalon_pos_lower'
 SLOW_PIEZO_LOWER_CORRECTION_POS = 'matisse.correction.slow_piezo_pos_lower'
 REFCELL_LOWER_CORRECTION_POS = 'matisse.correction.refcell_pos_lower'
-
-WAVEMETER_PORT = 'wavemeter.port'
-WAVEMETER_PRECISION = 'wavemeter.precision'

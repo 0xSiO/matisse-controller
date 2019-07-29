@@ -20,15 +20,40 @@ class ConfigurationDialog(QDialog):
 
     # TODO: Tooltips
     def add_options(self):
+        general_options = self.create_general_options()
         scan_options = self.create_scan_options()
         locking_options = self.create_locking_options()
 
         form = QWidget()
         form_layout = QHBoxLayout()
         form.setLayout(form_layout)
-        form_layout.addWidget(scan_options)
+        col_1 = QVBoxLayout()
+        col_1.addWidget(general_options)
+        col_1.addWidget(scan_options)
+        form_layout.addLayout(col_1)
         form_layout.addWidget(locking_options)
         self.layout.addWidget(form)
+
+    def create_general_options(self):
+        general_options = QGroupBox('General')
+        general_layout = QFormLayout()
+        general_options.setLayout(general_layout)
+        self.matisse_device_id_field = QLineEdit()
+        general_layout.addRow('Matisse device ID: ', self.matisse_device_id_field)
+        self.wavelength_lower_limit_field = QDoubleSpinBox()
+        self.wavelength_lower_limit_field.setMinimum(0)
+        self.wavelength_lower_limit_field.setMaximum(2000)
+        self.wavemeter_port_field = QLineEdit()
+        general_layout.addRow('Wavemeter port: ', self.wavemeter_port_field)
+        self.wavemeter_precision_field = QSpinBox()
+        self.wavemeter_precision_field.setMinimum(0)
+        general_layout.addRow('Wavemeter precision: ', self.wavemeter_precision_field)
+        general_layout.addRow('Wavelength lower limit: ', self.wavelength_lower_limit_field)
+        self.wavelength_upper_limit_field = QDoubleSpinBox()
+        self.wavelength_upper_limit_field.setMinimum(0)
+        self.wavelength_upper_limit_field.setMaximum(2000)
+        general_layout.addRow('Wavelength upper limit: ', self.wavelength_upper_limit_field)
+        return general_options
 
     def create_scan_options(self):
         scan_options = QGroupBox('Scanning')
@@ -147,6 +172,12 @@ class ConfigurationDialog(QDialog):
         return locking_options
 
     def set_current_values_from_config(self):
+        self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
+        self.wavemeter_port_field.setText(cfg.get(cfg.WAVEMETER_PORT))
+        self.wavemeter_precision_field.setValue(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.wavelength_lower_limit_field.setValue(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+
         self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
         self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
         self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
@@ -189,8 +220,11 @@ class ConfigurationDialog(QDialog):
     @pyqtSlot(bool)
     def save_configuration(self, checked):
         print('Saving configuration.')
-        # TODO: create separate UI section for device ID
-        cfg.set(cfg.MATISSE_DEVICE_ID, 'USB0::0x17E7::0x0102::07-40-01::INSTR')
+        cfg.set(cfg.MATISSE_DEVICE_ID, self.matisse_device_id_field.text())
+        cfg.set(cfg.WAVEMETER_PORT, self.wavemeter_port_field.text())
+        cfg.set(cfg.WAVEMETER_PRECISION, self.wavemeter_precision_field.value())
+        cfg.set(cfg.WAVELENGTH_LOWER_LIMIT, self.wavelength_lower_limit_field.value())
+        cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
 
         cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
@@ -225,8 +259,7 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
         cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
 
-        # TODO: wavemeter and GUI config
-        # cfg.set('wavemeter', {})
+        # TODO: GUI config
         # cfg.set('gui', {})
 
         cfg.save()
