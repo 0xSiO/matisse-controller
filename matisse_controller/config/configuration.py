@@ -39,8 +39,9 @@ DEFAULTS = {
                 'falling_speed': 0.005
             },
             'wavelength_drift': {
-                'large': 0.3,
-                'medium': 0.1,
+                # TODO: Tweak these defaults
+                'large': 0.4,
+                'medium': 0.2,
                 'small': 0.02
             },
         },
