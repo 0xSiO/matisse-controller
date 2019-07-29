@@ -11,16 +11,16 @@ BIFI_SCAN_RANGE = 'Total amount of motor steps to move (left and right) when doi
 BIFI_SCAN_RANGE_SMALL = 'Total amount of motor steps to move (left and right) when doing a small BiFi scan.'
 BIFI_SCAN_STEP = 'Amount of motor steps to increment when doing a BiFi scan.'
 BIFI_SCAN_SHOW_PLOTS = 'Should we open matplotlib windows after a BiFi scan?'
-BIFI_SMOOTHING_FILTER_WINDOW = 'Savitzky–Golay filter parameter for BiFi scan. See scipy.signal.savgol_filter.'
-BIFI_SMOOTHING_FILTER_POLYORDER = 'Savitzky–Golay filter parameter for BiFi scan. See scipy.signal.savgol_filter.'
+BIFI_SMOOTHING_FILTER_WINDOW = 'Smaller -> more accurate, less smooth. Larger -> less accurate, more smooth. See scipy.signal.savgol_filter.'
+BIFI_SMOOTHING_FILTER_POLYORDER = 'Savitzky-Golay filter parameter for BiFi scan. See scipy.signal.savgol_filter.'
 
 THIN_ETA_SCAN_RANGE = 'Total amount of motor steps to move (left and right) when doing a thin etalon scan.'
 THIN_ETA_SCAN_RANGE_SMALL = 'Total amount of motor steps to move (left and right) when doing a small thin etalon scan.'
 THIN_ETA_SCAN_STEP = 'Amount of motor steps to increment when doing a thin etalon scan.'
 THIN_ETA_NUDGE = 'Amount of motor steps to move after a thin etalon scan has finished.'
 THIN_ETA_SHOW_PLOTS = 'Should we open matplotlib windows after a thin etalon scan?'
-THIN_ETA_SMOOTHING_FILTER_WINDOW = 'Savitzky–Golay filter parameter for thin etalon scan. See scipy.signal.savgol_filter.'
-THIN_ETA_SMOOTHING_FILTER_POLYORDER = 'Savitzky–Golay filter parameter for thin etalon scan. See scipy.signal.savgol_filter.'
+THIN_ETA_SMOOTHING_FILTER_WINDOW = 'Smaller -> more accurate, less smooth. Larger -> less accurate, more smooth. See scipy.signal.savgol_filter.'
+THIN_ETA_SMOOTHING_FILTER_POLYORDER = 'Savitzky-Golay filter parameter for thin etalon scan. See scipy.signal.savgol_filter.'
 
 REFCELL_SCAN_RISING_SPEED = "The speed at which the RefCell increases when using 'Scan Device Up'"
 REFCELL_SCAN_FALLING_SPEED = "The speed at which the RefCell decreases when using 'Scan Device Down'"
