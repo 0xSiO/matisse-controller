@@ -49,9 +49,9 @@ class StatusUpdateThread(QThread):
 
                     bifi_pos_text = f"BiFi:{bifi_pos}"
                     thin_eta_pos_text = f"Thin Eta:{thin_eta_pos}"
-                    pz_eta_pos_text = f"Pz Eta:{pz_eta_pos}"
-                    slow_pz_pos_text = f"Slow Pz:{slow_pz_pos}"
-                    refcell_pos_text = f"RefCell:{refcell_pos}"
+                    pz_eta_pos_text = f"Pz Eta:{pz_eta_pos:.3f}"
+                    slow_pz_pos_text = f"Slow Pz:{slow_pz_pos:.3f}"
+                    refcell_pos_text = f"RefCell:{refcell_pos:.3f}"
                     stabilizing_text = f"Stabilize:{green_text('ON') if is_stabilizing else red_text('OFF')}"
                     scanning_text = f"Scanning:{green_text('ON') if is_stabilizing else red_text('OFF')}"
                     locked_text = f"{green_text('LOCKED') if is_locked else red_text('NO LOCK')}"

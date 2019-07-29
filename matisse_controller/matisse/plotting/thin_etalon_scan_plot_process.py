@@ -4,17 +4,18 @@ import matplotlib.pyplot as plt
 
 
 class ThinEtalonScanPlotProcess(multiprocessing.Process):
-    def __init__(self, positions, voltages, smoothed_data, minima, best_pos, *args, **kwargs):
+    def __init__(self, positions, voltages, smoothed_data, minima, old_pos, best_pos, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.positions = positions
         self.voltages = voltages
         self.smoothed_data = smoothed_data
         self.minima = minima
+        self.old_pos = old_pos
         self.best_pos = best_pos
 
     def run(self):
         self.plot_thin_etalon_scan(self.positions, self.voltages, self.smoothed_data)
-        self.plot_thin_etalon_selection(self.best_pos)
+        self.plot_thin_etalon_selection(self.old_pos, self.best_pos)
         self.plot_thin_etalon_minima(self.positions[self.minima], self.smoothed_data[self.minima])
         self.add_thin_etalon_scan_legend()
         plt.show()
@@ -32,8 +33,9 @@ class ThinEtalonScanPlotProcess(multiprocessing.Process):
     def plot_thin_etalon_minima(self, positions, voltages):
         plt.plot(positions, voltages, 'r*')
 
-    def plot_thin_etalon_selection(self, position):
-        plt.axvline(position, 0, 1, color='r', linestyle='--')
+    def plot_thin_etalon_selection(self, old_pos, new_pos):
+        plt.axvline(old_pos, 0, 1, color='r', linestyle='--')
+        plt.axvline(new_pos, 0, 1, color='r', linestyle='-')
 
     def add_thin_etalon_scan_legend(self):
-        plt.legend(['Raw', 'Smoothed', 'Selection'], loc='upper left')
+        plt.legend(['Raw', 'Smoothed', 'Old Pos', 'New Pos'], loc='upper left')

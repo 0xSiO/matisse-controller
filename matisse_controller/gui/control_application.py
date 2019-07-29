@@ -47,7 +47,7 @@ class ControlApplication(QApplication):
         self.window = window = QMainWindow()
         self.layout = QVBoxLayout()
         window.setWindowTitle('Matisse Controller')
-        window.resize(600, 300)
+        window.resize(700, 300)
 
     def setup_logging(self):
         self.log_queue = queue.Queue()
@@ -80,11 +80,9 @@ class ControlApplication(QApplication):
         scan_menu = menu_bar.addMenu('Scan')
         self.bifi_scan_action = scan_menu.addAction('Birefringent Filter')
         self.thin_eta_scan_action = scan_menu.addAction('Thin Etalon')
-
-        ple_menu = menu_bar.addMenu('PLE')
-        self.scan_device_up_action = ple_menu.addAction('Scan Up')
-        self.scan_device_down_action = ple_menu.addAction('Scan Down')
-        self.stop_scan_device_action = ple_menu.addAction('Stop Scanning')
+        self.scan_device_up_action = scan_menu.addAction('Scan Device Up')
+        self.scan_device_down_action = scan_menu.addAction('Scan Device Down')
+        self.stop_scan_device_action = scan_menu.addAction('Stop Scanning Device')
 
         stabilization_menu = menu_bar.addMenu('Stabilization')
         toggle_control_loop_menu = stabilization_menu.addMenu('Toggle Control Loop')
@@ -195,6 +193,8 @@ class ControlApplication(QApplication):
             self.matisse_worker = None
             self.matisse.stabilize_off()
             self.matisse.stop_laser_lock_correction()
+            self.matisse.reset_motors()
+            self.matisse.reset_stabilization_piezos()
             self.matisse.exit_flag = False
         print('Reset complete.')
 

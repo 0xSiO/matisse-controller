@@ -226,8 +226,8 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
 
         # TODO: wavemeter and GUI config
-        cfg.set('wavemeter', {})
-        cfg.set('gui', {})
+        # cfg.set('wavemeter', {})
+        # cfg.set('gui', {})
 
         cfg.save()
         self.close()

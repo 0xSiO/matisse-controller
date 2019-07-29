@@ -1,7 +1,7 @@
 from queue import Queue
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtGui import QTextCursor
+from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtWidgets import QTextEdit
 
 from matisse_controller.gui import utils
@@ -17,6 +17,8 @@ class LoggingArea(QTextEdit):
     are logged to the text area via a Qt slot, which runs in the creating thread for instances of this class.
     """
 
+    FONT_SIZE = 14
+
     def __init__(self, messages: Queue, *args, **kwargs):
         """
         Initialize an instance of LoggingArea.
@@ -29,6 +31,7 @@ class LoggingArea(QTextEdit):
 
         super().__init__(*args, **kwargs)
         self.messages = messages
+        self.setFont(QFont('StyleNormal', 10))
         self.update_thread = LoggingThread(messages)
         self.update_thread.message_received.connect(self.log_message)
         self.update_thread.start()
