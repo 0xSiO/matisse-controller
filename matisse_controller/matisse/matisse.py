@@ -192,10 +192,11 @@ class Matisse(Constants):
         self.set_bifi_motor_pos(best_pos)
         print('Done. ' + str(wavelength_differences))
 
-        plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, center_pos,
-                                                         best_pos, daemon=True)
-        self.plotting_processes.append(plot_process)
-        plot_process.start()
+        if cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS):
+            plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, center_pos,
+                                                             best_pos, daemon=True)
+            self.plotting_processes.append(plot_process)
+            plot_process.start()
 
         if repeat:
             new_diff = np.min(wavelength_differences)
@@ -271,10 +272,11 @@ class Matisse(Constants):
         self.set_thin_etalon_motor_pos(best_pos)
         print('Done. ' + str(wavelength_differences))
 
-        plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, old_pos, best_pos,
-                                                 daemon=True)
-        self.plotting_processes.append(plot_process)
-        plot_process.start()
+        if cfg.get(cfg.THIN_ETA_SHOW_PLOTS):
+            plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, old_pos, best_pos,
+                                                     daemon=True)
+            self.plotting_processes.append(plot_process)
+            plot_process.start()
 
         if repeat:
             new_diff = np.min(wavelength_differences)
