@@ -12,6 +12,7 @@ DEFAULTS = {
             'lower_limit': 700,
             'upper_limit': 800
         },
+        'component_limit_offset': 0.05,
         'scanning': {
             'birefringent_filter': {
                 'range': 400,

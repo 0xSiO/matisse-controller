@@ -2,6 +2,8 @@ MATISSE_DEVICE_ID = 'An NI-VISA instrument descriptor for the Matisse.'
 WAVEMETER_PORT = 'The serial port to use for reading from the wavemeter.'
 WAVEMETER_PRECISION = 'Precision of the readings from the wavemeter. 1 -> 0.1, 2 -> 0.01, 3 -> 0.001, etc.'
 
+COMPONENT_LIMIT_OFFSET = 'How close should a component be to its limit before automatically taking an appropriate action?'
+
 WAVELENGTH_LOWER_LIMIT = 'The lowest wavelength the Matisse is capable of producing.'
 WAVELENGTH_UPPER_LIMIT = 'The highest wavelength the Matisse is capable of producing.'
 
