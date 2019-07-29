@@ -433,13 +433,26 @@ class Matisse(Constants):
 
         self.query(f"SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS)}")
 
+    # TODO: Make sure you're measuring the right value
+    # TODO: Stop scanning and stabilizing when doing this
     def get_reference_cell_transmission_spectrum(self):
-        # TODO: Look into the REFCELL:TABLE? command to do a scan and measure the transmission spectrum
-        raise NotImplementedError
+        positions = np.linspace(0.1, 0.6, 128)
+        values = np.array([])
+        old_refcell_pos = self.query(f"SCAN:NOW?", numeric_result=True)
+        for pos in positions:
+            self.query(f"SCAN:NOW {pos}")
+            values = np.append(values, self.query('FASTPIEZO:INPUT?'))
+        self.query(f"SCAN:NOW {old_refcell_pos}")
+        return positions, values
 
-    def get_recommended_fast_piezo_setpoint(self):
-        # TODO: Use result from get_reference_cell_transmission_spectrum
-        raise NotImplementedError
+    # TODO: Check that the Airy peaks don't wildly vary in height
+    def set_recommended_fast_piezo_setpoint(self):
+        positions, values = self.get_reference_cell_transmission_spectrum()
+        setpoint = (np.max(values) + np.min(values)) / 2
+        import matplotlib.pyplot as plt
+        plt.plot(positions, values)
+        plt.axhline(setpoint, 0, 1)
+        print(f"Recommended fast piezo setpoint: {setpoint}")
 
     def start_laser_lock_correction(self):
         if self.is_lock_correction_on():
