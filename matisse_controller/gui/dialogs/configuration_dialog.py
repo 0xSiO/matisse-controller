@@ -12,7 +12,7 @@ class ConfigurationDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle('Configuration')
-        self.resize(700, 200)
+        self.resize(950, 550)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.add_options()
@@ -28,10 +28,8 @@ class ConfigurationDialog(QDialog):
         form = QWidget()
         form_layout = QHBoxLayout()
         form.setLayout(form_layout)
-        col_1 = QVBoxLayout()
-        col_1.addWidget(general_options)
-        col_1.addWidget(scan_options)
-        form_layout.addLayout(col_1)
+        form_layout.addWidget(general_options)
+        form_layout.addWidget(scan_options)
         form_layout.addWidget(locking_options)
         self.layout.addWidget(form)
 
