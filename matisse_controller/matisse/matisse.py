@@ -431,8 +431,14 @@ class Matisse(Constants):
 
         self.query(f"SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS)}")
 
-    # TODO: Stop scanning and stabilizing when doing this
     def get_reference_cell_transmission_spectrum(self):
+        # TODO: Make a context manager for pausing stabilization/scanning
+        stabilize_when_done = False
+        if self.is_stabilizing():
+            self.stabilize_off()
+            stabilize_when_done = True
+        self.stop_scan()
+
         positions = np.linspace(0.3, 0.4, 128)
         values = np.array([])
         old_refcell_pos = self.query(f"SCAN:NOW?", numeric_result=True)
@@ -440,16 +446,24 @@ class Matisse(Constants):
             self.query(f"SCAN:NOW {pos}")
             values = np.append(values, self.query('FASTPIEZO:INPUT?', numeric_result=True))
         self.query(f"SCAN:NOW {old_refcell_pos}")
+
+        if stabilize_when_done:
+            self.stabilize_on()
+
         return positions, values
 
-    # TODO: Take average of several scans
     def set_recommended_fast_piezo_setpoint(self):
-        positions, values = self.get_reference_cell_transmission_spectrum()
-        setpoint = (np.max(values) + np.min(values)) / 2
-        import matplotlib.pyplot as plt
-        plt.plot(positions, values)
-        plt.axhline(setpoint, 0, 1)
-        print(f"Recommended fast piezo setpoint: {setpoint}")
+        num_scans = 5
+        total = 0
+        for i in range(0, num_scans):
+            positions, values = self.get_reference_cell_transmission_spectrum()
+            setpoint = (np.max(values) + np.min(values)) / 2
+            import matplotlib.pyplot as plt
+            plt.plot(positions, values)
+            plt.axhline(setpoint, 0, 1)
+            total += setpoint
+        recommended_setpoint = total / num_scans
+        print(f"Recommended fast piezo setpoint: {recommended_setpoint}")
 
     def start_laser_lock_correction(self):
         if self.is_lock_correction_on():
