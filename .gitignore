@@ -5,3 +5,5 @@ dist/
 *.egg
 *.py[cod]
 __pycache__/
+
+matisse_controller/shamrock/lib/
