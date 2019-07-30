@@ -200,3 +200,18 @@ Add interface to initiate small scans of the device with a given speed and direc
 
 Throwing errors from other threads seems to hang the error dialog. Trying to run a BiFi/TE scan while stabilizing makes
 GUI hang and cannot exit.
+
+For PLE, software is Andor SOLIS for Spectroscopy, spectrograph is the Andor Shamrock SR-750, CCD is the Andor Newton.
+Found a library that may control the spectrograph - https://github.com/sdickreuter/python-andor which provides bindings
+to the SDK. Only the basic functionality needed, set center, exposure time, etc.
+
+Got the Shamrock SDK loaded in Python via ctypes! Had to replace the FTDI 2XX driver with the 64-bit version, silly that
+it's not already included. Now I can call any function from the C API straight from Python.
+
+Can't control the CCD with the Shamrock library, need the full Andor SDK. https://pypi.org/project/andor/ is written for
+Linux and for Python 2.7, so it might not be suitable for this project. I can look through the code and see if there's
+anything useful.
+
+Need to know:
+- What is the readout mode and the acquisition mode used to take spectra with the Shamrock?
+- Does the temperature remain constant even when the USB cable is unplugged?
