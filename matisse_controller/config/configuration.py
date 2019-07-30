@@ -47,7 +47,13 @@ DEFAULTS = {
             },
         },
         'locking': {
-            'timeout': 7.0
+            'timeout': 7.0,
+            'fast_piezo_setpoint': {
+                'refcell_lower_limit': 0.3,
+                'refcell_upper_limit': 0.4,
+                'num_points': 128,
+                'num_scans': 5
+            }
         },
         'stabilization': {
             'rising_speed': 0.005,

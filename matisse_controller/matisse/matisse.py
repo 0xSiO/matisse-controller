@@ -439,7 +439,9 @@ class Matisse(Constants):
             stabilize_when_done = True
         self.stop_scan()
 
-        positions = np.linspace(0.3, 0.4, 128)
+        positions = np.linspace(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT),
+                                cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT),
+                                cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
         values = np.array([])
         old_refcell_pos = self.query(f"SCAN:NOW?", numeric_result=True)
         for pos in positions:
@@ -453,7 +455,7 @@ class Matisse(Constants):
         return positions, values
 
     def set_recommended_fast_piezo_setpoint(self):
-        num_scans = 5
+        num_scans = cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS)
         total = 0
         for i in range(0, num_scans):
             positions, values = self.get_reference_cell_transmission_spectrum()
@@ -464,6 +466,7 @@ class Matisse(Constants):
             total += setpoint
         recommended_setpoint = total / num_scans
         print(f"Recommended fast piezo setpoint: {recommended_setpoint}")
+        self.query(f"FASTPIEZO:CONTROLSETPOINT {recommended_setpoint}")
 
     def start_laser_lock_correction(self):
         if self.is_lock_correction_on():

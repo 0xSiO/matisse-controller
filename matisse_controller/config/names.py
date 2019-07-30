@@ -33,6 +33,10 @@ MEDIUM_WAVELENGTH_DRIFT = 'matisse.scanning.wavelength_drift.medium'
 SMALL_WAVELENGTH_DRIFT = 'matisse.scanning.wavelength_drift.small'
 
 LOCKING_TIMEOUT = 'matisse.locking.timeout'
+FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT = 'matisse.locking.fast_piezo_setpoint.refcell_lower_limit'
+FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT = 'matisse.locking.fast_piezo_setpoint.refcell_upper_limit'
+FAST_PZ_SETPOINT_NUM_POINTS = 'matisse.locking.fast_piezo_setpoint.num_points'
+FAST_PZ_SETPOINT_NUM_SCANS = 'matisse.locking.fast_piezo_setpoint.num_scans'
 
 STABILIZATION_RISING_SPEED = 'matisse.stabilization.rising_speed'
 STABILIZATION_FALLING_SPEED = 'matisse.stabilization.falling_speed'
