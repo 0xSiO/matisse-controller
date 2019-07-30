@@ -460,12 +460,9 @@ class Matisse(Constants):
         for i in range(0, num_scans):
             positions, values = self.get_reference_cell_transmission_spectrum()
             setpoint = (np.max(values) + np.min(values)) / 2
-            import matplotlib.pyplot as plt
-            plt.plot(positions, values)
-            plt.axhline(setpoint, 0, 1)
             total += setpoint
         recommended_setpoint = total / num_scans
-        print(f"Recommended fast piezo setpoint: {recommended_setpoint}")
+        print(f"Setting fast piezo setpoint to {recommended_setpoint}")
         self.query(f"FASTPIEZO:CONTROLSETPOINT {recommended_setpoint}")
 
     def start_laser_lock_correction(self):
