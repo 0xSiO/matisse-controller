@@ -95,6 +95,7 @@ class ControlApplication(QApplication):
         self.fast_pz_control_action = toggle_control_loop_menu.addAction('Fast Piezo')
         self.fast_pz_control_action.setCheckable(True)
         self.lock_laser_action = stabilization_menu.addAction('Toggle Lock Laser')
+        self.set_recommended_fast_pz_setpoint_action = stabilization_menu.addAction('Set Recommended Fast Pz Setpoint')
         self.auto_stabilize_action = stabilization_menu.addAction('Toggle Auto Stabilization')
 
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
@@ -126,11 +127,12 @@ class ControlApplication(QApplication):
         self.stop_scan_device_action.triggered.connect(self.stop_scanning_device)
 
         # Stabilization
-        self.lock_laser_action.triggered.connect(self.toggle_lock_laser)
         self.slow_pz_control_action.triggered.connect(self.toggle_slow_piezo_control)
         self.thin_eta_control_action.triggered.connect(self.toggle_thin_etalon_control)
         self.piezo_eta_control_action.triggered.connect(self.toggle_piezo_etalon_control)
         self.fast_pz_control_action.triggered.connect(self.toggle_fast_piezo_control)
+        self.lock_laser_action.triggered.connect(self.toggle_lock_laser)
+        self.set_recommended_fast_pz_setpoint_action.triggered.connect(self.set_recommended_fast_pz_setpoint)
         self.auto_stabilize_action.triggered.connect(self.toggle_auto_stabilization)
 
     @handled_function
@@ -312,6 +314,10 @@ class ControlApplication(QApplication):
             self.matisse.start_laser_lock_correction()
             [action.setEnabled(False) for action in self.control_loop_actions]
             [action.setChecked(True) for action in self.control_loop_actions]
+
+    @handled_slot(bool)
+    def set_recommended_fast_pz_setpoint(self, checked):
+        self.matisse.set_recommended_fast_piezo_setpoint()
 
     @handled_slot(bool)
     def toggle_slow_piezo_control(self, checked):
