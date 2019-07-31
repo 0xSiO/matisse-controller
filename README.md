@@ -4,6 +4,8 @@ A Python package to control the Matisse 2 TS laser for the University of Washing
 
 Requirements: Python 3.7+, NI VISA, PyVISA, pySerial, SciPy, matplotlib, PyQt5
 
+Tested on Windows 10 (x64).
+
 ## Installation
 
     $ pip install matisse-controller
@@ -18,8 +20,9 @@ To configure the behavior of the program, click the 'Configuration' menu option 
 
     $ matisse-config
 
-The GUI uses a Python API to control the Matisse. If you only care about using the API, just
-`import matisse_controller`. The `matisse` and `wavemeter` subpackages contain the APIs you'll want.
+The GUI uses a Python API to control the Matisse. If you're writing a Python program, just import the subpackages
+that contain the APIs you want. The `matisse` subpackage contains Matisse-related components, the `config` subpackage
+contains configuration functionality, etc.
 
 ## Development
 
