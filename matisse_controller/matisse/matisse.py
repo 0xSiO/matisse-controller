@@ -143,8 +143,8 @@ class Matisse(Constants):
 
             if self.exit_flag:
                 return
-            if self.scan_attempts > 20:
-                print('WARNING: Number of scan attempts exceeded. Starting scan process over again.')
+            if self.scan_attempts > cfg.get(cfg.SCAN_LIMIT):
+                print('WARNING: Number of scan attempts exceeded. Starting wavelength-setting process over again.')
                 self.force_large_scan = True
                 continue
             else:
@@ -165,7 +165,7 @@ class Matisse(Constants):
 
         Additionally, plot the power data and motor position selection.
         """
-        if self.exit_flag or self.scan_attempts > 20:
+        if self.exit_flag or self.scan_attempts > cfg.get(cfg.SCAN_LIMIT):
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
@@ -250,7 +250,7 @@ class Matisse(Constants):
         Nudges the motor position a little bit away from the minimum to ensure good locking later.
         Additionally, plot the reflex data and motor position selection.
         """
-        if self.exit_flag or self.scan_attempts > 20:
+        if self.exit_flag or self.scan_attempts > cfg.get(cfg.SCAN_LIMIT):
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
