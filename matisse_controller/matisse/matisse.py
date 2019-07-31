@@ -31,6 +31,8 @@ class Matisse(Constants):
             self.lock_correction_thread = None
             self.plotting_processes = []
             self.exit_flag = False
+            self.scan_attempts = 0
+            self.force_large_scan = True
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.query('MOTORBIREFRINGENT:CLEAR')
             self.query('MOTORTHINETALON:CLEAR')
@@ -109,35 +111,46 @@ class Matisse(Constants):
         if self.is_stabilizing():
             self.stabilize_off()
 
-        diff = abs(wavelength - self.wavemeter_wavelength())
+        while True:
+            self.scan_attempts = 0
+            diff = abs(wavelength - self.wavemeter_wavelength())
 
-        if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
-            self.reset_motors()
-            # Normal BiFi scan
-            print(f"Setting BiFi to ~{wavelength} nm... ", end='')
-            self.set_bifi_wavelength(wavelength)
-            time.sleep(0.1)
-            print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm.")
-            self.birefringent_filter_scan(repeat=True)
-            self.thin_etalon_scan(repeat=True)
-            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
-            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
-        elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
-            # Small BiFi scan
-            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
-            self.thin_etalon_scan(repeat=True)
-            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
-            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
-        elif cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
-            # No BiFi scan, TE scan only
-            self.thin_etalon_scan(repeat=True)
-            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
-            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
-        else:
-            # No BiFi, no TE. Scan device only.
-            pass
-        if self.exit_flag:
-            return
+            if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self.force_large_scan:
+                self.reset_motors()
+                # Normal BiFi scan
+                print(f"Setting BiFi to ~{wavelength} nm... ", end='')
+                self.set_bifi_wavelength(wavelength)
+                time.sleep(0.1)
+                print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm.")
+                self.birefringent_filter_scan(repeat=True)
+                self.thin_etalon_scan(repeat=True)
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+            elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+                # Small BiFi scan
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(repeat=True)
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+            elif cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
+                # No BiFi scan, TE scan only
+                self.thin_etalon_scan(repeat=True)
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+            else:
+                # No BiFi, no TE. Scan device only.
+                pass
+
+            if self.exit_flag:
+                return
+            if self.scan_attempts > 20:
+                print('WARNING: Number of scan attempts exceeded. Starting scan process over again.')
+                self.force_large_scan = True
+                continue
+            else:
+                self.force_large_scan = False
+                break
+
         if lock_when_done:
             self.start_laser_lock_correction()
         self.stabilize_on()
@@ -152,13 +165,14 @@ class Matisse(Constants):
 
         Additionally, plot the power data and motor position selection.
         """
-        if self.exit_flag:
+        if self.exit_flag or self.scan_attempts > 20:
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
         if scan_range is None:
             scan_range = cfg.get(cfg.BIFI_SCAN_RANGE)
 
+        self.scan_attempts += 1
         center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
         lower_end = center_pos - scan_range
         upper_end = center_pos + scan_range
@@ -236,13 +250,14 @@ class Matisse(Constants):
         Nudges the motor position a little bit away from the minimum to ensure good locking later.
         Additionally, plot the reflex data and motor position selection.
         """
-        if self.exit_flag:
+        if self.exit_flag or self.scan_attempts > 20:
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
         if scan_range is None:
             scan_range = cfg.get(cfg.THIN_ETA_SCAN_RANGE)
 
+        self.scan_attempts += 1
         old_pos = int(self.query('MOTTE:POS?', numeric_result=True))
         lower_end, upper_end = self.limits_for_thin_etalon_scan(old_pos, scan_range)
 
