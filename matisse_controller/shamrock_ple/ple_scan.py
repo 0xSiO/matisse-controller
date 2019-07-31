@@ -15,9 +15,10 @@ shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF64.dll')
 class ShamrockPLE:
     def __init__(self, matisse):
         self.matisse = matisse
+        self.exit_flag = False
 
-    def do_ple_scan(self, name, initial_wavelength, final_wavelength, step, exposure_time,
-                    acquisition_mode=ACQ_MODE_ACCUMULATE, readout_mode=READ_MODE_FVB, temperature=-70):
+    def start_ple_scan(self, name, initial_wavelength, final_wavelength, step, exposure_time,
+                       acquisition_mode=ACQ_MODE_ACCUMULATE, readout_mode=READ_MODE_FVB, temperature=-70):
         """Perform a PLE scan using the Andor Shamrock spectrometer."""
         if os.path.exists(f"{name}_full_pickled.dat"):
             raise FileExistsError(
@@ -31,7 +32,9 @@ class ShamrockPLE:
         scans = {}
         tolerance = 0.001
         for wavelength in wavelengths:
-            # TODO: Exit flag
+            if self.exit_flag:
+                print('Received exit signal, stopping PLE scan.')
+                break
             self.matisse.set_wavelength(wavelength)
             self.matisse.set_recommended_fast_piezo_setpoint()
             self.matisse.start_laser_lock_correction()
@@ -45,6 +48,9 @@ class ShamrockPLE:
             counter += 1
         with open(f"{name}_full_pickled.dat") as full_data_file:
             pickle.dump(scans, full_data_file)
+
+    def stop_ple_scan(self):
+        self.exit_flag = True
 
     def setup_spectrometer(self):
         shamrock.ShamrockInitialize()
@@ -84,20 +90,6 @@ class ShamrockPLE:
         andor.SetTriggerMode(c_int(TRIGGER_MODE_INTERNAL))
         andor.SetFilterMode(c_int(COSMIC_RAY_FILTER_ON))
 
-    def analyze_ple_data(self, name):
-        """
-        Analyze the data from a PLE scan.
-
-        :param name:
-        """
-        with open(f"{name}_full_pickled.dat") as full_data_file:
-            scans = pickle.load(full_data_file)
-        # TODO: Subtract noise
-        total_counts = {}
-        for wavelength in scans.keys():
-            total_counts[wavelength] = sum(scans[wavelength])
-        plt.plot(total_counts.keys(), total_counts.values())
-
     def take_spectrum(self, num_points):
         andor.StartAcquisition()
         acquisition_array_type = c_int32 * num_points
@@ -107,6 +99,16 @@ class ShamrockPLE:
         data = np.array(data, dtype=np.int32)
         plt.plot(range(0, num_points), data)
         return data
+
+    def analyze_ple_data(self, name):
+        """Analyze the data from a PLE scan."""
+        with open(f"{name}_full_pickled.dat") as full_data_file:
+            scans = pickle.load(full_data_file)
+        # TODO: Subtract noise
+        total_counts = {}
+        for wavelength in scans.keys():
+            total_counts[wavelength] = sum(scans[wavelength])
+        plt.plot(total_counts.keys(), total_counts.values())
 
 
 if __name__ == '__main__':
