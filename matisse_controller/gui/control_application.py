@@ -98,6 +98,9 @@ class ControlApplication(QApplication):
         self.set_recommended_fast_pz_setpoint_action = stabilization_menu.addAction('Set Recommended Fast Pz Setpoint')
         self.auto_stabilize_action = stabilization_menu.addAction('Toggle Auto Stabilization')
 
+        ple_menu = menu_bar.addMenu('Shamrock')
+        self.start_ple_scan_action = ple_menu.addAction('Start PLE Scan')
+
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
                                      self.piezo_eta_control_action, self.fast_pz_control_action]
 
@@ -134,6 +137,9 @@ class ControlApplication(QApplication):
         self.lock_laser_action.triggered.connect(self.toggle_lock_laser)
         self.set_recommended_fast_pz_setpoint_action.triggered.connect(self.set_recommended_fast_pz_setpoint)
         self.auto_stabilize_action.triggered.connect(self.toggle_auto_stabilization)
+
+        # Shamrock
+        self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
 
     @handled_function
     def setup_widgets(self):
@@ -353,6 +359,10 @@ class ControlApplication(QApplication):
             self.matisse.stabilize_off()
         else:
             self.matisse.stabilize_on()
+
+    @handled_slot(bool)
+    def start_ple_scan(self, checked):
+        raise NotImplementedError('PLE scan logic currently in development.')
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
