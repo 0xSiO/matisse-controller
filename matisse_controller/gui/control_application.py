@@ -172,7 +172,7 @@ class ControlApplication(QApplication):
         description = stack.pop()
         print(utils.red_text(description), end='')
         # Remove entries for handled_function decorator, for clarity
-        stack = filter(lambda item: 'in handled_function_wrapper' not in item, stack)
+        stack = list(filter(lambda item: 'in handled_function_wrapper' not in item, stack))
         dialog = QMessageBox(icon=QMessageBox.Critical)
         dialog.setWindowTitle('Error')
         # Adding the underscores is a hack to resize the QMessageBox because it's not normally resizable.
@@ -382,12 +382,15 @@ class ControlApplication(QApplication):
             self.matisse_worker.add_done_callback(self.raise_error_from_future)
             return True
 
-    @handled_function
     def raise_error_from_future(self, future: Future):
-        # TODO: This seems to just hang the error dialog
-        async_task_error = future.exception()
+        async_task_error: Exception = future.exception()
         if async_task_error is not None:
-            raise async_task_error
+            # Using the error_dialog method here seems to just hang the application forever.
+            # Workaround: log error, make a noise, alert the user, and hope for the best
+            message = f"An error occurred while running an asynchronous task: <pre>{traceback.format_exc()}</pre>"
+            self.alert(self.window)
+            self.beep()
+            print(utils.red_text(message))
 
 
 def main():
