@@ -108,7 +108,3 @@ class ShamrockPLE:
         for wavelength in scans.keys():
             total_counts[wavelength] = sum(scans[wavelength])
         plt.plot(total_counts.keys(), total_counts.values())
-
-
-if __name__ == '__main__':
-    os.chdir('lib')
