@@ -15,6 +15,9 @@ shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF64.dll')
 def do_ple_scan(name, initial_wavelength, final_wavelength, step, matisse, exposure_time,
                 acquisition_mode=ACQ_MODE_ACCUMULATE, readout_mode=READ_MODE_FVB, temperature=-70):
     """Perform a PLE scan using the Andor Shamrock spectrometer."""
+    if os.path.exists(f"{name}_full_pickled.dat"):
+        raise FileExistsError(f"A scan has already been run for {name}. Please choose a different name and try again.")
+
     setup_spectrometer()
     width, height = setup_ccd(exposure_time, acquisition_mode, readout_mode, temperature)
     # 'Inclusive' arange
@@ -28,7 +31,7 @@ def do_ple_scan(name, initial_wavelength, final_wavelength, step, matisse, expos
         while abs(wavelength - matisse.wavemeter_wavelength()) >= tolerance:
             time.sleep(3)
         data = take_spectrum(width)
-        file_name = f"{str(counter).zfill(3)}_{name}_{wavelength}nm.txt"
+        file_name = f"{str(counter).zfill(3)}_{name}_{wavelength}nm_StepSize_{step}nm_Range_{abs(round(final_wavelength - initial_wavelength, 8))}nm.txt"
         np.savetxt(file_name, data)
         scans[wavelength] = data
         counter += 1
