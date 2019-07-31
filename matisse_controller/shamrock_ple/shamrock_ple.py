@@ -9,7 +9,7 @@ import numpy as np
 from matisse_controller.shamrock_ple.constants import *
 
 andor: WinDLL  # TODO: andor: WinDLL = windll.LoadLibrary('ATMCD64D.dll')
-shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF64.dll')
+shamrock: WinDLL  # TODO: shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF64.dll')
 
 
 class ShamrockPLE:
@@ -26,7 +26,6 @@ class ShamrockPLE:
 
         self.setup_spectrometer()
         width, height = self.setup_ccd(exposure_time, acquisition_mode, readout_mode, temperature)
-        # 'Inclusive' arange
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         counter = 1
         scans = {}

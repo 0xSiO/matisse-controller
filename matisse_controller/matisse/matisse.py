@@ -11,6 +11,7 @@ from matisse_controller.matisse.constants import Constants
 from matisse_controller.matisse.lock_correction_thread import LockCorrectionThread
 from matisse_controller.matisse.plotting import BirefringentFilterScanPlotProcess, ThinEtalonScanPlotProcess
 from matisse_controller.matisse.stabilization_thread import StabilizationThread
+from matisse_controller.shamrock_ple import ShamrockPLE
 from matisse_controller.wavemaster import WaveMaster
 
 
@@ -37,6 +38,7 @@ class Matisse(Constants):
             self.query('MOTORBIREFRINGENT:CLEAR')
             self.query('MOTORTHINETALON:CLEAR')
             self.wavemeter = WaveMaster(cfg.get(cfg.WAVEMETER_PORT))
+            self.ple_scanner = ShamrockPLE(self)
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
