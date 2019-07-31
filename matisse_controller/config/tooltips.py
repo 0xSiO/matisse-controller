@@ -7,6 +7,8 @@ COMPONENT_LIMIT_OFFSET = 'How close should a component be to its limit before au
 WAVELENGTH_LOWER_LIMIT = 'The lowest wavelength the Matisse is capable of producing.'
 WAVELENGTH_UPPER_LIMIT = 'The highest wavelength the Matisse is capable of producing.'
 
+SCAN_LIMIT = 'The number of scans allowed before giving up and starting the wavelength-setting process over again.'
+
 BIFI_SCAN_RANGE = 'Total amount of motor steps to move (left and right) when doing a BiFi scan.'
 BIFI_SCAN_RANGE_SMALL = 'Total amount of motor steps to move (left and right) when doing a small BiFi scan.'
 BIFI_SCAN_STEP = 'Amount of motor steps to increment when doing a BiFi scan.'

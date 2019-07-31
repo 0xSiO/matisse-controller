@@ -10,6 +10,8 @@ COMPONENT_LIMIT_OFFSET = 'matisse.component_limit_offset'
 WAVELENGTH_LOWER_LIMIT = 'matisse.wavelength.lower_limit'
 WAVELENGTH_UPPER_LIMIT = 'matisse.wavelength.upper_limit'
 
+SCAN_LIMIT = 'matisse.scanning.limit'
+
 BIFI_SCAN_RANGE = 'matisse.scanning.birefringent_filter.range'
 BIFI_SCAN_RANGE_SMALL = 'matisse.scanning.birefringent_filter.range_small'
 BIFI_SCAN_STEP = 'matisse.scanning.birefringent_filter.step'

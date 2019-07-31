@@ -14,6 +14,7 @@ DEFAULTS = {
         },
         'component_limit_offset': 0.05,
         'scanning': {
+            'limit': 20,
             'birefringent_filter': {
                 'range': 400,
                 'range_small': 200,  # TODO: Check the 'small' scan ranges
