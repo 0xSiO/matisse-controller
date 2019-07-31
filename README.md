@@ -57,8 +57,8 @@ thread later.
 slot (see LoggingThread, StatusUpdateThread for examples).
 - For long-running tasks that do not need access to the UI, submit a runnable object to the ControlApplication's
 instance of ThreadPoolExecutor. Hold a reference to the Future it gives you and call `add_done_callback` on it, passing
-in `ControlApplication.raise_error_from_future` if you want to display errors from that thread in a dialog box. For an
-example of a method that runs tasks one-by-one on the Matisse, see `ControlApplication.run_matisse_task`.
+in `ControlApplication.raise_error_from_future` if you want to log errors from that thread. For an example of a method 
+that runs tasks one-by-one on the Matisse, see `ControlApplication.run_matisse_task`.
 
 ## Contributing
 
