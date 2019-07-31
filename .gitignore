@@ -6,4 +6,4 @@ dist/
 *.py[cod]
 __pycache__/
 
-matisse_controller/shamrock_ple/lib/
+shamrock_ple/lib/
