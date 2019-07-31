@@ -6,30 +6,14 @@ from ctypes import *
 import matplotlib.pyplot as plt
 import numpy as np
 
-from matisse_controller import Matisse
+from matisse_controller.shamrock_ple.constants import *
 
-ACQ_MODE_SINGLE = 1
-ACQ_MODE_ACCUMULATE = 2
-ACQ_MODE_KINETICS = 3
-ACQ_MODE_FAST_KINETICS = 4
-ACQ_MODE_UNTIL_ABORT = 5
-READ_MODE_FVB = 0
-READ_MODE_MULTI_TRACK = 1
-READ_MODE_RANDOM_TRACK = 2
-READ_MODE_SINGLE_TRACK = 3
-READ_MODE_IMAGE = 4
-COSMIC_RAY_FILTER_OFF = 0
-COSMIC_RAY_FILTER_ON = 2
-TRIGGER_MODE_INTERNAL = 0
-
-os.chdir('lib')
 andor: WinDLL  # TODO: andor: WinDLL = windll.LoadLibrary('ATMCD64D.dll')
 shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF64.dll')
-matisse = Matisse()
 
 
-def do_ple_scan(name, initial_wavelength, final_wavelength, step, exposure_time, acquisition_mode=ACQ_MODE_ACCUMULATE,
-                readout_mode=READ_MODE_FVB, temperature=-70):
+def do_ple_scan(name, initial_wavelength, final_wavelength, step, matisse, exposure_time,
+                acquisition_mode=ACQ_MODE_ACCUMULATE, readout_mode=READ_MODE_FVB, temperature=-70):
     """Perform a PLE scan using the Andor Shamrock spectrometer."""
     setup_spectrometer()
     width, height = setup_ccd(exposure_time, acquisition_mode, readout_mode, temperature)
@@ -39,6 +23,7 @@ def do_ple_scan(name, initial_wavelength, final_wavelength, step, exposure_time,
     scans = {}
     tolerance = 0.001
     for wavelength in wavelengths:
+        # TODO: Exit flag
         matisse.set_wavelength(wavelength)
         while abs(wavelength - matisse.wavemeter_wavelength()) >= tolerance:
             time.sleep(3)
@@ -116,4 +101,5 @@ def take_spectrum(num_points):
 
 
 if __name__ == '__main__':
+    os.chdir('lib')
     setup_spectrometer()
