@@ -60,6 +60,12 @@ instance of ThreadPoolExecutor. Hold a reference to the Future it gives you and 
 in `ControlApplication.raise_error_from_future` if you want to log errors from that thread. For an example of a method 
 that runs tasks one-by-one on the Matisse, see `ControlApplication.run_matisse_task`.
 
+### Adding another PLE procedure
+Currently I've only implemented a PLE scan for the Andor Shamrock 750. If you'd like to implement your own PLE procedure,
+create a separate Python package with a class that has the methods `start_ple_scan`, `stop_ple_scan`, and
+`analyze_ple_data`. It's up to you to implement the scanning logic for your particular spectrometer and CCD setup.
+Modify the Matisse class `__init__` method to use your chosen wavemeter and an instance of your PLE scanning class.
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/lucis-fluxum/matisse-controller.
