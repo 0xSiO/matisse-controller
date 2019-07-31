@@ -6,4 +6,4 @@ dist/
 *.py[cod]
 __pycache__/
 
-shamrock_ple/lib/
+shamrock-ple/
