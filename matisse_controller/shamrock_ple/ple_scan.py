@@ -83,10 +83,13 @@ def analyze_ple_data(name):
 
     :param name:
     """
-    scans = {}
     with open(f"{name}_full_pickled.dat") as full_data_file:
         scans = pickle.load(full_data_file)
-    # TODO: Integrate and show plot
+    # TODO: Subtract noise
+    total_counts = {}
+    for wavelength in scans.keys():
+        total_counts[wavelength] = sum(scans[wavelength])
+    plt.plot(total_counts.keys(), total_counts.values())
 
 
 def take_spectrum(num_points):
