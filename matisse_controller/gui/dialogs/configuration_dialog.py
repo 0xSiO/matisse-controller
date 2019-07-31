@@ -63,7 +63,7 @@ class ConfigurationDialog(QDialog):
         scan_options.setLayout(scan_layout)
         self.scan_limit_field = QSpinBox()
         self.scan_limit_field.setMinimum(0)
-        scan_layout.addRow('Scan limit: ', self.scan_limit_field)
+        scan_layout.addRow('Number of scans before retry: ', self.scan_limit_field)
         self.bifi_scan_range_field = QSpinBox()
         self.bifi_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
         scan_layout.addRow('BiFi normal scan range:', self.bifi_scan_range_field)
