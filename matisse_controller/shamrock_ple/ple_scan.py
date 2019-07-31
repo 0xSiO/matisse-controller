@@ -28,9 +28,12 @@ def do_ple_scan(name, initial_wavelength, final_wavelength, step, matisse, expos
     for wavelength in wavelengths:
         # TODO: Exit flag
         matisse.set_wavelength(wavelength)
+        matisse.set_recommended_fast_piezo_setpoint()
+        matisse.start_laser_lock_correction()
         while abs(wavelength - matisse.wavemeter_wavelength()) >= tolerance:
             time.sleep(3)
         data = take_spectrum(width)
+        matisse.stop_laser_lock_correction()
         file_name = f"{str(counter).zfill(3)}_{name}_{wavelength}nm_StepSize_{step}nm_Range_{abs(round(final_wavelength - initial_wavelength, 8))}nm.txt"
         np.savetxt(file_name, data)
         scans[wavelength] = data
