@@ -11,14 +11,13 @@ from matisse_controller.gui.utils import red_text, orange_text, green_text
 class StatusUpdateThread(QThread):
     """
     A QThread that periodically reads several pieces of state data and emits all of it in one HTML-formatted string.
-    The interval between successive updates is specified by INTERVAL.
+    The interval between successive updates is specified by a configuration option.
 
     Some messages are colored, like for components that are at or nearing their limits.
 
     Note: Any Qt slots implemented in this class will be executed in the creating thread for instances of this class.
     """
     status_read = pyqtSignal(str)
-    INTERVAL = 1
 
     def __init__(self, matisse, messages: Queue, *args, **kwargs):
         """
@@ -86,7 +85,7 @@ class StatusUpdateThread(QThread):
                 except Exception:
                     status = red_text('Error reading system status. Please restart if this issue persists.')
                 self.status_read.emit(status)
-                time.sleep(StatusUpdateThread.INTERVAL)
+                time.sleep(cfg.get(cfg.STATUS_MONITOR_DELAY))
             else:
                 break
 

@@ -84,7 +84,12 @@ DEFAULTS = {
         'precision': 3,
         'measurement_delay': 0.5
     },
-    'gui': {}
+    'gui': {
+        'status_monitor': {
+            'delay': 1,
+            'font_size': 10
+        }
+    }
 }
 
 
