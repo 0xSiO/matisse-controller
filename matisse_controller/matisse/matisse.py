@@ -224,6 +224,9 @@ class Matisse(Constants):
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[maxima][np.argmin(wavelength_differences)]
 
+        # By default, let's assume we're using the new position.
+        using_new_pos = True
+
         if len(positions[maxima]) > 1:
             difference_threshold = np.mean(np.diff(positions[maxima])) / 6
             if abs(old_pos - best_pos) > difference_threshold:
@@ -231,6 +234,7 @@ class Matisse(Constants):
             else:
                 print('Current BiFi motor position is close enough, leaving it alone.')
                 self.set_bifi_motor_pos(old_pos)
+                using_new_pos = False
         else:
             self.set_bifi_motor_pos(best_pos)
         print('Done.')
@@ -238,7 +242,7 @@ class Matisse(Constants):
         if cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS):
             # TODO: Label wavelength at each peak
             plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, old_pos,
-                                                             best_pos, daemon=True)
+                                                             best_pos, using_new_pos, daemon=True)
             self.plotting_processes.append(plot_process)
             plot_process.start()
 
@@ -332,6 +336,9 @@ class Matisse(Constants):
         best_minimum_index = np.argmin(wavelength_differences)
         best_pos = positions[minima][best_minimum_index] + cfg.get(cfg.THIN_ETA_NUDGE)
 
+        # By default, let's assume we're using the new position.
+        using_new_pos = True
+
         if len(positions[minima]) > 1:
             difference_threshold = np.mean(np.diff(positions[minima])) / 6
             if abs(old_pos - best_pos) > difference_threshold:
@@ -339,6 +346,7 @@ class Matisse(Constants):
             else:
                 print('Current thin etalon motor position is close enough, leaving it alone.')
                 self.set_thin_etalon_motor_pos(old_pos)
+                using_new_pos = False
         else:
             self.set_thin_etalon_motor_pos(best_pos)
         print('Done.')
@@ -355,7 +363,7 @@ class Matisse(Constants):
 
         if cfg.get(cfg.THIN_ETA_SHOW_PLOTS):
             plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, old_pos, best_pos,
-                                                     daemon=True)
+                                                     using_new_pos, daemon=True)
             self.plotting_processes.append(plot_process)
             plot_process.start()
 
