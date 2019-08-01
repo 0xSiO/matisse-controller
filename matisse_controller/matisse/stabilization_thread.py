@@ -56,7 +56,7 @@ class StabilizationThread(threading.Thread):
                             self._matisse.stabilization_auto_corrections += 1
                 else:
                     self._matisse.stop_scan()
-                    print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+                    # print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                 time.sleep(cfg.get(cfg.STABILIZATION_DELAY))
             else:
                 self._matisse.stop_scan()

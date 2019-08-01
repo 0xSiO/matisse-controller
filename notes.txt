@@ -251,3 +251,7 @@ Traceback (most recent call last):
   File "C:\Python3.7\Lib\runpy.py", line 236, in _get_code_from_file
     code = compile(f.read(), fname, 'exec')
 MemoryError
+
+Would be nice to measure the drift of the laser over time as it's being stabilized. Every time the wavelength drifts by
+more than 0.001 nm, log the time, the wavelength, positions of stabilization piezos, and also every time you reset the
+stabilization piezos with the same information logged.
