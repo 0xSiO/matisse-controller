@@ -38,7 +38,8 @@ DEFAULTS = {
                 'smoothing_filter': {
                     'window': 21,
                     'polyorder': 3
-                }
+                },
+                'max_std_dev_allowed': 2.25
             },
             'refcell': {
                 'rising_speed': 0.005,

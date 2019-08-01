@@ -130,6 +130,9 @@ class ConfigurationDialog(QDialog):
         self.thin_eta_smoothing_polyorder_field = QSpinBox()
         self.thin_eta_smoothing_polyorder_field.setMinimum(1)
         scan_layout.addRow('Thin etalon smoothing filter polyorder: ', self.thin_eta_smoothing_polyorder_field)
+        self.thin_eta_max_allowed_stddev_field = QDoubleSpinBox()
+        self.thin_eta_max_allowed_stddev_field.setMinimum(0)
+        scan_layout.addRow('Thin etalon max allowed stddev: ', self.thin_eta_max_allowed_stddev_field)
         self.refcell_rising_speed_field = QDoubleSpinBox()
         self.refcell_rising_speed_field.setDecimals(3)
         self.refcell_rising_speed_field.setSingleStep(0.001)
@@ -305,6 +308,7 @@ class ConfigurationDialog(QDialog):
         self.thin_eta_scan_show_plots_field.setChecked(cfg.get(cfg.THIN_ETA_SHOW_PLOTS))
         self.thin_eta_smoothing_window_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW))
         self.thin_eta_smoothing_polyorder_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
+        self.thin_eta_max_allowed_stddev_field.setValue(cfg.get(cfg.THIN_ETA_MAX_ALLOWED_STDDEV))
 
         self.refcell_rising_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_RISING_SPEED))
         self.refcell_falling_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED))
@@ -381,6 +385,7 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.THIN_ETA_SHOW_PLOTS, self.thin_eta_scan_show_plots_field.isChecked())
         cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW, self.thin_eta_smoothing_window_field.value())
         cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER, self.thin_eta_smoothing_polyorder_field.value())
+        cfg.set(cfg.THIN_ETA_MAX_ALLOWED_STDDEV, self.thin_eta_max_allowed_stddev_field.value())
 
         cfg.set(cfg.REFCELL_SCAN_RISING_SPEED, self.refcell_rising_speed_field.value())
         cfg.set(cfg.REFCELL_SCAN_FALLING_SPEED, self.refcell_falling_speed_field.value())
