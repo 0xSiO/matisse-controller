@@ -417,9 +417,6 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
         cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
 
-        # TODO: GUI config
-        # cfg.set('gui', {})
-
         cfg.save()
         self.close()
 
