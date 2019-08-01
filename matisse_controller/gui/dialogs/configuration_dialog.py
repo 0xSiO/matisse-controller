@@ -21,6 +21,7 @@ class ConfigurationDialog(QDialog):
 
     def add_options(self):
         general_options = self.create_general_options()
+        gui_options = self.create_gui_options()
         scan_options = self.create_scan_options()
         locking_options = self.create_locking_options()
         self.set_tooltips()
@@ -28,7 +29,10 @@ class ConfigurationDialog(QDialog):
         form = QWidget()
         form_layout = QHBoxLayout()
         form.setLayout(form_layout)
-        form_layout.addWidget(general_options)
+        column_1 = QVBoxLayout()
+        column_1.addWidget(general_options)
+        column_1.addWidget(gui_options)
+        form_layout.addLayout(column_1)
         form_layout.addWidget(scan_options)
         form_layout.addWidget(locking_options)
         self.layout.addWidget(form)
@@ -68,6 +72,18 @@ class ConfigurationDialog(QDialog):
         self.thin_eta_reset_pos_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT)
         general_layout.addRow('Thin etalon reset position: ', self.thin_eta_reset_pos_field)
         return general_options
+
+    def create_gui_options(self):
+        gui_options = QGroupBox('GUI')
+        gui_layout = QFormLayout()
+        gui_options.setLayout(gui_layout)
+        self.status_monitor_delay_field = QDoubleSpinBox()
+        self.status_monitor_delay_field.setMinimum(0)
+        gui_layout.addRow('Status monitor update delay: ', self.status_monitor_delay_field)
+        self.status_monitor_font_size_field = QSpinBox()
+        self.status_monitor_font_size_field.setMinimum(0)
+        gui_layout.addRow('Status monitor font size: ', self.status_monitor_font_size_field)
+        return gui_options
 
     def create_scan_options(self):
         scan_options = QGroupBox('Scanning')
@@ -264,6 +280,10 @@ class ConfigurationDialog(QDialog):
         self.wavemeter_port_field.setText(cfg.get(cfg.WAVEMETER_PORT))
         self.wavemeter_precision_field.setValue(cfg.get(cfg.WAVEMETER_PRECISION))
         self.wavemeter_measurement_delay_field.setValue(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+
+        self.status_monitor_delay_field.setValue(cfg.get(cfg.STATUS_MONITOR_DELAY))
+        self.status_monitor_font_size_field.setValue(cfg.get(cfg.STATUS_MONITOR_FONT_SIZE))
+
         self.component_limit_offset_field.setValue(cfg.get(cfg.COMPONENT_LIMIT_OFFSET))
         self.wavelength_lower_limit_field.setValue(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
         self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
@@ -336,6 +356,10 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.WAVEMETER_PORT, self.wavemeter_port_field.text())
         cfg.set(cfg.WAVEMETER_PRECISION, self.wavemeter_precision_field.value())
         cfg.set(cfg.WAVEMETER_MEASUREMENT_DELAY, self.wavemeter_measurement_delay_field.value())
+
+        cfg.set(cfg.STATUS_MONITOR_DELAY, self.status_monitor_delay_field.value())
+        cfg.set(cfg.STATUS_MONITOR_FONT_SIZE, self.status_monitor_font_size_field.value())
+
         cfg.set(cfg.COMPONENT_LIMIT_OFFSET, self.component_limit_offset_field.value())
         cfg.set(cfg.WAVELENGTH_LOWER_LIMIT, self.wavelength_lower_limit_field.value())
         cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())

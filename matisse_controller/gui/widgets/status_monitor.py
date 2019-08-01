@@ -3,6 +3,7 @@ from queue import Queue
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QLabel
 
+import matisse_controller.config as cfg
 from matisse_controller.gui.threads import StatusUpdateThread, ExitFlag
 
 
@@ -24,7 +25,7 @@ class StatusMonitor(QLabel):
         """
         super().__init__(*args, **kwargs)
         self.messages = messages
-        self.setFont(QFont('StyleNormal', 10))
+        self.setFont(QFont('StyleNormal', cfg.get(cfg.STATUS_MONITOR_FONT_SIZE)))
         self.update_thread = StatusUpdateThread(matisse, messages, parent=self)
         self.update_thread.status_read.connect(self.setText)
         self.update_thread.start()
