@@ -208,7 +208,7 @@ class Matisse(Constants):
         self.set_bifi_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
         print('Done.')
 
-        print('Analyzing scan data... ', end='')
+        print('Analyzing scan data... ')
         # Smooth out the data and find extrema
         smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW),
                                       polyorder=cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER))
@@ -233,7 +233,7 @@ class Matisse(Constants):
                 self.set_bifi_motor_pos(old_pos)
         else:
             self.set_bifi_motor_pos(best_pos)
-        print('Done. ' + str(wavelength_differences))
+        print('Done.')
 
         if cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS):
             # TODO: Label wavelength at each peak
@@ -306,7 +306,7 @@ class Matisse(Constants):
         self.set_thin_etalon_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
         print('Done.')
 
-        print('Analyzing scan data... ', end='')
+        print('Analyzing scan data... ')
         # Smooth out the data and find extrema
         smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW),
                                       polyorder=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
@@ -341,13 +341,13 @@ class Matisse(Constants):
                 self.set_thin_etalon_motor_pos(old_pos)
         else:
             self.set_thin_etalon_motor_pos(best_pos)
-        print('Done. ' + str(wavelength_differences))
+        print('Done.')
 
         adjacent_differences = np.diff(wavelength_differences)
-        min_wavelength_difference = min(wavelength_differences)
-        # TODO: Make the factor of 5 configurable
-        left_too_large = best_minimum_index >= 1 and adjacent_differences[best_minimum_index - 1] > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT)
-        right_too_large = best_minimum_index < len(wavelength_differences) - 1 and adjacent_differences[best_minimum_index] > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT)
+        left_too_large = (best_minimum_index >= 1 and
+                          adjacent_differences[best_minimum_index - 1] > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+        right_too_large = (best_minimum_index < len(wavelength_differences) - 1 and
+                           adjacent_differences[best_minimum_index] > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
         if left_too_large or right_too_large:
             print('Large jump in wavelength detected, correcting birefringent filter position.')
             self.birefringent_filter_scan(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=False)
