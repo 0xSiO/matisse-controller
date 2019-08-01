@@ -120,20 +120,15 @@ class Matisse(Constants):
             diff = abs(wavelength - self.wavemeter_wavelength())
 
             if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self.force_large_scan:
-                self.query(f"MOTTE:POS {16000}")  # TODO: Configurable
+                self.query(f"MOTTE:POS {12000}")  # TODO: Configurable
                 # Normal BiFi scan
                 print(f"Setting BiFi to ~{wavelength} nm... ", end='')
                 self.set_bifi_wavelength(wavelength)
-                time.sleep(0.1)
+                time.sleep(0.5)
                 print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm.")
                 self.birefringent_filter_scan(repeat=True)
-                print(f"MOTTE: {self.query('MOTTE:POS?', numeric_result=True)}")  # TODO: Logging positions for debugging
                 self.thin_etalon_scan(repeat=True)
-                print(f"MOTTE: {self.query('MOTTE:POS?', numeric_result=True)}")
-                print(f"Wavelength difference: {self.target_wavelength - self.wavemeter_wavelength()}")
                 self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
-                print(f"Wavelength difference: {self.target_wavelength - self.wavemeter_wavelength()}")
-                print(f"MOTTE: {self.query('MOTTE:POS?', numeric_result=True)}")
                 self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
             elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
                 # Small BiFi scan
@@ -154,6 +149,7 @@ class Matisse(Constants):
             if self.exit_flag:
                 return
             if self.restart_set_wavelength:
+                self.restart_set_wavelength = False
                 print('Restarting wavelength-setting process.')
                 continue
             elif self.scan_attempts > cfg.get(cfg.SCAN_LIMIT):
@@ -177,7 +173,7 @@ class Matisse(Constants):
     def reset_motors(self):
         # TODO: Configurable. TE maybe 16000
         self.query(f"MOTBI:POS {100000}")
-        self.query(f"MOTTE:POS {18000}")
+        self.query(f"MOTTE:POS {12000}")
 
     def birefringent_filter_scan(self, scan_range: int = None, repeat=False):
         """
@@ -234,6 +230,7 @@ class Matisse(Constants):
                 self.set_bifi_motor_pos(best_pos)
             else:
                 print('Current BiFi motor position is close enough, leaving it alone.')
+                self.set_bifi_motor_pos(old_pos)
         else:
             self.set_bifi_motor_pos(best_pos)
         print('Done. ' + str(wavelength_differences))
@@ -316,8 +313,8 @@ class Matisse(Constants):
 
         normalized_std_dev = np.sqrt(np.sum(((smoothed_data - voltages) / smoothed_data) ** 2))
         print(f"Normalized standard deviation from smoothed data: {normalized_std_dev}")
-        # Example good value: 2.7, example bad value: 8.5
-        if normalized_std_dev > 5:  # TODO: Make it configurable
+        # Example good value: 1.5, example bad value: 2.5
+        if normalized_std_dev > 2.25:  # TODO: Make it configurable
             print('Abnormal deviation from smoothed curve detected, the scan region might just contain noise.')
             self.restart_set_wavelength = True
             self.force_large_scan = True
@@ -341,6 +338,7 @@ class Matisse(Constants):
                 self.set_thin_etalon_motor_pos(best_pos)
             else:
                 print('Current thin etalon motor position is close enough, leaving it alone.')
+                self.set_thin_etalon_motor_pos(old_pos)
         else:
             self.set_thin_etalon_motor_pos(best_pos)
         print('Done. ' + str(wavelength_differences))
