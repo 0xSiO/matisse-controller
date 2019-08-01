@@ -313,7 +313,7 @@ class Matisse(Constants):
         normalized_std_dev = np.sqrt(np.sum(((smoothed_data - voltages) / smoothed_data) ** 2))
         print(f"Normalized standard deviation from smoothed data: {normalized_std_dev}")
         # Example good value: 1.5, example bad value: 2.5
-        if normalized_std_dev > 2.25:  # TODO: Make it configurable
+        if normalized_std_dev > cfg.get(cfg.THIN_ETA_MAX_ALLOWED_STDDEV):
             print('Abnormal deviation from smoothed curve detected, the scan region might just contain noise.')
             self.restart_set_wavelength = True
             self.force_large_scan = True

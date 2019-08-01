@@ -33,6 +33,7 @@ THIN_ETA_NUDGE = 'matisse.scanning.thin_etalon.nudge'
 THIN_ETA_SHOW_PLOTS = 'matisse.scanning.thin_etalon.show_plots'
 THIN_ETA_SMOOTHING_FILTER_WINDOW = 'matisse.scanning.thin_etalon.smoothing_filter.window'
 THIN_ETA_SMOOTHING_FILTER_POLYORDER = 'matisse.scanning.thin_etalon.smoothing_filter.polyorder'
+THIN_ETA_MAX_ALLOWED_STDDEV = 'matisse.scanning.thin_etalon.max_std_dev_allowed'
 
 REFCELL_SCAN_RISING_SPEED = 'matisse.scanning.refcell.rising_speed'
 REFCELL_SCAN_FALLING_SPEED = 'matisse.scanning.refcell.falling_speed'
