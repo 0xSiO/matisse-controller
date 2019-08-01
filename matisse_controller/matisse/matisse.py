@@ -127,8 +127,13 @@ class Matisse(Constants):
                 time.sleep(0.1)
                 print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm.")
                 self.birefringent_filter_scan(repeat=True)
+                print(f"MOTTE: {self.query('MOTTE:POS?', numeric_result=True)}")  # TODO: Logging positions for debugging
                 self.thin_etalon_scan(repeat=True)
+                print(f"MOTTE: {self.query('MOTTE:POS?', numeric_result=True)}")
+                print(f"Wavelength difference: {self.target_wavelength - self.wavemeter_wavelength()}")
                 self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                print(f"Wavelength difference: {self.target_wavelength - self.wavemeter_wavelength()}")
+                print(f"MOTTE: {self.query('MOTTE:POS?', numeric_result=True)}")
                 self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
             elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
                 # Small BiFi scan
@@ -148,7 +153,10 @@ class Matisse(Constants):
             # Restart/exit conditions
             if self.exit_flag:
                 return
-            if self.scan_attempts > cfg.get(cfg.SCAN_LIMIT):
+            if self.restart_set_wavelength:
+                print('Restarting wavelength-setting process.')
+                continue
+            elif self.scan_attempts > cfg.get(cfg.SCAN_LIMIT):
                 print('WARNING: Number of scan attempts exceeded. Starting wavelength-setting process over again.')
                 self.force_large_scan = True
                 continue
@@ -157,9 +165,6 @@ class Matisse(Constants):
                       'over again.')
                 self.stabilization_auto_corrections = 0
                 self.force_large_scan = True
-                continue
-            elif self.restart_set_wavelength:
-                print('Restarting wavelength-setting process.')
                 continue
             else:
                 self.force_large_scan = False
@@ -271,7 +276,6 @@ class Matisse(Constants):
         """Return the last 8 bits of the BiFi motor status."""
         return int(self.query('MOTBI:STATUS?', numeric_result=True)) & 0b000000011111111
 
-    # TODO: Check RMS value for fit, if it's too big then go back to large BiFi scan which resets TE motor
     def thin_etalon_scan(self, scan_range: int = None, repeat=False):
         """
         Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
@@ -309,6 +313,16 @@ class Matisse(Constants):
         # Smooth out the data and find extrema
         smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW),
                                       polyorder=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
+
+        normalized_std_dev = np.sqrt(np.sum(((smoothed_data - voltages) / smoothed_data) ** 2))
+        print(f"Normalized standard deviation from smoothed data: {normalized_std_dev}")
+        # Example good value: 2.7, example bad value: 8.5
+        if normalized_std_dev > 5:  # TODO: Make it configurable
+            print('Abnormal deviation from smoothed curve detected, the scan region might just contain noise.')
+            self.restart_set_wavelength = True
+            self.force_large_scan = True
+            return
+
         minima = argrelextrema(smoothed_data, np.less, order=5)
 
         # Find the position of the extremum closest to the target wavelength
@@ -324,7 +338,7 @@ class Matisse(Constants):
         if len(positions[minima]) > 1:
             difference_threshold = np.mean(np.diff(positions[minima])) / 6
             if abs(old_pos - best_pos) > difference_threshold:
-                self.set_bifi_motor_pos(best_pos)
+                self.set_thin_etalon_motor_pos(best_pos)
             else:
                 print('Current thin etalon motor position is close enough, leaving it alone.')
         else:
@@ -334,8 +348,8 @@ class Matisse(Constants):
         adjacent_differences = np.diff(wavelength_differences)
         min_wavelength_difference = min(wavelength_differences)
         # TODO: Make the factor of 5 configurable
-        left_too_large = best_minimum_index >= 1 and adjacent_differences[best_minimum_index - 1] > 5 * min_wavelength_difference
-        right_too_large = best_minimum_index < len(wavelength_differences) - 1 and adjacent_differences[best_minimum_index] > 5 * min_wavelength_difference
+        left_too_large = best_minimum_index >= 1 and adjacent_differences[best_minimum_index - 1] > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT)
+        right_too_large = best_minimum_index < len(wavelength_differences) - 1 and adjacent_differences[best_minimum_index] > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT)
         if left_too_large or right_too_large:
             print('Large jump in wavelength detected, correcting birefringent filter position.')
             self.birefringent_filter_scan(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=False)
