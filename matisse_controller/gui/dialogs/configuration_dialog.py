@@ -55,6 +55,14 @@ class ConfigurationDialog(QDialog):
         self.wavelength_upper_limit_field.setMinimum(0)
         self.wavelength_upper_limit_field.setMaximum(2000)
         general_layout.addRow('Wavelength upper limit: ', self.wavelength_upper_limit_field)
+        self.bifi_reset_pos_field = QSpinBox()
+        self.bifi_reset_pos_field.setMinimum(Matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
+        self.bifi_reset_pos_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
+        general_layout.addRow('BiFi reset position: ', self.bifi_reset_pos_field)
+        self.thin_eta_reset_pos_field = QSpinBox()
+        self.thin_eta_reset_pos_field.setMinimum(Matisse.THIN_ETALON_LOWER_LIMIT)
+        self.thin_eta_reset_pos_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT)
+        general_layout.addRow('Thin etalon reset position: ', self.thin_eta_reset_pos_field)
         return general_options
 
     def create_scan_options(self):
@@ -254,6 +262,8 @@ class ConfigurationDialog(QDialog):
         self.component_limit_offset_field.setValue(cfg.get(cfg.COMPONENT_LIMIT_OFFSET))
         self.wavelength_lower_limit_field.setValue(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
         self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.bifi_reset_pos_field.setValue(cfg.get(cfg.BIFI_RESET_POS))
+        self.thin_eta_reset_pos_field.setValue(cfg.get(cfg.THIN_ETA_RESET_POS))
 
         self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
         self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
@@ -323,6 +333,8 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.COMPONENT_LIMIT_OFFSET, self.component_limit_offset_field.value())
         cfg.set(cfg.WAVELENGTH_LOWER_LIMIT, self.wavelength_lower_limit_field.value())
         cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
+        cfg.set(cfg.BIFI_RESET_POS, self.bifi_reset_pos_field.value())
+        cfg.set(cfg.THIN_ETA_RESET_POS, self.thin_eta_reset_pos_field.value())
 
         cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
         cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
