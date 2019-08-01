@@ -12,7 +12,7 @@ class ConfigurationDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle('Configuration')
-        self.resize(950, 550)
+        self.resize(1000, 550)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.add_options()
@@ -144,6 +144,9 @@ class ConfigurationDialog(QDialog):
         self.fast_pz_setpoint_num_scans_field = QSpinBox()
         self.fast_pz_setpoint_num_scans_field.setMinimum(1)
         locking_layout.addRow('Fast piezo setpoint number of scans: ', self.fast_pz_setpoint_num_scans_field)
+        self.auto_correction_limit_field = QSpinBox()
+        self.auto_correction_limit_field.setMinimum(1)
+        locking_layout.addRow('Number of auto-corrections before retry: ', self.auto_correction_limit_field)
         self.pz_eta_upper_correction_pos_field = QDoubleSpinBox()
         self.pz_eta_upper_correction_pos_field.setSingleStep(0.01)
         self.pz_eta_upper_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
@@ -281,6 +284,8 @@ class ConfigurationDialog(QDialog):
         self.fast_pz_setpoint_num_points_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
         self.fast_pz_setpoint_num_scans_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS))
 
+        self.auto_correction_limit_field.setValue(cfg.get(cfg.CORRECTION_LIMIT))
+
         self.pz_eta_upper_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS))
         self.slow_pz_upper_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_UPPER_CORRECTION_POS))
         self.refcell_upper_correction_pos_field.setValue(cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS))
@@ -347,6 +352,8 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT, self.fast_pz_setpoint_upper_limit_field.value())
         cfg.set(cfg.FAST_PZ_SETPOINT_NUM_POINTS, self.fast_pz_setpoint_num_points_field.value())
         cfg.set(cfg.FAST_PZ_SETPOINT_NUM_SCANS, self.fast_pz_setpoint_num_scans_field.value())
+
+        cfg.set(cfg.CORRECTION_LIMIT, self.auto_correction_limit_field.value())
 
         cfg.set(cfg.PIEZO_ETA_UPPER_CORRECTION_POS, self.pz_eta_upper_correction_pos_field.value())
         cfg.set(cfg.SLOW_PIEZO_UPPER_CORRECTION_POS, self.slow_pz_upper_correction_pos_field.value())

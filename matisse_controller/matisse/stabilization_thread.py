@@ -42,6 +42,7 @@ class StabilizationThread(threading.Thread):
                                   'Attempting automatic corrections.')
                             self._matisse.stop_scan()
                             self._matisse.reset_stabilization_piezos()
+                            self._matisse.stabilization_auto_corrections += 1
                     else:
                         # measured wavelength is too low
                         print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
@@ -52,6 +53,7 @@ class StabilizationThread(threading.Thread):
                                   'Attempting automatic corrections.')
                             self._matisse.stop_scan()
                             self._matisse.reset_stabilization_piezos()
+                            self._matisse.stabilization_auto_corrections += 1
                 else:
                     self._matisse.stop_scan()
                     print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
