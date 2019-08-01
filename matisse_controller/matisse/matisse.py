@@ -175,6 +175,9 @@ class Matisse(Constants):
         """
         Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.
 
+        The position is not changed if the difference between the current position and the "best" position is less than
+        1/6 of the average separation between peaks in the power diode curve.
+
         Additionally, plot the power data and motor position selection.
         """
         if self.exit_flag or self.scan_attempts > cfg.get(cfg.SCAN_LIMIT):
@@ -185,9 +188,9 @@ class Matisse(Constants):
             scan_range = cfg.get(cfg.BIFI_SCAN_RANGE)
 
         self.scan_attempts += 1
-        center_pos = int(self.query('MOTBI:POS?', numeric_result=True))
-        lower_end = center_pos - scan_range
-        upper_end = center_pos + scan_range
+        old_pos = int(self.query('MOTBI:POS?', numeric_result=True))
+        lower_end = old_pos - scan_range
+        upper_end = old_pos + scan_range
         assert (0 < lower_end < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
                 and 0 < upper_end < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
                 and lower_end < upper_end), 'Conditions for BiFi scan invalid. Motor position must be between ' + \
@@ -198,7 +201,7 @@ class Matisse(Constants):
         for pos in positions:
             self.set_bifi_motor_pos(pos)
             voltages = np.append(voltages, self.query('DPOW:DC?', numeric_result=True))
-        self.set_bifi_motor_pos(center_pos)  # return back to where we started, just in case something goes wrong
+        self.set_bifi_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
         print('Done.')
 
         print('Analyzing scan data... ', end='')
@@ -216,11 +219,20 @@ class Matisse(Constants):
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[maxima][np.argmin(wavelength_differences)]
-        self.set_bifi_motor_pos(best_pos)
+
+        if len(positions[maxima]) > 1:
+            difference_threshold = np.mean(np.diff(positions[maxima])) / 6
+            if abs(old_pos - best_pos) > difference_threshold:
+                self.set_bifi_motor_pos(best_pos)
+            else:
+                print('Current BiFi motor position is close enough, leaving it alone.')
+        else:
+            self.set_bifi_motor_pos(best_pos)
         print('Done. ' + str(wavelength_differences))
 
         if cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS):
-            plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, center_pos,
+            # TODO: Label wavelength at each peak
+            plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, old_pos,
                                                              best_pos, daemon=True)
             self.plotting_processes.append(plot_process)
             plot_process.start()
@@ -262,6 +274,8 @@ class Matisse(Constants):
         """
         Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
 
+        The position is not changed if the difference between the current position and the "best" position is less than
+        1/6 of the average separation between valleys in the reflex curve.
         Nudges the motor position a little bit away from the minimum to ensure good locking later.
         Additionally, plot the reflex data and motor position selection.
         """
@@ -299,7 +313,15 @@ class Matisse(Constants):
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[minima][np.argmin(wavelength_differences)] + cfg.get(cfg.THIN_ETA_NUDGE)
-        self.set_thin_etalon_motor_pos(best_pos)
+
+        if len(positions[minima]) > 1:
+            difference_threshold = np.mean(np.diff(positions[minima])) / 6
+            if abs(old_pos - best_pos) > difference_threshold:
+                self.set_bifi_motor_pos(best_pos)
+            else:
+                print('Current thin etalon motor position is close enough, leaving it alone.')
+        else:
+            self.set_thin_etalon_motor_pos(best_pos)
         print('Done. ' + str(wavelength_differences))
 
         if cfg.get(cfg.THIN_ETA_SHOW_PLOTS):
