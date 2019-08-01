@@ -84,14 +84,16 @@ class Matisse(Constants):
         Configure the Matisse to output a given wavelength.
 
         First I'll check the difference between the current wavelength and the target wavelength.
-        If it's greater than about 0.4 nm, do a large birefringent scan to choose a better peak.
-        If it's between about 0.15 nm and 0.4 nm, do a small birefringent scan to keep it on the peak.
-        If it's between 0.02 nm and 0.15 nm, skip the first birefringent scan and go right to the thin etalon scan.
-        If it's less than 0.02 nm, skip all BiFi and TE scans, and just do a RefCell scan.
+        - If it's greater than cfg.LARGE_WAVELENGTH_DRIFT, do a large birefringent scan to choose a better peak.
+        - If it's between about cfg.MEDIUM_WAVELENGTH_DRIFT and cfg.LARGE_WAVELENGTH_DRIFT, do a small birefringent scan
+          to keep it on the peak.
+        - If it's between cfg.SMALL_WAVELENGTH_DRIFT nm and cfg.MEDIUM_WAVELENGTH_DRIFT, skip the first birefringent
+          scan and go right to the thin etalon scan.
+        - If it's less than cfg.SMALL_WAVELENGTH_DRIFT, skip all BiFi and TE scans, and just do a RefCell scan.
 
         This is generally the process I'll follow:
         1. Decide whether to skip any scans, as described above.
-        2. Set approx. wavelength using BiFi. This is good to about +-1 nm.
+        2. Set approx. wavelength using BiFi. This is supposed to be good to about +-1 nm but it's usually very far off.
         3. Scan the BiFi back and forth and measure the total laser power at each point.
         4. Find all local maxima, move the BiFi to the maximum that's closest to the desired wavelength.
         5. Move the thin etalon motor directly to a position close to the target wavelength.
