@@ -119,7 +119,7 @@ class Matisse(Constants):
             diff = abs(wavelength - self.wavemeter_wavelength())
 
             if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self.force_large_scan:
-                self.reset_motors()
+                self.reset_motors()  # TODO: reset TE only
                 # Normal BiFi scan
                 print(f"Setting BiFi to ~{wavelength} nm... ", end='')
                 self.set_bifi_wavelength(wavelength)
@@ -127,7 +127,9 @@ class Matisse(Constants):
                 print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm.")
                 self.birefringent_filter_scan(repeat=True)
                 self.thin_etalon_scan(repeat=True)
+                # TODO: don't move BiFi if new pos is less than 1/6 the distance to peaks on either side
                 self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                # TODO: same for small TE scan
                 self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
             elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) < diff <= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
                 # Small BiFi scan
@@ -165,6 +167,7 @@ class Matisse(Constants):
         self.stabilize_on()
 
     def reset_motors(self):
+        # TODO: Configurable. TE maybe 16000
         self.query(f"MOTBI:POS {100000}")
         self.query(f"MOTTE:POS {18000}")
 
@@ -208,7 +211,8 @@ class Matisse(Constants):
         wavelength_differences = np.array([])
         for pos in positions[maxima]:
             self.set_bifi_motor_pos(pos)
-            time.sleep(0.01)
+            # TODO: Make this configurable
+            time.sleep(0.1)
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[maxima][np.argmin(wavelength_differences)]
@@ -252,6 +256,8 @@ class Matisse(Constants):
         """Return the last 8 bits of the BiFi motor status."""
         return int(self.query('MOTBI:STATUS?', numeric_result=True)) & 0b000000011111111
 
+    # TODO: Check RMS value for fit, if it's too big then go back to large BiFi scan which resets TE motor
+    # TODO: Do small BiFi scan to correct if consecutive difference measurements are large
     def thin_etalon_scan(self, scan_range: int = None, repeat=False):
         """
         Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
@@ -289,7 +295,7 @@ class Matisse(Constants):
         wavelength_differences = np.array([])
         for pos in positions[minima]:
             self.set_thin_etalon_motor_pos(pos)
-            time.sleep(0.01)
+            time.sleep(0.1)
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[minima][np.argmin(wavelength_differences)] + cfg.get(cfg.THIN_ETA_NUDGE)
