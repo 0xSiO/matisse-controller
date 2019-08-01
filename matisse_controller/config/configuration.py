@@ -81,7 +81,8 @@ DEFAULTS = {
     },
     'wavemeter': {
         'port': 'COM5',
-        'precision': 3
+        'precision': 3,
+        'measurement_delay': 0.5
     },
     'gui': {}
 }

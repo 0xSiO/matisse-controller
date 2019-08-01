@@ -124,7 +124,7 @@ class Matisse(Constants):
                 # Normal BiFi scan
                 print(f"Setting BiFi to ~{wavelength} nm... ", end='')
                 self.set_bifi_wavelength(wavelength)
-                time.sleep(0.5)
+                time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
                 print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm. "
                       "(This is often very wrong, don't worry)")
                 self.birefringent_filter_scan(repeat=True)
@@ -218,8 +218,7 @@ class Matisse(Constants):
         wavelength_differences = np.array([])
         for pos in positions[maxima]:
             self.set_bifi_motor_pos(pos)
-            # TODO: Make this configurable
-            time.sleep(0.1)
+            time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_pos = positions[maxima][np.argmin(wavelength_differences)]
@@ -326,7 +325,7 @@ class Matisse(Constants):
         wavelength_differences = np.array([])
         for pos in positions[minima]:
             self.set_thin_etalon_motor_pos(pos)
-            time.sleep(0.1)
+            time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
         best_minimum_index = np.argmin(wavelength_differences)

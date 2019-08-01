@@ -4,6 +4,7 @@
 MATISSE_DEVICE_ID = 'matisse.device_id'
 WAVEMETER_PORT = 'wavemeter.port'
 WAVEMETER_PRECISION = 'wavemeter.precision'
+WAVEMETER_MEASUREMENT_DELAY = 'wavemeter.measurement_delay'
 
 BIFI_RESET_POS = 'matisse.reset_positions.birefringent_filter'
 THIN_ETA_RESET_POS = 'matisse.reset_positions.thin_etalon'
