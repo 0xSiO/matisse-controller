@@ -23,8 +23,6 @@ class LockCorrectionThread(threading.Thread):
         self.timer = threading.Timer(self.timeout, self.quit_unless_locked)
 
     def run(self):
-        # TODO: Only reset piezos that are too far towards their limits
-        self.matisse.reset_stabilization_piezos()
         with ControlLoopsOn(self.matisse):
             self.timer.start()
             while True:
