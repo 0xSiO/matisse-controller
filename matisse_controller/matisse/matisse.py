@@ -121,6 +121,7 @@ class Matisse(Constants):
 
             if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self.force_large_scan:
                 self.query(f"MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}")
+                self.reset_stabilization_piezos()
                 # Normal BiFi scan
                 print(f"Setting BiFi to ~{wavelength} nm... ", end='')
                 self.set_bifi_wavelength(wavelength)
@@ -506,7 +507,7 @@ class Matisse(Constants):
             self.query(f"SCAN:NOW {cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS)}")
             self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_LOWER_CORRECTION_POS)}")
         else:
-            # TODO: Maybe check if we really need to move the piezo etalon
+            self.query(f"SCAN:NOW {cfg.get(cfg.REFCELL_MID_CORRECTION_POS)}")
             self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_MID_CORRECTION_POS)}")
 
         self.query(f"SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS)}")

@@ -39,9 +39,7 @@ class StatusUpdateThread(QThread):
                 try:
                     bifi_pos = self.matisse.query('MOTBI:POS?', numeric_result=True)
                     thin_eta_pos = self.matisse.query('MOTTE:POS?', numeric_result=True)
-                    pz_eta_pos = self.matisse.query('PIEZOETALON:BASELINE?', numeric_result=True)
-                    slow_pz_pos = self.matisse.query('SLOWPIEZO:NOW?', numeric_result=True)
-                    refcell_pos = self.matisse.query('SCAN:NOW?', numeric_result=True)
+                    refcell_pos, pz_eta_pos, slow_pz_pos = self.matisse.get_stabilizing_piezo_positions()
                     is_stabilizing = self.matisse.is_stabilizing()
                     is_scanning = self.matisse.is_scanning()
                     is_locked = self.matisse.laser_locked()

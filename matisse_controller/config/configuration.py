@@ -74,7 +74,7 @@ DEFAULTS = {
             'refcell_pos_upper': 0.5,
             'piezo_etalon_pos_mid': 0.0,
             'slow_piezo_pos_mid': 0.35,
-            'refcell_pos_mid': 0.35,  # TODO: Not used yet
+            'refcell_pos_mid': 0.35,
             'piezo_etalon_pos_lower': -0.8,
             'slow_piezo_pos_lower': 0.2,  # TODO: Not used yet
             'refcell_pos_lower': 0.2
