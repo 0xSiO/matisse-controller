@@ -249,11 +249,21 @@ class ConfigurationDialog(QDialog):
         self.matisse_device_id_field.setToolTip(tooltips.MATISSE_DEVICE_ID)
         self.wavemeter_port_field.setToolTip(tooltips.WAVEMETER_PORT)
         self.wavemeter_precision_field.setToolTip(tooltips.WAVEMETER_PRECISION)
+        self.wavemeter_measurement_delay_field.setToolTip(tooltips.WAVEMETER_MEASUREMENT_DELAY)
+
+        self.status_monitor_delay_field.setToolTip(tooltips.STATUS_MONITOR_DELAY)
+        self.status_monitor_font_size_field.setToolTip(tooltips.STATUS_MONITOR_FONT_SIZE)
+
+        self.bifi_reset_pos_field.setToolTip(tooltips.BIFI_RESET_POS)
+        self.thin_eta_reset_pos_field.setToolTip(tooltips.THIN_ETA_RESET_POS)
+
         self.component_limit_offset_field.setToolTip(tooltips.COMPONENT_LIMIT_OFFSET)
+
         self.wavelength_lower_limit_field.setToolTip(tooltips.WAVELENGTH_LOWER_LIMIT)
         self.wavelength_upper_limit_field.setToolTip(tooltips.WAVELENGTH_UPPER_LIMIT)
 
         self.scan_limit_field.setToolTip(tooltips.SCAN_LIMIT)
+
         self.bifi_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE)
         self.bifi_small_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE_SMALL)
         self.bifi_scan_step_field.setToolTip(tooltips.BIFI_SCAN_STEP)
@@ -268,6 +278,7 @@ class ConfigurationDialog(QDialog):
         self.thin_eta_scan_show_plots_field.setToolTip(tooltips.THIN_ETA_SHOW_PLOTS)
         self.thin_eta_smoothing_window_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_WINDOW)
         self.thin_eta_smoothing_polyorder_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_POLYORDER)
+        self.thin_eta_max_allowed_stddev_field.setToolTip(tooltips.THIN_ETA_MAX_ALLOWED_STDDEV)
 
         self.refcell_rising_speed_field.setToolTip(tooltips.REFCELL_SCAN_RISING_SPEED)
         self.refcell_falling_speed_field.setToolTip(tooltips.REFCELL_SCAN_FALLING_SPEED)
@@ -277,6 +288,17 @@ class ConfigurationDialog(QDialog):
         self.small_wavelength_drift_field.setToolTip(tooltips.SMALL_WAVELENGTH_DRIFT)
 
         self.locking_timeout_field.setToolTip(tooltips.LOCKING_TIMEOUT)
+        self.fast_pz_setpoint_lower_limit_field.setToolTip(tooltips.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT)
+        self.fast_pz_setpoint_upper_limit_field.setToolTip(tooltips.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT)
+        self.fast_pz_setpoint_num_points_field.setToolTip(tooltips.FAST_PZ_SETPOINT_NUM_POINTS)
+        self.fast_pz_setpoint_num_scans_field.setToolTip(tooltips.FAST_PZ_SETPOINT_NUM_SCANS)
+
+        self.stabilization_rising_speed_field.setToolTip(tooltips.STABILIZATION_RISING_SPEED)
+        self.stabilization_falling_speed_field.setToolTip(tooltips.STABILIZATION_FALLING_SPEED)
+        self.stabilization_delay_field.setToolTip(tooltips.STABILIZATION_DELAY)
+        self.stabilization_tolerance_field.setToolTip(tooltips.STABILIZATION_TOLERANCE)
+
+        self.auto_correction_limit_field.setToolTip(tooltips.CORRECTION_LIMIT)
 
     def set_current_values_from_config(self):
         self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
