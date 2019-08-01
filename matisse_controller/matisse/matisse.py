@@ -276,6 +276,10 @@ class Matisse(Constants):
 
         The position is not changed if the difference between the current position and the "best" position is less than
         1/6 of the average separation between valleys in the reflex curve.
+
+        If the thin etalon moves too far to one side and we end up in a valley of the power diode curve, then perform a
+        small birefringent scan to correct this.
+
         Nudges the motor position a little bit away from the minimum to ensure good locking later.
         Additionally, plot the reflex data and motor position selection.
         """
@@ -312,7 +316,8 @@ class Matisse(Constants):
             time.sleep(0.1)
             wavelength_differences = np.append(wavelength_differences,
                                                abs(self.wavemeter_wavelength() - self.target_wavelength))
-        best_pos = positions[minima][np.argmin(wavelength_differences)] + cfg.get(cfg.THIN_ETA_NUDGE)
+        best_minimum_index = np.argmin(wavelength_differences)
+        best_pos = positions[minima][best_minimum_index] + cfg.get(cfg.THIN_ETA_NUDGE)
 
         if len(positions[minima]) > 1:
             difference_threshold = np.mean(np.diff(positions[minima])) / 6
@@ -323,6 +328,16 @@ class Matisse(Constants):
         else:
             self.set_thin_etalon_motor_pos(best_pos)
         print('Done. ' + str(wavelength_differences))
+
+        adjacent_differences = np.diff(wavelength_differences)
+        min_wavelength_difference = min(wavelength_differences)
+        # TODO: Make the factor of 5 configurable
+        left_too_large = best_minimum_index >= 1 and adjacent_differences[best_minimum_index - 1] > 5 * min_wavelength_difference
+        right_too_large = best_minimum_index < len(wavelength_differences) - 1 and adjacent_differences[best_minimum_index] > 5 * min_wavelength_difference
+        if left_too_large or right_too_large:
+            print('Large jump in wavelength detected, correcting birefringent filter position.')
+            self.birefringent_filter_scan(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=False)
+            print('Returning to thin etalon scan.')
 
         if cfg.get(cfg.THIN_ETA_SHOW_PLOTS):
             plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, old_pos, best_pos,
