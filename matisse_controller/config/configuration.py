@@ -63,6 +63,7 @@ DEFAULTS = {
             'tolerance': 0.0005
         },
         'correction': {
+            'limit': 10,
             'piezo_etalon_pos_upper': 0.8,
             'slow_piezo_pos_upper': 0.5,  # TODO: Not used yet
             'refcell_pos_upper': 0.5,

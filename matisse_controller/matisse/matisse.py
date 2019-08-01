@@ -34,6 +34,7 @@ class Matisse(Constants):
             self.exit_flag = False
             self.scan_attempts = 0
             self.force_large_scan = True
+            self.stabilization_auto_corrections = 0
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.query('MOTORBIREFRINGENT:CLEAR')
             self.query('MOTORTHINETALON:CLEAR')
@@ -147,6 +148,12 @@ class Matisse(Constants):
                 return
             if self.scan_attempts > cfg.get(cfg.SCAN_LIMIT):
                 print('WARNING: Number of scan attempts exceeded. Starting wavelength-setting process over again.')
+                self.force_large_scan = True
+                continue
+            elif self.stabilization_auto_corrections > cfg.get(cfg.CORRECTION_LIMIT):
+                print('WARNING: Number of stabilization auto-corrections exceeded. Starting wavelength-setting process '
+                      'over again.')
+                self.stabilization_auto_corrections = 0
                 self.force_large_scan = True
                 continue
             else:

@@ -45,6 +45,8 @@ STABILIZATION_FALLING_SPEED = 'matisse.stabilization.falling_speed'
 STABILIZATION_DELAY = 'matisse.stabilization.delay'
 STABILIZATION_TOLERANCE = 'matisse.stabilization.tolerance'
 
+CORRECTION_LIMIT = 'matisse.correction.limit'
+
 PIEZO_ETA_UPPER_CORRECTION_POS = 'matisse.correction.piezo_etalon_pos_upper'
 SLOW_PIEZO_UPPER_CORRECTION_POS = 'matisse.correction.slow_piezo_pos_upper'
 REFCELL_UPPER_CORRECTION_POS = 'matisse.correction.refcell_pos_upper'
