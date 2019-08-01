@@ -5,6 +5,9 @@ MATISSE_DEVICE_ID = 'matisse.device_id'
 WAVEMETER_PORT = 'wavemeter.port'
 WAVEMETER_PRECISION = 'wavemeter.precision'
 
+BIFI_RESET_POS = 'matisse.reset_positions.birefringent_filter'
+THIN_ETA_RESET_POS = 'matisse.reset_positions.thin_etalon'
+
 COMPONENT_LIMIT_OFFSET = 'matisse.component_limit_offset'
 
 WAVELENGTH_LOWER_LIMIT = 'matisse.wavelength.lower_limit'

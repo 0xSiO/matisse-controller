@@ -8,6 +8,10 @@ CONFIGURATION = {}
 DEFAULTS = {
     'matisse': {
         'device_id': 'USB0::0x17E7::0x0102::07-40-01::INSTR',
+        'reset_positions': {
+            'birefringent_filter': 100_000,
+            'thin_etalon': 12_000
+        },
         'wavelength': {
             'lower_limit': 700,
             'upper_limit': 800
