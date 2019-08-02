@@ -83,7 +83,11 @@ class Matisse(Constants):
         """
         Configure the Matisse to output a given wavelength.
 
+        If the laser is locked and/or stabilizing, pause those operations for the duration of the method.
+
         First I'll check the difference between the current wavelength and the target wavelength.
+
+        - If this is the first time this is being run, do a large birefringent scan regardless of the difference.
         - If it's greater than cfg.LARGE_WAVELENGTH_DRIFT, do a large birefringent scan to choose a better peak.
         - If it's between about cfg.MEDIUM_WAVELENGTH_DRIFT and cfg.LARGE_WAVELENGTH_DRIFT, do a small birefringent scan
           to keep it on the peak.
@@ -92,6 +96,7 @@ class Matisse(Constants):
         - If it's less than cfg.SMALL_WAVELENGTH_DRIFT, skip all BiFi and TE scans, and just do a RefCell scan.
 
         This is generally the process I'll follow:
+
         1. Decide whether to skip any scans, as described above.
         2. Set approx. wavelength using BiFi. This is supposed to be good to about +-1 nm but it's usually very far off.
         3. Scan the BiFi back and forth and measure the total laser power at each point.
@@ -99,10 +104,17 @@ class Matisse(Constants):
         5. Move the thin etalon motor directly to a position close to the target wavelength.
         6. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
         7. Find all local minima. Move the TE to the minimum that's closest to the desired wavelength.
-        8. Shift the TE to the left or right a little bit. We want to be on the "flank" of the chosen parabola.
-        9. Do a small BiFi scan to make sure we're still on the location with maximum power.
+        8. Shift the thin etalon a over bit by cfg.THIN_ETA_NUDGE. We want to be on the "flank" of the chosen parabola.
+        9. Do a small BiFi scan to make sure we're still on the location with maximum power. If the distance to the new
+           motor location is very small, just leave the motor where it is.
         10. Do a small thin etalon scan to make sure we're still on the flank of the right parabola.
         11. Enable RefCell stabilization, which scans the device up or down until the desired wavelength is reached.
+
+        If more than cfg.SCAN_LIMIT scan attempts pass before stabilizing, restart the whole process over again.
+        If, during stabilization, more than cfg.CORRECTION_LIMIT corrections are made, start with a large birefringent
+        scan the next time this method is run.
+        A scan may decide it needs to start the process over again for some other reason, like the thin etalon moving to
+        a location with just noise.
 
         :param wavelength: the desired wavelength
         """
@@ -175,6 +187,7 @@ class Matisse(Constants):
         self.stabilize_on()
 
     def reset_motors(self):
+        """Move the birefringent filter and thin etalon motors to their configured reset positions."""
         self.query(f"MOTBI:POS {cfg.get(cfg.BIFI_RESET_POS)}")
         self.query(f"MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}")
 
