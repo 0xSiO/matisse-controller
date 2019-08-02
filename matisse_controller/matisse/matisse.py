@@ -19,18 +19,14 @@ class Matisse(Constants):
     matisse_lock = threading.Lock()
 
     def __init__(self):
-        """
-        Initialize VISA resource manager, connect to Matisse, clear any errors.
-
-        Additionally, connect to the wavemeter and open up a plot to display results of BiFi/TE scans.
-        """
+        """Initialize VISA resource manager, connect to Matisse and wavemeter, clear any errors."""
         try:
             # TODO: Add access modifiers on all these instance variables
             self.instrument = ResourceManager().open_resource(cfg.get(cfg.MATISSE_DEVICE_ID))
             self.target_wavelength = None
             self.stabilization_thread = None
             self.lock_correction_thread = None
-            self.plotting_processes = []
+            self.plotting_processes = []  # TODO: Add a method to close all of these plots
             self.exit_flag = False
             self.scan_attempts = 0
             self.force_large_scan = True
@@ -495,6 +491,8 @@ class Matisse(Constants):
         """
         Enable stabilization using the stabilization piezos and thin etalon to keep the wavelength constant.
 
+        If there is no target wavelength set, stabilize at the current wavelength.
+
         Starts a StabilizationThread as a daemon for this purpose. To stop stabilizing the laser, call stabilize_off.
         """
         if self.is_stabilizing():
@@ -592,6 +590,13 @@ class Matisse(Constants):
         self.query(f"SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS)}")
 
     def get_reference_cell_transmission_spectrum(self):
+        """
+        Scan the reference cell from cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT to cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT,
+        measuring the input to the fast piezo for each position. This creates a curve that represents the transmission
+        spectrum of the reference cell.
+
+        :return: the data measured during the scan
+        """
         # TODO: Make a context manager for pausing stabilization/scanning
         stabilize_when_done = False
         if self.is_stabilizing():
@@ -615,6 +620,11 @@ class Matisse(Constants):
         return positions, values
 
     def set_recommended_fast_piezo_setpoint(self):
+        """
+        Analyze the data from the reference cell transmission spectrum, and set the fast piezo setpoint to a point
+        about halfway between the min and max points on the spectrum. The recommended value is determined by averaging
+        a number of scans given by cfg.FAST_PZ_SETPOINT_NUM_SCANS.
+        """
         num_scans = cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS)
         total = 0
         for i in range(0, num_scans):
@@ -626,6 +636,13 @@ class Matisse(Constants):
         self.query(f"FASTPIEZO:CONTROLSETPOINT {recommended_setpoint}")
 
     def start_laser_lock_correction(self):
+        """
+        Try to lock the laser, and make automatic corrections to the stabilization piezos if needed.
+
+        If there is no target wavelength set, lock at the current wavelength.
+
+        Starts a LockCorrectionThread as a daemon for this purpose. Call stop_laser_lock_correction to disable lock.
+        """
         if self.is_lock_correction_on():
             print('WARNING: Lock correction is already running.')
         else:
@@ -637,6 +654,7 @@ class Matisse(Constants):
             self.lock_correction_thread.start()
 
     def stop_laser_lock_correction(self):
+        """Disable the lock correction loop, which stops the LockCorrectionThread."""
         if self.is_lock_correction_on():
             self.lock_correction_thread.messages.put('stop')
             self.lock_correction_thread.join()
@@ -644,4 +662,5 @@ class Matisse(Constants):
             print('WARNING: laser is not locked.')
 
     def is_lock_correction_on(self):
+        """:return: whether the lock correction thread is running"""
         return self.lock_correction_thread is not None and self.lock_correction_thread.is_alive()
