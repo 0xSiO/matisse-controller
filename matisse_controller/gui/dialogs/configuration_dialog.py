@@ -71,6 +71,8 @@ class ConfigurationDialog(QDialog):
         self.thin_eta_reset_pos_field.setMinimum(Matisse.THIN_ETALON_LOWER_LIMIT)
         self.thin_eta_reset_pos_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT)
         general_layout.addRow('Thin etalon reset position: ', self.thin_eta_reset_pos_field)
+        self.report_events_field = QCheckBox()
+        general_layout.addRow('Report events? ', self.report_events_field)
         return general_options
 
     def create_gui_options(self):
@@ -257,6 +259,8 @@ class ConfigurationDialog(QDialog):
         self.bifi_reset_pos_field.setToolTip(tooltips.BIFI_RESET_POS)
         self.thin_eta_reset_pos_field.setToolTip(tooltips.THIN_ETA_RESET_POS)
 
+        self.report_events_field.setToolTip(tooltips.REPORT_EVENTS)
+
         self.component_limit_offset_field.setToolTip(tooltips.COMPONENT_LIMIT_OFFSET)
 
         self.wavelength_lower_limit_field.setToolTip(tooltips.WAVELENGTH_LOWER_LIMIT)
@@ -314,6 +318,8 @@ class ConfigurationDialog(QDialog):
         self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
         self.bifi_reset_pos_field.setValue(cfg.get(cfg.BIFI_RESET_POS))
         self.thin_eta_reset_pos_field.setValue(cfg.get(cfg.THIN_ETA_RESET_POS))
+
+        self.report_events_field.setChecked(cfg.get(cfg.REPORT_EVENTS))
 
         self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
         self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
@@ -391,6 +397,8 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
         cfg.set(cfg.BIFI_RESET_POS, self.bifi_reset_pos_field.value())
         cfg.set(cfg.THIN_ETA_RESET_POS, self.thin_eta_reset_pos_field.value())
+
+        cfg.set(cfg.REPORT_EVENTS, self.report_events_field.isChecked())
 
         cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
         cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())

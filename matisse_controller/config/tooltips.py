@@ -9,6 +9,8 @@ STATUS_MONITOR_FONT_SIZE = 'The font size of the status monitor at the bottom of
 BIFI_RESET_POS = 'The position at which to set the birefringent motor during a reset operation.'
 THIN_ETA_RESET_POS = 'The position at which to set the thin etalon motor during a reset operation, or before a large scan.'
 
+REPORT_EVENTS = 'Should we log important events (like an automatic correction while stabilizing) to a CSV file?'
+
 COMPONENT_LIMIT_OFFSET = 'How close should a component be to its limit before automatically taking an appropriate action?'
 
 WAVELENGTH_LOWER_LIMIT = 'The lowest wavelength the Matisse is capable of producing.'
