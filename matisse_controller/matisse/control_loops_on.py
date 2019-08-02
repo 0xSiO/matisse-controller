@@ -14,7 +14,7 @@ class ControlLoopsOn(AbstractContextManager):
         self.matisse = matisse
 
     def __enter__(self):
-        print('Starting control loops... ', end='')
+        print('Starting control loops... ')
         self.matisse.set_slow_piezo_control(True)
         self.matisse.set_thin_etalon_control(True)
         self.matisse.set_piezo_etalon_control(True)
@@ -23,7 +23,7 @@ class ControlLoopsOn(AbstractContextManager):
         print('Done.')
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print('Stopping control loops... ', end='')
+        print('Stopping control loops... ')
         self.matisse.set_fast_piezo_control(False)
         self.matisse.set_piezo_etalon_control(False)
         self.matisse.set_thin_etalon_control(False)
