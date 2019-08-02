@@ -32,6 +32,7 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
             self.force_large_scan = True
             self.restart_set_wavelength = False
             self.stabilization_auto_corrections = 0
+            self.report_events = False
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.query('MOTORBIREFRINGENT:CLEAR')
             self.query('MOTORTHINETALON:CLEAR')
@@ -664,3 +665,11 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
     def is_lock_correction_on(self):
         """:return: whether the lock correction thread is running"""
         return self.lock_correction_thread is not None and self.lock_correction_thread.is_alive()
+
+    def start_event_report(self):
+        self.report_events = True
+        print('Starting report for important events.')
+
+    def stop_event_report(self):
+        self.report_events = False
+        print('Stopping report for important events.')
