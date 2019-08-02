@@ -1,3 +1,4 @@
+from datetime import datetime
 from queue import Queue
 
 from PyQt5.QtCore import pyqtSlot
@@ -41,8 +42,14 @@ class LoggingArea(QTextEdit):
         if 'WARNING' in message:
             message = utils.orange_text(message)
 
+        # Don't print timestamp for just newlines
+        if not message.strip():
+            timestamp = ''
+        else:
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S | ")
+
         self.moveCursor(QTextCursor.End)
-        self.insertHtml(message.replace('\n', '<br>'))
+        self.insertHtml(timestamp + message.replace('\n', '<br>'))
 
     def clean_up(self):
         self.messages.put(ExitFlag())
