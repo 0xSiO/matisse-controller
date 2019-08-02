@@ -195,10 +195,12 @@ class Matisse(Constants):
         """
         Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.
 
+        A configurable Savitzky-Golay filter is used to smooth the data for analysis.
+
         The position is not changed if the difference between the current position and the "best" position is less than
         1/6 of the average separation between peaks in the power diode curve.
 
-        Additionally, plot the power data and motor position selection.
+        Additionally, plot the power data and motor position selection if plotting is enabled for this scan.
         """
         if self.exit_flag or self.scan_attempts > cfg.get(cfg.SCAN_LIMIT) or self.restart_set_wavelength:
             return
@@ -296,11 +298,16 @@ class Matisse(Constants):
         """
         Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
 
+        A configurable Savitzky-Golay filter is used to smooth the data for analysis.
+
         The position is not changed if the difference between the current position and the "best" position is less than
         1/6 of the average separation between valleys in the reflex curve.
 
-        If the thin etalon moves too far to one side and we end up in a valley of the power diode curve, then perform a
-        small birefringent scan to correct this.
+        If the thin etalon moves too far to one side and we end up in a valley of the power diode curve, the wavelength
+        will make large jumps, so a small birefringent scan is performed to correct this.
+
+        If the thin etalon moves into a region with too much noise (as determined by a normalized RMS deviation), quit
+        early and perform a large scan next time set_wavelength is called.
 
         Nudges the motor position a little bit away from the minimum to ensure good locking later.
         Additionally, plot the reflex data and motor position selection.
