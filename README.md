@@ -6,6 +6,15 @@ Requirements: Python 3.7+, NI VISA, PyVISA, pySerial, SciPy, matplotlib, PyQt5
 
 Tested on Windows 10 (x64).
 
+## Contents
+- [Installation](#installation)
+- [Usage](#usage)
+- [Terminology](#terminology)
+- [GUI Options](#gui-options)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Installation
 
     $ pip install matisse-controller
@@ -16,13 +25,59 @@ To launch the GUI, connect the Matisse and a supported wavemeter, and then run:
 
     $ matisse-controller
 
-To configure the behavior of the program, click the 'Configuration' menu option from the main GUI, or run:
-
-    $ matisse-config
-
 The GUI uses a Python API to control the Matisse. If you're writing a Python program, just import the subpackages
 that contain the APIs you want. The `matisse` subpackage contains Matisse-related components, the `config` subpackage
 contains configuration functionality, etc.
+
+To configure the behavior of the program using a GUI, click the 'Configuration' menu option from the main GUI, or run:
+
+    $ matisse-config
+
+Hovering over most fields in this configuration dialog will reveal tooltips with more information about what the options do. 
+
+## Terminology
+There are a few important bits of terminology that may be confusing: 
+- The _target wavelength_ is the wavelength that is explicitly set (via Set > Wavelength), but if no target wavelength is
+given, the current measured wavelength is considered to be the target wavelength instead.
+- _Auto-stabilization_ or _stabilization_ in this case refers to constantly checking and scanning the device up and down to 
+keep the wavelength at a particular value.
+- The _stabilization piezos_ are the reference cell, the piezo etalon, and the slow piezo.
+- _Scanning_ may refer to the act of moving a motor back and forth to locate an optimal position, or the act of adjusting the 
+reference cell and stabilization piezos to adjust the wavelength.
+
+## GUI Options
+
+### Console
+- Clear Log: clear the log window
+- Configuration: open a dialog that allows you to customize all configurable options
+- Reset: bring the Matisse back to a "good" default state, unlocked, not stabilzing, etc.
+- Restart: close and re-open the GUI, reinitialize everything. Good for when things go wrong.
+
+### Set
+- Wavelength: set the laser wavlength to a given value
+- BiFi Approx. Wavelength: move the birefringent filter to an approximate wavelength
+- BiFi Motor Position: set the position of the birefringent filter
+- Thin Etalon Motor Position: set the position of the thin etalon
+- Piezo Etalon Position: set the position of the piezo etalon
+- Slow Piezo Position: set the position of the slow piezo
+- RefCell Position: set the position of the reference cell
+
+### Scan
+- Birefringent Filter: perform a scan of the birefringent filter, choosing the location with maximum diode power
+- Thin Etalon: perform a scan of the thin etalon, choosing the mode closest to the target wavelength
+- Scan Device Up: slowly increase the wavelength by scanning the stabilization piezos and the thin etalon together
+- Scan Device Down: slowly decrease the wavelength by scanning the stabilization piezos and the thin etalon together
+- Stop Scanning Device: stop scanning the stabilization piezos and the thin etalon
+
+### Stabilization
+- Toggle Control Loop: toggle individual control loops of Matisse components
+- Toggle Lock Laser: toggle execution of a thread that attempts to lock the laser to the target wavelength
+- Set Recommended Fast Pz Setpoint: measure the reference cell transmission spectrum, and set the fast piezo setpoint
+- Toggle Auto Stabilization: toggle execution of a thread that scans the device up or down to keep the wavelength at
+the target value
+
+### Shamrock
+- Start PLE Scan: (currently in development)
 
 ## Development
 
