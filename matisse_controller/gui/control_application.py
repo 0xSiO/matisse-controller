@@ -18,6 +18,10 @@ from matisse_controller.matisse import Matisse
 
 
 class ControlApplication(QApplication):
+    """
+    A comprehensive control center to make use of the APIs provided in this package.
+    """
+
     EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
     CONFIRM_WAVELENGTH_CHANGE_THRESHOLD = 10
 
@@ -50,6 +54,7 @@ class ControlApplication(QApplication):
         window.resize(700, 300)
 
     def setup_logging(self):
+        """Initialize logging queue and redirect stdout to the logging area."""
         self.log_queue = queue.Queue()
         self.log_area = LoggingArea(self.log_queue)
         self.log_area.setReadOnly(True)
@@ -60,6 +65,7 @@ class ControlApplication(QApplication):
         self.log_redirector.__enter__()
 
     def setup_menus(self):
+        """Initialization of items in the menu bar go here."""
         menu_bar = self.window.menuBar()
 
         console_menu = menu_bar.addMenu('Console')
@@ -105,6 +111,11 @@ class ControlApplication(QApplication):
                                      self.piezo_eta_control_action, self.fast_pz_control_action]
 
     def setup_slots(self):
+        """
+        Connection of Qt signals to Qt slots goes here.
+
+        Please note that execution of slots will block the UI thread by default.
+        """
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
         self.configuration_action.triggered.connect(self.open_configuration)
@@ -143,6 +154,7 @@ class ControlApplication(QApplication):
 
     @handled_function
     def setup_widgets(self):
+        """Initialize any widgets the UI needs to run correctly."""
         self.status_monitor_queue = queue.Queue()
         self.status_monitor = StatusMonitor(self.matisse, self.status_monitor_queue)
         self.layout.addWidget(self.status_monitor)
@@ -157,6 +169,11 @@ class ControlApplication(QApplication):
 
     @pyqtSlot()
     def clean_up(self):
+        """
+        This method is run before the GUI exits, think of it like __del__.
+
+        Don't call this elsewhere unless you know what you're doing.
+        """
         self.reset_matisse()
 
         # Clean up widgets with running threads.
@@ -166,6 +183,7 @@ class ControlApplication(QApplication):
         self.log_redirector.__exit__(None, None, None)
 
     def error_dialog(self):
+        """Display an error dialog box with details of the most recent exception raised."""
         stack = list(traceback.format_exception(*sys.exc_info()))
         # Pick length of longest line in stack, with a cutoff at 185
         desired_width = min(max([len(line) for line in stack]), 185)
@@ -191,7 +209,7 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def reset_matisse(self, checked=False):
-        """Reset Matisse to a 'good' default state."""
+        """Reset Matisse to a 'good' default state: not locked or stabilizing, motors reset, all tasks finished, etc."""
         print('Starting reset.')
         if self.matisse is not None:
             self.matisse.exit_flag = True
@@ -212,6 +230,10 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def set_wavelength_dialog(self, checked):
+        """
+        Open a dialog to set the wavelength of the Matisse. If the difference in wavleength is greater than or equal to
+        the wavelength change threshold, display a warning to confirm the change.
+        """
         current_wavelength = self.matisse.target_wavelength
         if current_wavelength is None:
             current_wavelength = self.matisse.wavemeter_wavelength()
@@ -383,6 +405,10 @@ class ControlApplication(QApplication):
             return True
 
     def raise_error_from_future(self, future: Future):
+        """
+        If you'd lke to log errors that occur in worker threads, call add_done_callback on the future returned from
+        the work executor and pass in this function.
+        """
         async_task_error: Exception = future.exception()
         if async_task_error is not None:
             # Using the error_dialog method here seems to just hang the application forever.
