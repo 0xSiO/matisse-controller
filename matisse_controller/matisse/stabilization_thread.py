@@ -39,23 +39,27 @@ class StabilizationThread(threading.Thread):
                 if abs(drift) > cfg.get(cfg.STABILIZATION_TOLERANCE):
                     if drift < 0:
                         # measured wavelength is too high
-                        print(
-                            f"Too high, decreasing. Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+                        print(f"Wavelength too high, decreasing. Drift is {drift} nm.")
                         if not self._matisse.is_any_limit_reached():
+                            if cfg.get(cfg.REPORT_EVENTS):
+                                log_event('wavelength_drift', self._matisse, current_wavelength,
+                                          f"wavelength drifted by {drift} nm")
                             self._matisse.start_scan(self._matisse.SCAN_MODE_DOWN)
                         else:
                             self.do_stabilization_correction(current_wavelength, drift)
                     else:
                         # measured wavelength is too low
-                        print(
-                            f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+                        print(f"Wavelength too low, increasing.  Drift is {drift} nm.")
                         if not self._matisse.is_any_limit_reached():
+                            if cfg.get(cfg.REPORT_EVENTS):
+                                log_event('wavelength_drift', self._matisse, current_wavelength,
+                                          f"wavelength drifted by {drift} nm")
                             self._matisse.start_scan(self._matisse.SCAN_MODE_UP)
                         else:
                             self.do_stabilization_correction(current_wavelength, drift)
                 else:
                     self._matisse.stop_scan()
-                    # print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+                    # print(f"Within tolerance. Drift is {drift}")
                 time.sleep(cfg.get(cfg.STABILIZATION_DELAY))
             else:
                 self._matisse.stop_scan()
