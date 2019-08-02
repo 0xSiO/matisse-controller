@@ -7,15 +7,25 @@ from matisse_controller.matisse.control_loops_on import ControlLoopsOn
 
 class LockCorrectionThread(threading.Thread):
     """
-    Runs while the fast piezo attempts to obtain a lock. Exits if the laser cannot lock within a certain timeout, or if
-    a component reaches its limit while trying to lock. If the laser locks within the timeout, but a component has
-    reached its limit, makes an automatic correction to the slow piezo, piezo etalon, and RefCell.
+    A thread that runs while the fast piezo attempts to obtain a lock. Exits if the laser cannot lock within a certain
+    timeout, or if a component reaches its limit while trying to lock. If the laser locks within the timeout, but a
+    component has reached its limit, it makes an automatic correction to the slow piezo, piezo etalon, and RefCell.
     """
 
     UNABLE_TO_LOCK_MESSAGE = 'Try manually stabilizing the laser output power. Alternatively, try setting the ' \
                              'recommended fast piezo setpoint. '
 
     def __init__(self, matisse, timeout: float, messages: Queue, *args, **kwargs):
+        """
+        Initialize the thread.
+
+        :param matisse: an instance of Matisse
+        :type matisse: matisse_controller.Matisse
+        :param timeout: the locking timeout, usually cfg.LOCKING_TIMEOUT is passed here
+        :param messages: a message queue
+        :param args: args to pass to Thread.__init__
+        :param kwargs: kwargs to pass to Thread.__init__
+        """
         super().__init__(*args, **kwargs)
         self.matisse = matisse
         self.messages = messages

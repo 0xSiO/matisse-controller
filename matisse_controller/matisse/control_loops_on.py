@@ -2,10 +2,14 @@ from contextlib import AbstractContextManager
 
 
 class ControlLoopsOn(AbstractContextManager):
+    """A context manager to automatically enable and disable all control loops for Matisse components."""
+
     def __init__(self, matisse):
         """
-        :param matisse:
-        :type matisse: matisse.Matisse
+        Initialize the context manager.
+
+        :param matisse: an instance of Matisse
+        :type matisse: matisse_controller.Matisse
         """
         self.matisse = matisse
 

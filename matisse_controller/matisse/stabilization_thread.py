@@ -11,7 +11,9 @@ class StabilizationThread(threading.Thread):
 
         :param matisse: instance of Matisse to which we should send commands
         :type matisse: matisse.Matisse
-        :param messages: a message queue for this thread
+        :param messages: a message queue
+        :param args: args to pass to Thread.__init__
+        :param kwargs: kwargs to pass to Thread.__init__
         """
         super().__init__(*args, **kwargs)
         self._matisse = matisse
