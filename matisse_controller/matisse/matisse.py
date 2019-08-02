@@ -133,7 +133,7 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
                 self.query(f"MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}")
                 self.reset_stabilization_piezos()
                 # Normal BiFi scan
-                print(f"Setting BiFi to ~{wavelength} nm... ", end='')
+                print(f"Setting BiFi to ~{wavelength} nm... ")
                 self.set_bifi_wavelength(wavelength)
                 time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
                 print(f"Done. Wavelength is now {self.wavemeter_wavelength()} nm. "
@@ -215,7 +215,7 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
                                             f"{scan_range} and {Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT - scan_range}"
         positions = np.array(range(lower_end, upper_end, cfg.get(cfg.BIFI_SCAN_STEP)))
         voltages = np.array([])
-        print('Starting BiFi scan... ', end='')
+        print('Starting BiFi scan... ')
         for pos in positions:
             self.set_bifi_motor_pos(pos)
             voltages = np.append(voltages, self.query('DPOW:DC?', numeric_result=True))
@@ -333,7 +333,7 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
 
         positions = np.array(range(lower_end, upper_end, cfg.get(cfg.THIN_ETA_SCAN_STEP)))
         voltages = np.array([])
-        print('Starting thin etalon scan... ', end='')
+        print('Starting thin etalon scan... ')
         for pos in positions:
             self.set_thin_etalon_motor_pos(pos)
             voltages = np.append(voltages, self.query('TE:DC?', numeric_result=True))
