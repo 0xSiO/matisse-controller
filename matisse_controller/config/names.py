@@ -12,6 +12,8 @@ STATUS_MONITOR_FONT_SIZE = 'gui.status_monitor.font_size'
 BIFI_RESET_POS = 'matisse.reset_positions.birefringent_filter'
 THIN_ETA_RESET_POS = 'matisse.reset_positions.thin_etalon'
 
+REPORT_EVENTS = 'matisse.report_events'
+
 COMPONENT_LIMIT_OFFSET = 'matisse.component_limit_offset'
 
 WAVELENGTH_LOWER_LIMIT = 'matisse.wavelength.lower_limit'

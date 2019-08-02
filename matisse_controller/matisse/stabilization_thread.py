@@ -1,7 +1,9 @@
 import threading
 import time
 from queue import Queue
+
 import matisse_controller.config as cfg
+from matisse_controller.matisse.event_report import log_event
 
 
 class StabilizationThread(threading.Thread):
@@ -10,7 +12,7 @@ class StabilizationThread(threading.Thread):
         Initialize stabilization thread.
 
         :param matisse: instance of Matisse to which we should send commands
-        :type matisse: matisse.Matisse
+        :type matisse: matisse_controller.Matisse
         :param messages: a message queue
         :param args: args to pass to Thread.__init__
         :param kwargs: kwargs to pass to Thread.__init__
@@ -31,31 +33,26 @@ class StabilizationThread(threading.Thread):
         """
         while True:
             if self.messages.qsize() == 0:
-                drift = self._matisse.target_wavelength - self._matisse.wavemeter_wavelength()
+                current_wavelength = self._matisse.wavemeter_wavelength()
+                drift = self._matisse.target_wavelength - current_wavelength
                 drift = round(drift, cfg.get(cfg.WAVEMETER_PRECISION))
                 if abs(drift) > cfg.get(cfg.STABILIZATION_TOLERANCE):
                     if drift < 0:
                         # measured wavelength is too high
-                        print(f"Too high, decreasing. Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+                        print(
+                            f"Too high, decreasing. Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
                             self._matisse.start_scan(self._matisse.SCAN_MODE_DOWN)
                         else:
-                            print('WARNING: A component has hit a limit while adjusting the RefCell. '
-                                  'Attempting automatic corrections.')
-                            self._matisse.stop_scan()
-                            self._matisse.reset_stabilization_piezos()
-                            self._matisse.stabilization_auto_corrections += 1
+                            self.do_stabilization_correction(current_wavelength, drift)
                     else:
                         # measured wavelength is too low
-                        print(f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
+                        print(
+                            f"Too low, increasing.   Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
                             self._matisse.start_scan(self._matisse.SCAN_MODE_UP)
                         else:
-                            print('WARNING: A component has hit a limit while adjusting the RefCell. '
-                                  'Attempting automatic corrections.')
-                            self._matisse.stop_scan()
-                            self._matisse.reset_stabilization_piezos()
-                            self._matisse.stabilization_auto_corrections += 1
+                            self.do_stabilization_correction(current_wavelength, drift)
                 else:
                     self._matisse.stop_scan()
                     # print(f"Within tolerance.      Drift is {drift}, RefCell pos {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
@@ -63,3 +60,12 @@ class StabilizationThread(threading.Thread):
             else:
                 self._matisse.stop_scan()
                 break
+
+    def do_stabilization_correction(self, wavelength, drift):
+        print('WARNING: A component has hit a limit while adjusting the RefCell. Attempting automatic corrections.')
+        self._matisse.stop_scan()
+        if cfg.get(cfg.REPORT_EVENTS):
+            log_event('stabilization_correction', self._matisse, wavelength,
+                      'component hit a limit while auto-stabilization was on')
+        self._matisse.reset_stabilization_piezos()
+        self._matisse.stabilization_auto_corrections += 1

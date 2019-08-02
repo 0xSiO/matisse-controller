@@ -16,6 +16,7 @@ DEFAULTS = {
             'lower_limit': 700,
             'upper_limit': 800
         },
+        'report_events': False,
         'component_limit_offset': 0.05,
         'scanning': {
             'limit': 15,
