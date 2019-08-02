@@ -270,6 +270,12 @@ class Matisse(Constants):
                 self.birefringent_filter_scan(scan_range, repeat=True)
 
     def set_bifi_motor_pos(self, pos: int):
+        """
+        Set the birefringent filter motor to the selected position. This method will block the calling thread until the
+        motor status is idle again.
+
+        :param pos: the desired motor position
+        """
         assert 0 < pos < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, 'Target motor position out of range.'
         # Wait for motor to be ready to accept commands
         while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
@@ -280,6 +286,12 @@ class Matisse(Constants):
             pass
 
     def set_bifi_wavelength(self, value: float):
+        """
+        Set the birefringent filter motor to the approximate position corresponding to the given wavelength. This
+        position is determined by the Matisse.
+
+        :param value: the desired wavelength
+        """
         assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) < value < cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
             'Target wavelength out of range.'
         # Wait for motor to be ready to accept commands
@@ -291,7 +303,7 @@ class Matisse(Constants):
             pass
 
     def bifi_motor_status(self):
-        """Return the last 8 bits of the BiFi motor status."""
+        """:return: the last 8 bits of the birefringent filter motor status."""
         return int(self.query('MOTBI:STATUS?', numeric_result=True)) & 0b000000011111111
 
     def thin_etalon_scan(self, scan_range: int = None, repeat=False):
@@ -396,6 +408,16 @@ class Matisse(Constants):
                 self.thin_etalon_scan(scan_range, repeat=True)
 
     def limits_for_thin_etalon_scan(self, current_pos: int, scan_range: int):
+        """
+        Calculate appropriate lower and upper limits for a thin etalon scan.
+
+        If the current wavelength difference is more than 1 thin etalon mode, change the limits of the scan to only go
+        left or right, rather than scanning on both sides of the current position.
+
+        :param current_pos: the current position of the thin etalon
+        :param scan_range: the desired range of the thin etalon scan
+        :return: the appropriate lower and upper limits for the scan
+        """
         lower_limit = current_pos - scan_range
         upper_limit = current_pos + scan_range
         diff = self.target_wavelength - self.wavemeter_wavelength()
@@ -416,6 +438,12 @@ class Matisse(Constants):
         return lower_limit, upper_limit
 
     def set_thin_etalon_motor_pos(self, pos: int):
+        """
+        Set the thin etalon motor to the selected position. This method will block the calling thread until the motor
+        status is idle again.
+
+        :param pos: the desired motor position
+        """
         assert (Matisse.THIN_ETALON_LOWER_LIMIT < pos < Matisse.THIN_ETALON_UPPER_LIMIT), \
             f"Can't set thin etalon motor position to {pos}, this is out of range."
         # Wait for motor to be ready to accept commands
@@ -427,24 +455,28 @@ class Matisse(Constants):
             pass
 
     def thin_etalon_motor_status(self):
-        """Return the last 8 bits of the TE motor status."""
+        """:return: the last 8 bits of the thin etalon motor status."""
         return int(self.query('MOTTE:STATUS?', numeric_result=True)) & 0b000000011111111
 
     def set_slow_piezo_control(self, enable: bool):
+        """Set the status of the control loop for the slow piezo."""
         self.query(f"SLOWPIEZO:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
     def set_fast_piezo_control(self, enable: bool):
+        """Set the status of the control loop for the fast piezo."""
         self.query(f"FASTPIEZO:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
     def set_thin_etalon_control(self, enable: bool):
+        """Set the status of the control loop for the thin etalon."""
         self.query(f"THINETALON:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
     def set_piezo_etalon_control(self, enable: bool):
+        """Set the status of the control loop for the piezo etalon."""
         self.query(f"PIEZOETALON:CONTROLSTATUS {'RUN' if enable else 'STOP'}")
 
     def all_control_loops_on(self):
         """
-        Returns whether the slow piezo, thin etalon, piezo etalon, and fast piezo all have their control loops enabled.
+        :return: whether the slow piezo, thin etalon, piezo etalon, and fast piezo all have their control loops enabled.
         """
         return ('RUN' in self.query('SLOWPIEZO:CONTROLSTATUS?')
                 and 'RUN' in self.query('THINETALON:CONTROLSTATUS?')
@@ -452,17 +484,18 @@ class Matisse(Constants):
                 and 'RUN' in self.query('FASTPIEZO:CONTROLSTATUS?'))
 
     def fast_piezo_locked(self):
+        """:return: whether the fast piezo is currently locked."""
         return 'TRUE' in self.query('FASTPIEZO:LOCK?')
 
     def laser_locked(self):
+        """:return: whether the laser is locked, which means all control loops are on and the fast piezo is locked."""
         return self.all_control_loops_on() and self.fast_piezo_locked()
 
     def stabilize_on(self):
         """
-        Enable stabilization using the reference cell to keep the wavelength constant.
+        Enable stabilization using the stabilization piezos and thin etalon to keep the wavelength constant.
 
-        Starts a StabilizationThread as a daemon for this purpose. To stop stabilizing and unlock the laser, call
-        stabilize_off.
+        Starts a StabilizationThread as a daemon for this purpose. To stop stabilizing the laser, call stabilize_off.
         """
         if self.is_stabilizing():
             print('WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
@@ -475,7 +508,7 @@ class Matisse(Constants):
             self.stabilization_thread.start()
 
     def stabilize_off(self):
-        """Disable stabilization loop and unlock the laser. This stops the StabilizationThread."""
+        """Disable the stabilization loop, which stops the StabilizationThread."""
         if self.is_stabilizing():
             print('Stopping stabilization thread.')
             self.stabilization_thread.messages.put('stop')
@@ -484,27 +517,43 @@ class Matisse(Constants):
         else:
             print('WARNING: Stabilization thread is not running.')
 
-    def start_scan(self, mode):
-        self.query(f"SCAN:MODE {mode}")
+    def start_scan(self, direction):
+        """
+        Start a device scan in the given direction. To configure the speed of the scan, use the queries
+        SCAN:RISINGSPEED or SCAN:FALLINGSPEED.
+
+        :param direction: 0 = up, 1 = down
+        """
+        self.query(f"SCAN:MODE {direction}")
         self.query(f"SCAN:STATUS RUN")
 
     def stop_scan(self):
+        """Terminate a device scan."""
         self.query(f"SCAN:STATUS STOP")
 
     def is_scanning(self):
+        """
+        :return: whether the device is currently scanning
+        """
         return 'RUN' in self.query('SCAN:STATUS?')
 
     def is_stabilizing(self):
+        """
+        :return: whether the stabilization thread is running
+        """
         return self.stabilization_thread is not None and self.stabilization_thread.is_alive()
 
     def get_stabilizing_piezo_positions(self):
+        """
+        :return: the current positions of the "stabilization piezos": RefCell, piezo etalon, and slow piezo
+        """
         current_refcell_pos = self.query('SCAN:NOW?', numeric_result=True)
         current_slow_pz_pos = self.query('SLOWPIEZO:NOW?', numeric_result=True)
         current_pz_eta_pos = self.query('PIEZOETALON:BASELINE?', numeric_result=True)
         return current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos
 
     def is_any_limit_reached(self):
-        """Returns true if the RefCell, slow piezo, or piezo etalon are very close to one of their limits."""
+        """:return: whether any of the stabilization piezos are very close to their limits."""
 
         refcell_pos, pz_eta_pos, slow_pz_pos = self.get_stabilizing_piezo_positions()
         offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
@@ -515,12 +564,12 @@ class Matisse(Constants):
     def reset_stabilization_piezos(self):
         """
         Reset the slow piezo to the center, and the RefCell and piezo etalon according to the following rules:
-            If RefCell is at upper limit, piezo etalon is likely near lower limit
-                If wavelength is still too low, move RefCell down lower than usual and piezo etalon higher than usual
-            If RefCell is at lower limit, piezo etalon is likely near upper limit
-                If wavelength is still too high, move RefCell up higher than usual and piezo etalon lower than usual
-            Else,
-                Move RefCell and piezo etalon to their center positions.
+
+        - If RefCell is at upper limit, piezo etalon is likely near lower limit
+        - If wavelength is still too low, move RefCell down lower than usual and piezo etalon higher than usual
+        - If RefCell is at lower limit, piezo etalon is likely near upper limit
+        - If wavelength is still too high, move RefCell up higher than usual and piezo etalon lower than usual
+        - Else, move RefCell and piezo etalon to their center positions.
 
         A target wavelength must already be set in order to run this method.
         """
