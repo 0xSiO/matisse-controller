@@ -4,6 +4,8 @@ from serial import Serial, SerialException
 
 
 class WaveMaster:
+    """An interface to serial port communication with the WaveMaster wavemeter."""
+
     wavemeter_lock = threading.Lock()
 
     def __init__(self, port: str):
@@ -18,7 +20,13 @@ class WaveMaster:
     def close(self):
         self.serial.close()
 
-    def query(self, command: str):
+    def query(self, command: str) -> str:
+        """
+        Wait to acquire an exclusive lock on the serial port, then send a command to the wavemeter.
+
+        :param command: the command to send to the wavemeter
+        :return: the respond from the wavemeter to the given command
+        """
         with WaveMaster.wavemeter_lock:
             try:
                 if not self.serial.is_open:
@@ -31,10 +39,12 @@ class WaveMaster:
             except SerialException as err:
                 raise IOError("Error communicating with wavemeter serial port.") from err
 
-    def get_raw_value(self):
+    def get_raw_value(self) -> str:
+        """:return: the raw output from the wavemeter display."""
         return self.query('VAL?').split(',')[1].strip()
 
-    def get_wavelength(self):
+    def get_wavelength(self) -> float:
+        """:return: a measurement from the wavemeter. Blocks the calling thread until a number is received."""
         raw_value = self.get_raw_value()
         # Keep trying until we get a number
         while raw_value == 'NO SIGNAL' or raw_value == 'MULTI-LINE':

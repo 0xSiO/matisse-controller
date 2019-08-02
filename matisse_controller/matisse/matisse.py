@@ -15,7 +15,7 @@ from matisse_controller.shamrock_ple import ShamrockPLE
 from matisse_controller.wavemaster import WaveMaster
 
 
-class Matisse(Constants):
+class Matisse(Constants):  # TODO: No need to extend constants, maybe just import them
     matisse_lock = threading.Lock()
 
     def __init__(self):

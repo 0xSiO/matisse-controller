@@ -13,6 +13,9 @@ shamrock: WinDLL  # TODO: shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF64.d
 
 
 class ShamrockPLE:
+    """PLE scanning functionality with the Andor Shamrock and Newton CCD."""
+    # TODO: Currently untested, waiting on Andor to send me the SDK
+
     def __init__(self, matisse):
         self.matisse = matisse
         self.exit_flag = False

@@ -1,6 +1,6 @@
-import numpy as np
+"""Example data to use for developing scan optimization logic."""
 
-# Example data to use for developing scan optimization logic
+import numpy as np
 
 bifi_positions = np.array(range(100000 - 1000, 100000 + 1000, 3))
 diode_voltages = np.array([0.2529297, 0.2626953, 0.2626953, 0.2626953, 0.2558594, 0.2617188, 0.2568359,

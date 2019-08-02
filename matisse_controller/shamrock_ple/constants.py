@@ -1,3 +1,5 @@
+"""Constants used by the Andor SDK to configure CCD behavior."""
+
 ACQ_MODE_SINGLE = 1
 ACQ_MODE_ACCUMULATE = 2
 ACQ_MODE_KINETICS = 3

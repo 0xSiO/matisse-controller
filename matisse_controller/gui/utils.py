@@ -1,3 +1,5 @@
+"""Utility functions and decorators for use in the GUI."""
+
 import types
 from functools import wraps
 
