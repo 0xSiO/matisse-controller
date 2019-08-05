@@ -1,0 +1,1586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>matisse_controller.gui.dialogs.configuration_dialog API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>matisse_controller.gui.dialogs.configuration_dialog</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import *
+
+import matisse_controller.config as cfg
+import matisse_controller.config.tooltips as tooltips
+from matisse_controller.matisse import Matisse
+
+
+class ConfigurationDialog(QDialog):
+    &#34;&#34;&#34;A dialog for displaying and modifying selected configurable options that affect the behavior of the program.&#34;&#34;&#34;
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowTitle(&#39;Configuration&#39;)
+        self.resize(1000, 550)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.add_options()
+        self.set_current_values_from_config()
+        self.add_buttons()
+
+    def add_options(self):
+        general_options = self.create_general_options()
+        gui_options = self.create_gui_options()
+        scan_options = self.create_scan_options()
+        locking_options = self.create_locking_options()
+        self.set_tooltips()
+
+        form = QWidget()
+        form_layout = QHBoxLayout()
+        form.setLayout(form_layout)
+        column_1 = QVBoxLayout()
+        column_1.addWidget(general_options)
+        column_1.addWidget(gui_options)
+        form_layout.addLayout(column_1)
+        form_layout.addWidget(scan_options)
+        form_layout.addWidget(locking_options)
+        self.layout.addWidget(form)
+
+    def create_general_options(self):
+        general_options = QGroupBox(&#39;General&#39;)
+        general_layout = QFormLayout()
+        general_options.setLayout(general_layout)
+        self.matisse_device_id_field = QLineEdit()
+        general_layout.addRow(&#39;Matisse device ID: &#39;, self.matisse_device_id_field)
+        self.wavemeter_port_field = QLineEdit()
+        general_layout.addRow(&#39;Wavemeter port: &#39;, self.wavemeter_port_field)
+        self.wavemeter_precision_field = QSpinBox()
+        self.wavemeter_precision_field.setMinimum(0)
+        general_layout.addRow(&#39;Wavemeter precision: &#39;, self.wavemeter_precision_field)
+        self.wavemeter_measurement_delay_field = QDoubleSpinBox()
+        self.wavemeter_measurement_delay_field.setMinimum(0)
+        self.wavemeter_measurement_delay_field.setSingleStep(0.1)
+        general_layout.addRow(&#39;Wavemeter measurement delay: &#39;, self.wavemeter_measurement_delay_field)
+        self.component_limit_offset_field = QDoubleSpinBox()
+        self.component_limit_offset_field.setMinimum(0)
+        general_layout.addRow(&#39;Component limit offset: &#39;, self.component_limit_offset_field)
+        self.wavelength_lower_limit_field = QDoubleSpinBox()
+        self.wavelength_lower_limit_field.setMinimum(0)
+        self.wavelength_lower_limit_field.setMaximum(2000)
+        general_layout.addRow(&#39;Wavelength lower limit: &#39;, self.wavelength_lower_limit_field)
+        self.wavelength_upper_limit_field = QDoubleSpinBox()
+        self.wavelength_upper_limit_field.setMinimum(0)
+        self.wavelength_upper_limit_field.setMaximum(2000)
+        general_layout.addRow(&#39;Wavelength upper limit: &#39;, self.wavelength_upper_limit_field)
+        self.bifi_reset_pos_field = QSpinBox()
+        self.bifi_reset_pos_field.setMinimum(Matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
+        self.bifi_reset_pos_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
+        general_layout.addRow(&#39;BiFi reset position: &#39;, self.bifi_reset_pos_field)
+        self.thin_eta_reset_pos_field = QSpinBox()
+        self.thin_eta_reset_pos_field.setMinimum(Matisse.THIN_ETALON_LOWER_LIMIT)
+        self.thin_eta_reset_pos_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT)
+        general_layout.addRow(&#39;Thin etalon reset position: &#39;, self.thin_eta_reset_pos_field)
+        self.report_events_field = QCheckBox()
+        general_layout.addRow(&#39;Report events? &#39;, self.report_events_field)
+        return general_options
+
+    def create_gui_options(self):
+        gui_options = QGroupBox(&#39;GUI&#39;)
+        gui_layout = QFormLayout()
+        gui_options.setLayout(gui_layout)
+        self.status_monitor_delay_field = QDoubleSpinBox()
+        self.status_monitor_delay_field.setMinimum(0)
+        gui_layout.addRow(&#39;Status monitor update delay: &#39;, self.status_monitor_delay_field)
+        self.status_monitor_font_size_field = QSpinBox()
+        self.status_monitor_font_size_field.setMinimum(0)
+        gui_layout.addRow(&#39;Status monitor font size: &#39;, self.status_monitor_font_size_field)
+        return gui_options
+
+    def create_scan_options(self):
+        scan_options = QGroupBox(&#39;Scanning&#39;)
+        scan_layout = QFormLayout()
+        scan_options.setLayout(scan_layout)
+        self.scan_limit_field = QSpinBox()
+        self.scan_limit_field.setMinimum(0)
+        scan_layout.addRow(&#39;Number of scans before retry: &#39;, self.scan_limit_field)
+        self.bifi_scan_range_field = QSpinBox()
+        self.bifi_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
+        scan_layout.addRow(&#39;BiFi normal scan range:&#39;, self.bifi_scan_range_field)
+        self.bifi_small_scan_range_field = QSpinBox()
+        self.bifi_small_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
+        scan_layout.addRow(&#39;BiFi small scan range:&#39;, self.bifi_small_scan_range_field)
+        self.bifi_scan_step_field = QSpinBox()
+        scan_layout.addRow(&#39;BiFi scan step:&#39;, self.bifi_scan_step_field)
+        self.bifi_scan_show_plots_field = QCheckBox()
+        scan_layout.addRow(&#39;Show BiFi scan plots? &#39;, self.bifi_scan_show_plots_field)
+        self.bifi_smoothing_window_field = QSpinBox()
+        self.bifi_smoothing_window_field.setMinimum(1)
+        self.bifi_smoothing_window_field.setSingleStep(2)
+        self.bifi_smoothing_window_field.valueChanged.connect(self.ensure_odd_value)
+        scan_layout.addRow(&#39;BiFi smoothing filter window: &#39;, self.bifi_smoothing_window_field)
+        self.bifi_smoothing_polyorder_field = QSpinBox()
+        self.bifi_smoothing_polyorder_field.setMinimum(1)
+        scan_layout.addRow(&#39;BiFi smoothing filter polyorder: &#39;, self.bifi_smoothing_polyorder_field)
+        self.thin_eta_scan_range_field = QSpinBox()
+        self.thin_eta_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 2)
+        scan_layout.addRow(&#39;Thin etalon normal scan range:&#39;, self.thin_eta_scan_range_field)
+        self.thin_eta_small_scan_range_field = QSpinBox()
+        self.thin_eta_small_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 4)
+        scan_layout.addRow(&#39;Thin etalon small scan range:&#39;, self.thin_eta_small_scan_range_field)
+        self.thin_eta_scan_step_field = QSpinBox()
+        scan_layout.addRow(&#39;Thin etalon scan step:&#39;, self.thin_eta_scan_step_field)
+        self.thin_eta_nudge_field = QSpinBox()
+        scan_layout.addRow(&#39;Thin etalon scan nudge:&#39;, self.thin_eta_nudge_field)
+        self.thin_eta_scan_show_plots_field = QCheckBox()
+        scan_layout.addRow(&#39;Show thin etalon scan plots? &#39;, self.thin_eta_scan_show_plots_field)
+        self.thin_eta_smoothing_window_field = QSpinBox()
+        self.thin_eta_smoothing_window_field.setMinimum(1)
+        self.thin_eta_smoothing_window_field.setSingleStep(2)
+        self.thin_eta_smoothing_window_field.valueChanged.connect(self.ensure_odd_value)
+        scan_layout.addRow(&#39;Thin etalon smoothing filter window: &#39;, self.thin_eta_smoothing_window_field)
+        self.thin_eta_smoothing_polyorder_field = QSpinBox()
+        self.thin_eta_smoothing_polyorder_field.setMinimum(1)
+        scan_layout.addRow(&#39;Thin etalon smoothing filter polyorder: &#39;, self.thin_eta_smoothing_polyorder_field)
+        self.thin_eta_max_allowed_stddev_field = QDoubleSpinBox()
+        self.thin_eta_max_allowed_stddev_field.setMinimum(0)
+        scan_layout.addRow(&#39;Thin etalon max allowed stddev: &#39;, self.thin_eta_max_allowed_stddev_field)
+        self.refcell_rising_speed_field = QDoubleSpinBox()
+        self.refcell_rising_speed_field.setDecimals(3)
+        self.refcell_rising_speed_field.setSingleStep(0.001)
+        self.refcell_rising_speed_field.setMinimum(0)
+        self.refcell_rising_speed_field.setMaximum(0.1)
+        scan_layout.addRow(&#39;RefCell scan rising speed: &#39;, self.refcell_rising_speed_field)
+        self.refcell_falling_speed_field = QDoubleSpinBox()
+        self.refcell_falling_speed_field.setDecimals(3)
+        self.refcell_falling_speed_field.setSingleStep(0.001)
+        self.refcell_falling_speed_field.setMinimum(0)
+        self.refcell_falling_speed_field.setMaximum(0.1)
+        scan_layout.addRow(&#39;RefCell scan falling speed: &#39;, self.refcell_falling_speed_field)
+        self.large_wavelength_drift_field = QDoubleSpinBox()
+        scan_layout.addRow(&#39;Large wavelength drift: &#39;, self.large_wavelength_drift_field)
+        self.medium_wavelength_drift_field = QDoubleSpinBox()
+        scan_layout.addRow(&#39;Medium wavelength drift: &#39;, self.medium_wavelength_drift_field)
+        self.small_wavelength_drift_field = QDoubleSpinBox()
+        scan_layout.addRow(&#39;Small wavelength drift: &#39;, self.small_wavelength_drift_field)
+        return scan_options
+
+    def create_locking_options(self):
+        locking_options = QGroupBox(&#39;Locking/Stabilization&#39;)
+        locking_layout = QFormLayout()
+        locking_options.setLayout(locking_layout)
+        self.locking_timeout_field = QDoubleSpinBox()
+        self.locking_timeout_field.setMinimum(0)
+        locking_layout.addRow(&#39;Locking timeout: &#39;, self.locking_timeout_field)
+        self.fast_pz_setpoint_lower_limit_field = QDoubleSpinBox()
+        self.fast_pz_setpoint_lower_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.fast_pz_setpoint_lower_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Fast piezo setpoint scan lower limit: &#39;, self.fast_pz_setpoint_lower_limit_field)
+        self.fast_pz_setpoint_upper_limit_field = QDoubleSpinBox()
+        self.fast_pz_setpoint_upper_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.fast_pz_setpoint_upper_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Fast piezo setpoint scan upper limit: &#39;, self.fast_pz_setpoint_upper_limit_field)
+        self.fast_pz_setpoint_num_points_field = QSpinBox()
+        self.fast_pz_setpoint_num_points_field.setMinimum(32)
+        self.fast_pz_setpoint_num_points_field.setMaximum(512)
+        locking_layout.addRow(&#39;Fast piezo setpoint scan sample: &#39;, self.fast_pz_setpoint_num_points_field)
+        self.fast_pz_setpoint_num_scans_field = QSpinBox()
+        self.fast_pz_setpoint_num_scans_field.setMinimum(1)
+        locking_layout.addRow(&#39;Fast piezo setpoint number of scans: &#39;, self.fast_pz_setpoint_num_scans_field)
+        self.auto_correction_limit_field = QSpinBox()
+        self.auto_correction_limit_field.setMinimum(1)
+        locking_layout.addRow(&#39;Number of auto-corrections before retry: &#39;, self.auto_correction_limit_field)
+        self.pz_eta_upper_correction_pos_field = QDoubleSpinBox()
+        self.pz_eta_upper_correction_pos_field.setSingleStep(0.01)
+        self.pz_eta_upper_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_upper_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Piezo etalon upper correction pos: &#39;, self.pz_eta_upper_correction_pos_field)
+        self.slow_pz_upper_correction_pos_field = QDoubleSpinBox()
+        self.slow_pz_upper_correction_pos_field.setSingleStep(0.01)
+        self.slow_pz_upper_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_upper_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Slow piezo upper correction pos: &#39;, self.slow_pz_upper_correction_pos_field)
+        self.refcell_upper_correction_pos_field = QDoubleSpinBox()
+        self.refcell_upper_correction_pos_field.setSingleStep(0.01)
+        self.refcell_upper_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_upper_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;RefCell upper correction pos: &#39;, self.refcell_upper_correction_pos_field)
+        self.pz_eta_mid_correction_pos_field = QDoubleSpinBox()
+        self.pz_eta_mid_correction_pos_field.setSingleStep(0.01)
+        self.pz_eta_mid_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_mid_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Piezo etalon mid correction pos: &#39;, self.pz_eta_mid_correction_pos_field)
+        self.slow_pz_mid_correction_pos_field = QDoubleSpinBox()
+        self.slow_pz_mid_correction_pos_field.setSingleStep(0.01)
+        self.slow_pz_mid_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_mid_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Slow piezo mid correction pos: &#39;, self.slow_pz_mid_correction_pos_field)
+        self.refcell_mid_correction_pos_field = QDoubleSpinBox()
+        self.refcell_mid_correction_pos_field.setSingleStep(0.01)
+        self.refcell_mid_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_mid_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;RefCell mid correction pos: &#39;, self.refcell_mid_correction_pos_field)
+        self.pz_eta_lower_correction_pos_field = QDoubleSpinBox()
+        self.pz_eta_lower_correction_pos_field.setSingleStep(0.01)
+        self.pz_eta_lower_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_lower_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Piezo etalon lower correction pos: &#39;, self.pz_eta_lower_correction_pos_field)
+        self.slow_pz_lower_correction_pos_field = QDoubleSpinBox()
+        self.slow_pz_lower_correction_pos_field.setSingleStep(0.01)
+        self.slow_pz_lower_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_lower_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Slow piezo lower correction pos: &#39;, self.slow_pz_lower_correction_pos_field)
+        self.refcell_lower_correction_pos_field = QDoubleSpinBox()
+        self.refcell_lower_correction_pos_field.setSingleStep(0.01)
+        self.refcell_lower_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_lower_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;RefCell lower correction pos: &#39;, self.refcell_lower_correction_pos_field)
+        self.stabilization_rising_speed_field = QDoubleSpinBox()
+        self.stabilization_rising_speed_field.setDecimals(3)
+        self.stabilization_rising_speed_field.setSingleStep(0.001)
+        self.stabilization_rising_speed_field.setMinimum(0)
+        self.stabilization_rising_speed_field.setMaximum(0.1)
+        locking_layout.addRow(&#39;Auto-stabilization rising speed: &#39;, self.stabilization_rising_speed_field)
+        self.stabilization_falling_speed_field = QDoubleSpinBox()
+        self.stabilization_falling_speed_field.setDecimals(3)
+        self.stabilization_falling_speed_field.setSingleStep(0.001)
+        self.stabilization_falling_speed_field.setMinimum(0)
+        self.stabilization_falling_speed_field.setMaximum(0.1)
+        locking_layout.addRow(&#39;Auto-stabilization falling speed: &#39;, self.stabilization_falling_speed_field)
+        self.stabilization_delay_field = QDoubleSpinBox()
+        self.stabilization_delay_field.setMinimum(0.1)
+        locking_layout.addRow(&#39;Auto-stabilization delay: &#39;, self.stabilization_delay_field)
+        self.stabilization_tolerance_field = QDoubleSpinBox()
+        self.stabilization_tolerance_field.setDecimals(4)
+        self.stabilization_tolerance_field.setSingleStep(0.0001)
+        self.stabilization_tolerance_field.setMinimum(0.0001)
+        locking_layout.addRow(&#39;Auto-stabilization tolerance: &#39;, self.stabilization_tolerance_field)
+        return locking_options
+
+    def set_tooltips(self):
+        self.matisse_device_id_field.setToolTip(tooltips.MATISSE_DEVICE_ID)
+        self.wavemeter_port_field.setToolTip(tooltips.WAVEMETER_PORT)
+        self.wavemeter_precision_field.setToolTip(tooltips.WAVEMETER_PRECISION)
+        self.wavemeter_measurement_delay_field.setToolTip(tooltips.WAVEMETER_MEASUREMENT_DELAY)
+
+        self.status_monitor_delay_field.setToolTip(tooltips.STATUS_MONITOR_DELAY)
+        self.status_monitor_font_size_field.setToolTip(tooltips.STATUS_MONITOR_FONT_SIZE)
+
+        self.bifi_reset_pos_field.setToolTip(tooltips.BIFI_RESET_POS)
+        self.thin_eta_reset_pos_field.setToolTip(tooltips.THIN_ETA_RESET_POS)
+
+        self.report_events_field.setToolTip(tooltips.REPORT_EVENTS)
+
+        self.component_limit_offset_field.setToolTip(tooltips.COMPONENT_LIMIT_OFFSET)
+
+        self.wavelength_lower_limit_field.setToolTip(tooltips.WAVELENGTH_LOWER_LIMIT)
+        self.wavelength_upper_limit_field.setToolTip(tooltips.WAVELENGTH_UPPER_LIMIT)
+
+        self.scan_limit_field.setToolTip(tooltips.SCAN_LIMIT)
+
+        self.bifi_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE)
+        self.bifi_small_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE_SMALL)
+        self.bifi_scan_step_field.setToolTip(tooltips.BIFI_SCAN_STEP)
+        self.bifi_scan_show_plots_field.setToolTip(tooltips.BIFI_SCAN_SHOW_PLOTS)
+        self.bifi_smoothing_window_field.setToolTip(tooltips.BIFI_SMOOTHING_FILTER_WINDOW)
+        self.bifi_smoothing_polyorder_field.setToolTip(tooltips.BIFI_SMOOTHING_FILTER_POLYORDER)
+
+        self.thin_eta_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE)
+        self.thin_eta_small_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE_SMALL)
+        self.thin_eta_scan_step_field.setToolTip(tooltips.THIN_ETA_SCAN_STEP)
+        self.thin_eta_nudge_field.setToolTip(tooltips.THIN_ETA_NUDGE)
+        self.thin_eta_scan_show_plots_field.setToolTip(tooltips.THIN_ETA_SHOW_PLOTS)
+        self.thin_eta_smoothing_window_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_WINDOW)
+        self.thin_eta_smoothing_polyorder_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_POLYORDER)
+        self.thin_eta_max_allowed_stddev_field.setToolTip(tooltips.THIN_ETA_MAX_ALLOWED_STDDEV)
+
+        self.refcell_rising_speed_field.setToolTip(tooltips.REFCELL_SCAN_RISING_SPEED)
+        self.refcell_falling_speed_field.setToolTip(tooltips.REFCELL_SCAN_FALLING_SPEED)
+
+        self.large_wavelength_drift_field.setToolTip(tooltips.LARGE_WAVELENGTH_DRIFT)
+        self.medium_wavelength_drift_field.setToolTip(tooltips.MEDIUM_WAVELENGTH_DRIFT)
+        self.small_wavelength_drift_field.setToolTip(tooltips.SMALL_WAVELENGTH_DRIFT)
+
+        self.locking_timeout_field.setToolTip(tooltips.LOCKING_TIMEOUT)
+        self.fast_pz_setpoint_lower_limit_field.setToolTip(tooltips.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT)
+        self.fast_pz_setpoint_upper_limit_field.setToolTip(tooltips.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT)
+        self.fast_pz_setpoint_num_points_field.setToolTip(tooltips.FAST_PZ_SETPOINT_NUM_POINTS)
+        self.fast_pz_setpoint_num_scans_field.setToolTip(tooltips.FAST_PZ_SETPOINT_NUM_SCANS)
+
+        self.stabilization_rising_speed_field.setToolTip(tooltips.STABILIZATION_RISING_SPEED)
+        self.stabilization_falling_speed_field.setToolTip(tooltips.STABILIZATION_FALLING_SPEED)
+        self.stabilization_delay_field.setToolTip(tooltips.STABILIZATION_DELAY)
+        self.stabilization_tolerance_field.setToolTip(tooltips.STABILIZATION_TOLERANCE)
+
+        self.auto_correction_limit_field.setToolTip(tooltips.CORRECTION_LIMIT)
+
+    def set_current_values_from_config(self):
+        self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
+        self.wavemeter_port_field.setText(cfg.get(cfg.WAVEMETER_PORT))
+        self.wavemeter_precision_field.setValue(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.wavemeter_measurement_delay_field.setValue(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+
+        self.status_monitor_delay_field.setValue(cfg.get(cfg.STATUS_MONITOR_DELAY))
+        self.status_monitor_font_size_field.setValue(cfg.get(cfg.STATUS_MONITOR_FONT_SIZE))
+
+        self.component_limit_offset_field.setValue(cfg.get(cfg.COMPONENT_LIMIT_OFFSET))
+        self.wavelength_lower_limit_field.setValue(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.bifi_reset_pos_field.setValue(cfg.get(cfg.BIFI_RESET_POS))
+        self.thin_eta_reset_pos_field.setValue(cfg.get(cfg.THIN_ETA_RESET_POS))
+
+        self.report_events_field.setChecked(cfg.get(cfg.REPORT_EVENTS))
+
+        self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
+        self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
+        self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+        self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
+        self.bifi_scan_show_plots_field.setChecked(cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS))
+        self.bifi_smoothing_window_field.setValue(cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW))
+        self.bifi_smoothing_polyorder_field.setValue(cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER))
+
+        self.thin_eta_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE))
+        self.thin_eta_small_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+        self.thin_eta_scan_step_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_STEP))
+        self.thin_eta_nudge_field.setValue(cfg.get(cfg.THIN_ETA_NUDGE))
+        self.thin_eta_scan_show_plots_field.setChecked(cfg.get(cfg.THIN_ETA_SHOW_PLOTS))
+        self.thin_eta_smoothing_window_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW))
+        self.thin_eta_smoothing_polyorder_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
+        self.thin_eta_max_allowed_stddev_field.setValue(cfg.get(cfg.THIN_ETA_MAX_ALLOWED_STDDEV))
+
+        self.refcell_rising_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_RISING_SPEED))
+        self.refcell_falling_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED))
+
+        self.large_wavelength_drift_field.setValue(cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+        self.medium_wavelength_drift_field.setValue(cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT))
+        self.small_wavelength_drift_field.setValue(cfg.get(cfg.SMALL_WAVELENGTH_DRIFT))
+
+        self.locking_timeout_field.setValue(cfg.get(cfg.LOCKING_TIMEOUT))
+        self.fast_pz_setpoint_lower_limit_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT))
+        self.fast_pz_setpoint_upper_limit_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT))
+        self.fast_pz_setpoint_num_points_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
+        self.fast_pz_setpoint_num_scans_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS))
+
+        self.auto_correction_limit_field.setValue(cfg.get(cfg.CORRECTION_LIMIT))
+
+        self.pz_eta_upper_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS))
+        self.slow_pz_upper_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_UPPER_CORRECTION_POS))
+        self.refcell_upper_correction_pos_field.setValue(cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS))
+        self.pz_eta_mid_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_MID_CORRECTION_POS))
+        self.slow_pz_mid_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS))
+        self.refcell_mid_correction_pos_field.setValue(cfg.get(cfg.REFCELL_MID_CORRECTION_POS))
+        self.pz_eta_lower_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_LOWER_CORRECTION_POS))
+        self.slow_pz_lower_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS))
+        self.refcell_lower_correction_pos_field.setValue(cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS))
+
+        self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
+        self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
+        self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
+        self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
+
+    def add_buttons(self):
+        button_box = QDialogButtonBox(QDialogButtonBox.RestoreDefaults | QDialogButtonBox.Save |
+                                      QDialogButtonBox.Cancel)
+        button_box.button(QDialogButtonBox.RestoreDefaults).clicked.connect(self.restore_defaults)
+        button_box.button(QDialogButtonBox.Save).clicked.connect(self.save_configuration)
+        button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.cancel)
+        self.layout.addWidget(button_box)
+
+    @pyqtSlot(bool)
+    def restore_defaults(self, checked):
+        cfg.restore_defaults()
+        self.set_current_values_from_config()
+
+    @pyqtSlot(bool)
+    def save_configuration(self, checked):
+        print(&#39;Saving configuration.&#39;)
+        cfg.set(cfg.MATISSE_DEVICE_ID, self.matisse_device_id_field.text())
+        cfg.set(cfg.WAVEMETER_PORT, self.wavemeter_port_field.text())
+        cfg.set(cfg.WAVEMETER_PRECISION, self.wavemeter_precision_field.value())
+        cfg.set(cfg.WAVEMETER_MEASUREMENT_DELAY, self.wavemeter_measurement_delay_field.value())
+
+        cfg.set(cfg.STATUS_MONITOR_DELAY, self.status_monitor_delay_field.value())
+        cfg.set(cfg.STATUS_MONITOR_FONT_SIZE, self.status_monitor_font_size_field.value())
+
+        cfg.set(cfg.COMPONENT_LIMIT_OFFSET, self.component_limit_offset_field.value())
+        cfg.set(cfg.WAVELENGTH_LOWER_LIMIT, self.wavelength_lower_limit_field.value())
+        cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
+        cfg.set(cfg.BIFI_RESET_POS, self.bifi_reset_pos_field.value())
+        cfg.set(cfg.THIN_ETA_RESET_POS, self.thin_eta_reset_pos_field.value())
+
+        cfg.set(cfg.REPORT_EVENTS, self.report_events_field.isChecked())
+
+        cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
+        cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
+        cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
+        cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())
+        cfg.set(cfg.BIFI_SCAN_SHOW_PLOTS, self.bifi_scan_show_plots_field.isChecked())
+        cfg.set(cfg.BIFI_SMOOTHING_FILTER_WINDOW, self.bifi_smoothing_window_field.value())
+        cfg.set(cfg.BIFI_SMOOTHING_FILTER_POLYORDER, self.bifi_smoothing_polyorder_field.value())
+
+        cfg.set(cfg.THIN_ETA_SCAN_RANGE, self.thin_eta_scan_range_field.value())
+        cfg.set(cfg.THIN_ETA_SCAN_RANGE_SMALL, self.thin_eta_small_scan_range_field.value())
+        cfg.set(cfg.THIN_ETA_SCAN_STEP, self.thin_eta_scan_step_field.value())
+        cfg.set(cfg.THIN_ETA_NUDGE, self.thin_eta_nudge_field.value())
+        cfg.set(cfg.THIN_ETA_SHOW_PLOTS, self.thin_eta_scan_show_plots_field.isChecked())
+        cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW, self.thin_eta_smoothing_window_field.value())
+        cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER, self.thin_eta_smoothing_polyorder_field.value())
+        cfg.set(cfg.THIN_ETA_MAX_ALLOWED_STDDEV, self.thin_eta_max_allowed_stddev_field.value())
+
+        cfg.set(cfg.REFCELL_SCAN_RISING_SPEED, self.refcell_rising_speed_field.value())
+        cfg.set(cfg.REFCELL_SCAN_FALLING_SPEED, self.refcell_falling_speed_field.value())
+
+        cfg.set(cfg.LARGE_WAVELENGTH_DRIFT, self.large_wavelength_drift_field.value())
+        cfg.set(cfg.MEDIUM_WAVELENGTH_DRIFT, self.medium_wavelength_drift_field.value())
+        cfg.set(cfg.SMALL_WAVELENGTH_DRIFT, self.small_wavelength_drift_field.value())
+
+        cfg.set(cfg.LOCKING_TIMEOUT, self.locking_timeout_field.value())
+        cfg.set(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT, self.fast_pz_setpoint_lower_limit_field.value())
+        cfg.set(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT, self.fast_pz_setpoint_upper_limit_field.value())
+        cfg.set(cfg.FAST_PZ_SETPOINT_NUM_POINTS, self.fast_pz_setpoint_num_points_field.value())
+        cfg.set(cfg.FAST_PZ_SETPOINT_NUM_SCANS, self.fast_pz_setpoint_num_scans_field.value())
+
+        cfg.set(cfg.CORRECTION_LIMIT, self.auto_correction_limit_field.value())
+
+        cfg.set(cfg.PIEZO_ETA_UPPER_CORRECTION_POS, self.pz_eta_upper_correction_pos_field.value())
+        cfg.set(cfg.SLOW_PIEZO_UPPER_CORRECTION_POS, self.slow_pz_upper_correction_pos_field.value())
+        cfg.set(cfg.REFCELL_UPPER_CORRECTION_POS, self.refcell_upper_correction_pos_field.value())
+        cfg.set(cfg.PIEZO_ETA_MID_CORRECTION_POS, self.pz_eta_mid_correction_pos_field.value())
+        cfg.set(cfg.SLOW_PIEZO_MID_CORRECTION_POS, self.slow_pz_mid_correction_pos_field.value())
+        cfg.set(cfg.REFCELL_MID_CORRECTION_POS, self.refcell_mid_correction_pos_field.value())
+        cfg.set(cfg.PIEZO_ETA_LOWER_CORRECTION_POS, self.pz_eta_lower_correction_pos_field.value())
+        cfg.set(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS, self.slow_pz_lower_correction_pos_field.value())
+        cfg.set(cfg.REFCELL_LOWER_CORRECTION_POS, self.refcell_lower_correction_pos_field.value())
+
+        cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
+        cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
+        cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
+        cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+
+        cfg.save()
+        self.close()
+
+    @pyqtSlot(bool)
+    def cancel(self, checked):
+        self.close()
+
+    @pyqtSlot(int)
+    def ensure_odd_value(self, value):
+        field: QSpinBox = self.sender()
+        if value % 2 == 0:
+            field.setValue(value - 1)
+
+
+def main():
+    app = QApplication([])
+    d = ConfigurationDialog()
+    d.exec()
+    app.exit()
+
+
+if __name__ == &#39;__main__&#39;:
+    main()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def main():
+    app = QApplication([])
+    d = ConfigurationDialog()
+    d.exec()
+    app.exit()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog"><code class="flex name class">
+<span>class <span class="ident">ConfigurationDialog</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A dialog for displaying and modifying selected configurable options that affect the behavior of the program.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class ConfigurationDialog(QDialog):
+    &#34;&#34;&#34;A dialog for displaying and modifying selected configurable options that affect the behavior of the program.&#34;&#34;&#34;
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowTitle(&#39;Configuration&#39;)
+        self.resize(1000, 550)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.add_options()
+        self.set_current_values_from_config()
+        self.add_buttons()
+
+    def add_options(self):
+        general_options = self.create_general_options()
+        gui_options = self.create_gui_options()
+        scan_options = self.create_scan_options()
+        locking_options = self.create_locking_options()
+        self.set_tooltips()
+
+        form = QWidget()
+        form_layout = QHBoxLayout()
+        form.setLayout(form_layout)
+        column_1 = QVBoxLayout()
+        column_1.addWidget(general_options)
+        column_1.addWidget(gui_options)
+        form_layout.addLayout(column_1)
+        form_layout.addWidget(scan_options)
+        form_layout.addWidget(locking_options)
+        self.layout.addWidget(form)
+
+    def create_general_options(self):
+        general_options = QGroupBox(&#39;General&#39;)
+        general_layout = QFormLayout()
+        general_options.setLayout(general_layout)
+        self.matisse_device_id_field = QLineEdit()
+        general_layout.addRow(&#39;Matisse device ID: &#39;, self.matisse_device_id_field)
+        self.wavemeter_port_field = QLineEdit()
+        general_layout.addRow(&#39;Wavemeter port: &#39;, self.wavemeter_port_field)
+        self.wavemeter_precision_field = QSpinBox()
+        self.wavemeter_precision_field.setMinimum(0)
+        general_layout.addRow(&#39;Wavemeter precision: &#39;, self.wavemeter_precision_field)
+        self.wavemeter_measurement_delay_field = QDoubleSpinBox()
+        self.wavemeter_measurement_delay_field.setMinimum(0)
+        self.wavemeter_measurement_delay_field.setSingleStep(0.1)
+        general_layout.addRow(&#39;Wavemeter measurement delay: &#39;, self.wavemeter_measurement_delay_field)
+        self.component_limit_offset_field = QDoubleSpinBox()
+        self.component_limit_offset_field.setMinimum(0)
+        general_layout.addRow(&#39;Component limit offset: &#39;, self.component_limit_offset_field)
+        self.wavelength_lower_limit_field = QDoubleSpinBox()
+        self.wavelength_lower_limit_field.setMinimum(0)
+        self.wavelength_lower_limit_field.setMaximum(2000)
+        general_layout.addRow(&#39;Wavelength lower limit: &#39;, self.wavelength_lower_limit_field)
+        self.wavelength_upper_limit_field = QDoubleSpinBox()
+        self.wavelength_upper_limit_field.setMinimum(0)
+        self.wavelength_upper_limit_field.setMaximum(2000)
+        general_layout.addRow(&#39;Wavelength upper limit: &#39;, self.wavelength_upper_limit_field)
+        self.bifi_reset_pos_field = QSpinBox()
+        self.bifi_reset_pos_field.setMinimum(Matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
+        self.bifi_reset_pos_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
+        general_layout.addRow(&#39;BiFi reset position: &#39;, self.bifi_reset_pos_field)
+        self.thin_eta_reset_pos_field = QSpinBox()
+        self.thin_eta_reset_pos_field.setMinimum(Matisse.THIN_ETALON_LOWER_LIMIT)
+        self.thin_eta_reset_pos_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT)
+        general_layout.addRow(&#39;Thin etalon reset position: &#39;, self.thin_eta_reset_pos_field)
+        self.report_events_field = QCheckBox()
+        general_layout.addRow(&#39;Report events? &#39;, self.report_events_field)
+        return general_options
+
+    def create_gui_options(self):
+        gui_options = QGroupBox(&#39;GUI&#39;)
+        gui_layout = QFormLayout()
+        gui_options.setLayout(gui_layout)
+        self.status_monitor_delay_field = QDoubleSpinBox()
+        self.status_monitor_delay_field.setMinimum(0)
+        gui_layout.addRow(&#39;Status monitor update delay: &#39;, self.status_monitor_delay_field)
+        self.status_monitor_font_size_field = QSpinBox()
+        self.status_monitor_font_size_field.setMinimum(0)
+        gui_layout.addRow(&#39;Status monitor font size: &#39;, self.status_monitor_font_size_field)
+        return gui_options
+
+    def create_scan_options(self):
+        scan_options = QGroupBox(&#39;Scanning&#39;)
+        scan_layout = QFormLayout()
+        scan_options.setLayout(scan_layout)
+        self.scan_limit_field = QSpinBox()
+        self.scan_limit_field.setMinimum(0)
+        scan_layout.addRow(&#39;Number of scans before retry: &#39;, self.scan_limit_field)
+        self.bifi_scan_range_field = QSpinBox()
+        self.bifi_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
+        scan_layout.addRow(&#39;BiFi normal scan range:&#39;, self.bifi_scan_range_field)
+        self.bifi_small_scan_range_field = QSpinBox()
+        self.bifi_small_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
+        scan_layout.addRow(&#39;BiFi small scan range:&#39;, self.bifi_small_scan_range_field)
+        self.bifi_scan_step_field = QSpinBox()
+        scan_layout.addRow(&#39;BiFi scan step:&#39;, self.bifi_scan_step_field)
+        self.bifi_scan_show_plots_field = QCheckBox()
+        scan_layout.addRow(&#39;Show BiFi scan plots? &#39;, self.bifi_scan_show_plots_field)
+        self.bifi_smoothing_window_field = QSpinBox()
+        self.bifi_smoothing_window_field.setMinimum(1)
+        self.bifi_smoothing_window_field.setSingleStep(2)
+        self.bifi_smoothing_window_field.valueChanged.connect(self.ensure_odd_value)
+        scan_layout.addRow(&#39;BiFi smoothing filter window: &#39;, self.bifi_smoothing_window_field)
+        self.bifi_smoothing_polyorder_field = QSpinBox()
+        self.bifi_smoothing_polyorder_field.setMinimum(1)
+        scan_layout.addRow(&#39;BiFi smoothing filter polyorder: &#39;, self.bifi_smoothing_polyorder_field)
+        self.thin_eta_scan_range_field = QSpinBox()
+        self.thin_eta_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 2)
+        scan_layout.addRow(&#39;Thin etalon normal scan range:&#39;, self.thin_eta_scan_range_field)
+        self.thin_eta_small_scan_range_field = QSpinBox()
+        self.thin_eta_small_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 4)
+        scan_layout.addRow(&#39;Thin etalon small scan range:&#39;, self.thin_eta_small_scan_range_field)
+        self.thin_eta_scan_step_field = QSpinBox()
+        scan_layout.addRow(&#39;Thin etalon scan step:&#39;, self.thin_eta_scan_step_field)
+        self.thin_eta_nudge_field = QSpinBox()
+        scan_layout.addRow(&#39;Thin etalon scan nudge:&#39;, self.thin_eta_nudge_field)
+        self.thin_eta_scan_show_plots_field = QCheckBox()
+        scan_layout.addRow(&#39;Show thin etalon scan plots? &#39;, self.thin_eta_scan_show_plots_field)
+        self.thin_eta_smoothing_window_field = QSpinBox()
+        self.thin_eta_smoothing_window_field.setMinimum(1)
+        self.thin_eta_smoothing_window_field.setSingleStep(2)
+        self.thin_eta_smoothing_window_field.valueChanged.connect(self.ensure_odd_value)
+        scan_layout.addRow(&#39;Thin etalon smoothing filter window: &#39;, self.thin_eta_smoothing_window_field)
+        self.thin_eta_smoothing_polyorder_field = QSpinBox()
+        self.thin_eta_smoothing_polyorder_field.setMinimum(1)
+        scan_layout.addRow(&#39;Thin etalon smoothing filter polyorder: &#39;, self.thin_eta_smoothing_polyorder_field)
+        self.thin_eta_max_allowed_stddev_field = QDoubleSpinBox()
+        self.thin_eta_max_allowed_stddev_field.setMinimum(0)
+        scan_layout.addRow(&#39;Thin etalon max allowed stddev: &#39;, self.thin_eta_max_allowed_stddev_field)
+        self.refcell_rising_speed_field = QDoubleSpinBox()
+        self.refcell_rising_speed_field.setDecimals(3)
+        self.refcell_rising_speed_field.setSingleStep(0.001)
+        self.refcell_rising_speed_field.setMinimum(0)
+        self.refcell_rising_speed_field.setMaximum(0.1)
+        scan_layout.addRow(&#39;RefCell scan rising speed: &#39;, self.refcell_rising_speed_field)
+        self.refcell_falling_speed_field = QDoubleSpinBox()
+        self.refcell_falling_speed_field.setDecimals(3)
+        self.refcell_falling_speed_field.setSingleStep(0.001)
+        self.refcell_falling_speed_field.setMinimum(0)
+        self.refcell_falling_speed_field.setMaximum(0.1)
+        scan_layout.addRow(&#39;RefCell scan falling speed: &#39;, self.refcell_falling_speed_field)
+        self.large_wavelength_drift_field = QDoubleSpinBox()
+        scan_layout.addRow(&#39;Large wavelength drift: &#39;, self.large_wavelength_drift_field)
+        self.medium_wavelength_drift_field = QDoubleSpinBox()
+        scan_layout.addRow(&#39;Medium wavelength drift: &#39;, self.medium_wavelength_drift_field)
+        self.small_wavelength_drift_field = QDoubleSpinBox()
+        scan_layout.addRow(&#39;Small wavelength drift: &#39;, self.small_wavelength_drift_field)
+        return scan_options
+
+    def create_locking_options(self):
+        locking_options = QGroupBox(&#39;Locking/Stabilization&#39;)
+        locking_layout = QFormLayout()
+        locking_options.setLayout(locking_layout)
+        self.locking_timeout_field = QDoubleSpinBox()
+        self.locking_timeout_field.setMinimum(0)
+        locking_layout.addRow(&#39;Locking timeout: &#39;, self.locking_timeout_field)
+        self.fast_pz_setpoint_lower_limit_field = QDoubleSpinBox()
+        self.fast_pz_setpoint_lower_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.fast_pz_setpoint_lower_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Fast piezo setpoint scan lower limit: &#39;, self.fast_pz_setpoint_lower_limit_field)
+        self.fast_pz_setpoint_upper_limit_field = QDoubleSpinBox()
+        self.fast_pz_setpoint_upper_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.fast_pz_setpoint_upper_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Fast piezo setpoint scan upper limit: &#39;, self.fast_pz_setpoint_upper_limit_field)
+        self.fast_pz_setpoint_num_points_field = QSpinBox()
+        self.fast_pz_setpoint_num_points_field.setMinimum(32)
+        self.fast_pz_setpoint_num_points_field.setMaximum(512)
+        locking_layout.addRow(&#39;Fast piezo setpoint scan sample: &#39;, self.fast_pz_setpoint_num_points_field)
+        self.fast_pz_setpoint_num_scans_field = QSpinBox()
+        self.fast_pz_setpoint_num_scans_field.setMinimum(1)
+        locking_layout.addRow(&#39;Fast piezo setpoint number of scans: &#39;, self.fast_pz_setpoint_num_scans_field)
+        self.auto_correction_limit_field = QSpinBox()
+        self.auto_correction_limit_field.setMinimum(1)
+        locking_layout.addRow(&#39;Number of auto-corrections before retry: &#39;, self.auto_correction_limit_field)
+        self.pz_eta_upper_correction_pos_field = QDoubleSpinBox()
+        self.pz_eta_upper_correction_pos_field.setSingleStep(0.01)
+        self.pz_eta_upper_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_upper_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Piezo etalon upper correction pos: &#39;, self.pz_eta_upper_correction_pos_field)
+        self.slow_pz_upper_correction_pos_field = QDoubleSpinBox()
+        self.slow_pz_upper_correction_pos_field.setSingleStep(0.01)
+        self.slow_pz_upper_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_upper_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Slow piezo upper correction pos: &#39;, self.slow_pz_upper_correction_pos_field)
+        self.refcell_upper_correction_pos_field = QDoubleSpinBox()
+        self.refcell_upper_correction_pos_field.setSingleStep(0.01)
+        self.refcell_upper_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_upper_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;RefCell upper correction pos: &#39;, self.refcell_upper_correction_pos_field)
+        self.pz_eta_mid_correction_pos_field = QDoubleSpinBox()
+        self.pz_eta_mid_correction_pos_field.setSingleStep(0.01)
+        self.pz_eta_mid_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_mid_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Piezo etalon mid correction pos: &#39;, self.pz_eta_mid_correction_pos_field)
+        self.slow_pz_mid_correction_pos_field = QDoubleSpinBox()
+        self.slow_pz_mid_correction_pos_field.setSingleStep(0.01)
+        self.slow_pz_mid_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_mid_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Slow piezo mid correction pos: &#39;, self.slow_pz_mid_correction_pos_field)
+        self.refcell_mid_correction_pos_field = QDoubleSpinBox()
+        self.refcell_mid_correction_pos_field.setSingleStep(0.01)
+        self.refcell_mid_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_mid_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;RefCell mid correction pos: &#39;, self.refcell_mid_correction_pos_field)
+        self.pz_eta_lower_correction_pos_field = QDoubleSpinBox()
+        self.pz_eta_lower_correction_pos_field.setSingleStep(0.01)
+        self.pz_eta_lower_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_lower_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Piezo etalon lower correction pos: &#39;, self.pz_eta_lower_correction_pos_field)
+        self.slow_pz_lower_correction_pos_field = QDoubleSpinBox()
+        self.slow_pz_lower_correction_pos_field.setSingleStep(0.01)
+        self.slow_pz_lower_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_lower_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        locking_layout.addRow(&#39;Slow piezo lower correction pos: &#39;, self.slow_pz_lower_correction_pos_field)
+        self.refcell_lower_correction_pos_field = QDoubleSpinBox()
+        self.refcell_lower_correction_pos_field.setSingleStep(0.01)
+        self.refcell_lower_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_lower_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        locking_layout.addRow(&#39;RefCell lower correction pos: &#39;, self.refcell_lower_correction_pos_field)
+        self.stabilization_rising_speed_field = QDoubleSpinBox()
+        self.stabilization_rising_speed_field.setDecimals(3)
+        self.stabilization_rising_speed_field.setSingleStep(0.001)
+        self.stabilization_rising_speed_field.setMinimum(0)
+        self.stabilization_rising_speed_field.setMaximum(0.1)
+        locking_layout.addRow(&#39;Auto-stabilization rising speed: &#39;, self.stabilization_rising_speed_field)
+        self.stabilization_falling_speed_field = QDoubleSpinBox()
+        self.stabilization_falling_speed_field.setDecimals(3)
+        self.stabilization_falling_speed_field.setSingleStep(0.001)
+        self.stabilization_falling_speed_field.setMinimum(0)
+        self.stabilization_falling_speed_field.setMaximum(0.1)
+        locking_layout.addRow(&#39;Auto-stabilization falling speed: &#39;, self.stabilization_falling_speed_field)
+        self.stabilization_delay_field = QDoubleSpinBox()
+        self.stabilization_delay_field.setMinimum(0.1)
+        locking_layout.addRow(&#39;Auto-stabilization delay: &#39;, self.stabilization_delay_field)
+        self.stabilization_tolerance_field = QDoubleSpinBox()
+        self.stabilization_tolerance_field.setDecimals(4)
+        self.stabilization_tolerance_field.setSingleStep(0.0001)
+        self.stabilization_tolerance_field.setMinimum(0.0001)
+        locking_layout.addRow(&#39;Auto-stabilization tolerance: &#39;, self.stabilization_tolerance_field)
+        return locking_options
+
+    def set_tooltips(self):
+        self.matisse_device_id_field.setToolTip(tooltips.MATISSE_DEVICE_ID)
+        self.wavemeter_port_field.setToolTip(tooltips.WAVEMETER_PORT)
+        self.wavemeter_precision_field.setToolTip(tooltips.WAVEMETER_PRECISION)
+        self.wavemeter_measurement_delay_field.setToolTip(tooltips.WAVEMETER_MEASUREMENT_DELAY)
+
+        self.status_monitor_delay_field.setToolTip(tooltips.STATUS_MONITOR_DELAY)
+        self.status_monitor_font_size_field.setToolTip(tooltips.STATUS_MONITOR_FONT_SIZE)
+
+        self.bifi_reset_pos_field.setToolTip(tooltips.BIFI_RESET_POS)
+        self.thin_eta_reset_pos_field.setToolTip(tooltips.THIN_ETA_RESET_POS)
+
+        self.report_events_field.setToolTip(tooltips.REPORT_EVENTS)
+
+        self.component_limit_offset_field.setToolTip(tooltips.COMPONENT_LIMIT_OFFSET)
+
+        self.wavelength_lower_limit_field.setToolTip(tooltips.WAVELENGTH_LOWER_LIMIT)
+        self.wavelength_upper_limit_field.setToolTip(tooltips.WAVELENGTH_UPPER_LIMIT)
+
+        self.scan_limit_field.setToolTip(tooltips.SCAN_LIMIT)
+
+        self.bifi_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE)
+        self.bifi_small_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE_SMALL)
+        self.bifi_scan_step_field.setToolTip(tooltips.BIFI_SCAN_STEP)
+        self.bifi_scan_show_plots_field.setToolTip(tooltips.BIFI_SCAN_SHOW_PLOTS)
+        self.bifi_smoothing_window_field.setToolTip(tooltips.BIFI_SMOOTHING_FILTER_WINDOW)
+        self.bifi_smoothing_polyorder_field.setToolTip(tooltips.BIFI_SMOOTHING_FILTER_POLYORDER)
+
+        self.thin_eta_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE)
+        self.thin_eta_small_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE_SMALL)
+        self.thin_eta_scan_step_field.setToolTip(tooltips.THIN_ETA_SCAN_STEP)
+        self.thin_eta_nudge_field.setToolTip(tooltips.THIN_ETA_NUDGE)
+        self.thin_eta_scan_show_plots_field.setToolTip(tooltips.THIN_ETA_SHOW_PLOTS)
+        self.thin_eta_smoothing_window_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_WINDOW)
+        self.thin_eta_smoothing_polyorder_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_POLYORDER)
+        self.thin_eta_max_allowed_stddev_field.setToolTip(tooltips.THIN_ETA_MAX_ALLOWED_STDDEV)
+
+        self.refcell_rising_speed_field.setToolTip(tooltips.REFCELL_SCAN_RISING_SPEED)
+        self.refcell_falling_speed_field.setToolTip(tooltips.REFCELL_SCAN_FALLING_SPEED)
+
+        self.large_wavelength_drift_field.setToolTip(tooltips.LARGE_WAVELENGTH_DRIFT)
+        self.medium_wavelength_drift_field.setToolTip(tooltips.MEDIUM_WAVELENGTH_DRIFT)
+        self.small_wavelength_drift_field.setToolTip(tooltips.SMALL_WAVELENGTH_DRIFT)
+
+        self.locking_timeout_field.setToolTip(tooltips.LOCKING_TIMEOUT)
+        self.fast_pz_setpoint_lower_limit_field.setToolTip(tooltips.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT)
+        self.fast_pz_setpoint_upper_limit_field.setToolTip(tooltips.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT)
+        self.fast_pz_setpoint_num_points_field.setToolTip(tooltips.FAST_PZ_SETPOINT_NUM_POINTS)
+        self.fast_pz_setpoint_num_scans_field.setToolTip(tooltips.FAST_PZ_SETPOINT_NUM_SCANS)
+
+        self.stabilization_rising_speed_field.setToolTip(tooltips.STABILIZATION_RISING_SPEED)
+        self.stabilization_falling_speed_field.setToolTip(tooltips.STABILIZATION_FALLING_SPEED)
+        self.stabilization_delay_field.setToolTip(tooltips.STABILIZATION_DELAY)
+        self.stabilization_tolerance_field.setToolTip(tooltips.STABILIZATION_TOLERANCE)
+
+        self.auto_correction_limit_field.setToolTip(tooltips.CORRECTION_LIMIT)
+
+    def set_current_values_from_config(self):
+        self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
+        self.wavemeter_port_field.setText(cfg.get(cfg.WAVEMETER_PORT))
+        self.wavemeter_precision_field.setValue(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.wavemeter_measurement_delay_field.setValue(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+
+        self.status_monitor_delay_field.setValue(cfg.get(cfg.STATUS_MONITOR_DELAY))
+        self.status_monitor_font_size_field.setValue(cfg.get(cfg.STATUS_MONITOR_FONT_SIZE))
+
+        self.component_limit_offset_field.setValue(cfg.get(cfg.COMPONENT_LIMIT_OFFSET))
+        self.wavelength_lower_limit_field.setValue(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.bifi_reset_pos_field.setValue(cfg.get(cfg.BIFI_RESET_POS))
+        self.thin_eta_reset_pos_field.setValue(cfg.get(cfg.THIN_ETA_RESET_POS))
+
+        self.report_events_field.setChecked(cfg.get(cfg.REPORT_EVENTS))
+
+        self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
+        self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
+        self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+        self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
+        self.bifi_scan_show_plots_field.setChecked(cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS))
+        self.bifi_smoothing_window_field.setValue(cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW))
+        self.bifi_smoothing_polyorder_field.setValue(cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER))
+
+        self.thin_eta_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE))
+        self.thin_eta_small_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+        self.thin_eta_scan_step_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_STEP))
+        self.thin_eta_nudge_field.setValue(cfg.get(cfg.THIN_ETA_NUDGE))
+        self.thin_eta_scan_show_plots_field.setChecked(cfg.get(cfg.THIN_ETA_SHOW_PLOTS))
+        self.thin_eta_smoothing_window_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW))
+        self.thin_eta_smoothing_polyorder_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
+        self.thin_eta_max_allowed_stddev_field.setValue(cfg.get(cfg.THIN_ETA_MAX_ALLOWED_STDDEV))
+
+        self.refcell_rising_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_RISING_SPEED))
+        self.refcell_falling_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED))
+
+        self.large_wavelength_drift_field.setValue(cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+        self.medium_wavelength_drift_field.setValue(cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT))
+        self.small_wavelength_drift_field.setValue(cfg.get(cfg.SMALL_WAVELENGTH_DRIFT))
+
+        self.locking_timeout_field.setValue(cfg.get(cfg.LOCKING_TIMEOUT))
+        self.fast_pz_setpoint_lower_limit_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT))
+        self.fast_pz_setpoint_upper_limit_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT))
+        self.fast_pz_setpoint_num_points_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
+        self.fast_pz_setpoint_num_scans_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS))
+
+        self.auto_correction_limit_field.setValue(cfg.get(cfg.CORRECTION_LIMIT))
+
+        self.pz_eta_upper_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS))
+        self.slow_pz_upper_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_UPPER_CORRECTION_POS))
+        self.refcell_upper_correction_pos_field.setValue(cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS))
+        self.pz_eta_mid_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_MID_CORRECTION_POS))
+        self.slow_pz_mid_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS))
+        self.refcell_mid_correction_pos_field.setValue(cfg.get(cfg.REFCELL_MID_CORRECTION_POS))
+        self.pz_eta_lower_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_LOWER_CORRECTION_POS))
+        self.slow_pz_lower_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS))
+        self.refcell_lower_correction_pos_field.setValue(cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS))
+
+        self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
+        self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
+        self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
+        self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
+
+    def add_buttons(self):
+        button_box = QDialogButtonBox(QDialogButtonBox.RestoreDefaults | QDialogButtonBox.Save |
+                                      QDialogButtonBox.Cancel)
+        button_box.button(QDialogButtonBox.RestoreDefaults).clicked.connect(self.restore_defaults)
+        button_box.button(QDialogButtonBox.Save).clicked.connect(self.save_configuration)
+        button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.cancel)
+        self.layout.addWidget(button_box)
+
+    @pyqtSlot(bool)
+    def restore_defaults(self, checked):
+        cfg.restore_defaults()
+        self.set_current_values_from_config()
+
+    @pyqtSlot(bool)
+    def save_configuration(self, checked):
+        print(&#39;Saving configuration.&#39;)
+        cfg.set(cfg.MATISSE_DEVICE_ID, self.matisse_device_id_field.text())
+        cfg.set(cfg.WAVEMETER_PORT, self.wavemeter_port_field.text())
+        cfg.set(cfg.WAVEMETER_PRECISION, self.wavemeter_precision_field.value())
+        cfg.set(cfg.WAVEMETER_MEASUREMENT_DELAY, self.wavemeter_measurement_delay_field.value())
+
+        cfg.set(cfg.STATUS_MONITOR_DELAY, self.status_monitor_delay_field.value())
+        cfg.set(cfg.STATUS_MONITOR_FONT_SIZE, self.status_monitor_font_size_field.value())
+
+        cfg.set(cfg.COMPONENT_LIMIT_OFFSET, self.component_limit_offset_field.value())
+        cfg.set(cfg.WAVELENGTH_LOWER_LIMIT, self.wavelength_lower_limit_field.value())
+        cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
+        cfg.set(cfg.BIFI_RESET_POS, self.bifi_reset_pos_field.value())
+        cfg.set(cfg.THIN_ETA_RESET_POS, self.thin_eta_reset_pos_field.value())
+
+        cfg.set(cfg.REPORT_EVENTS, self.report_events_field.isChecked())
+
+        cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
+        cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
+        cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
+        cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())
+        cfg.set(cfg.BIFI_SCAN_SHOW_PLOTS, self.bifi_scan_show_plots_field.isChecked())
+        cfg.set(cfg.BIFI_SMOOTHING_FILTER_WINDOW, self.bifi_smoothing_window_field.value())
+        cfg.set(cfg.BIFI_SMOOTHING_FILTER_POLYORDER, self.bifi_smoothing_polyorder_field.value())
+
+        cfg.set(cfg.THIN_ETA_SCAN_RANGE, self.thin_eta_scan_range_field.value())
+        cfg.set(cfg.THIN_ETA_SCAN_RANGE_SMALL, self.thin_eta_small_scan_range_field.value())
+        cfg.set(cfg.THIN_ETA_SCAN_STEP, self.thin_eta_scan_step_field.value())
+        cfg.set(cfg.THIN_ETA_NUDGE, self.thin_eta_nudge_field.value())
+        cfg.set(cfg.THIN_ETA_SHOW_PLOTS, self.thin_eta_scan_show_plots_field.isChecked())
+        cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW, self.thin_eta_smoothing_window_field.value())
+        cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER, self.thin_eta_smoothing_polyorder_field.value())
+        cfg.set(cfg.THIN_ETA_MAX_ALLOWED_STDDEV, self.thin_eta_max_allowed_stddev_field.value())
+
+        cfg.set(cfg.REFCELL_SCAN_RISING_SPEED, self.refcell_rising_speed_field.value())
+        cfg.set(cfg.REFCELL_SCAN_FALLING_SPEED, self.refcell_falling_speed_field.value())
+
+        cfg.set(cfg.LARGE_WAVELENGTH_DRIFT, self.large_wavelength_drift_field.value())
+        cfg.set(cfg.MEDIUM_WAVELENGTH_DRIFT, self.medium_wavelength_drift_field.value())
+        cfg.set(cfg.SMALL_WAVELENGTH_DRIFT, self.small_wavelength_drift_field.value())
+
+        cfg.set(cfg.LOCKING_TIMEOUT, self.locking_timeout_field.value())
+        cfg.set(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT, self.fast_pz_setpoint_lower_limit_field.value())
+        cfg.set(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT, self.fast_pz_setpoint_upper_limit_field.value())
+        cfg.set(cfg.FAST_PZ_SETPOINT_NUM_POINTS, self.fast_pz_setpoint_num_points_field.value())
+        cfg.set(cfg.FAST_PZ_SETPOINT_NUM_SCANS, self.fast_pz_setpoint_num_scans_field.value())
+
+        cfg.set(cfg.CORRECTION_LIMIT, self.auto_correction_limit_field.value())
+
+        cfg.set(cfg.PIEZO_ETA_UPPER_CORRECTION_POS, self.pz_eta_upper_correction_pos_field.value())
+        cfg.set(cfg.SLOW_PIEZO_UPPER_CORRECTION_POS, self.slow_pz_upper_correction_pos_field.value())
+        cfg.set(cfg.REFCELL_UPPER_CORRECTION_POS, self.refcell_upper_correction_pos_field.value())
+        cfg.set(cfg.PIEZO_ETA_MID_CORRECTION_POS, self.pz_eta_mid_correction_pos_field.value())
+        cfg.set(cfg.SLOW_PIEZO_MID_CORRECTION_POS, self.slow_pz_mid_correction_pos_field.value())
+        cfg.set(cfg.REFCELL_MID_CORRECTION_POS, self.refcell_mid_correction_pos_field.value())
+        cfg.set(cfg.PIEZO_ETA_LOWER_CORRECTION_POS, self.pz_eta_lower_correction_pos_field.value())
+        cfg.set(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS, self.slow_pz_lower_correction_pos_field.value())
+        cfg.set(cfg.REFCELL_LOWER_CORRECTION_POS, self.refcell_lower_correction_pos_field.value())
+
+        cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
+        cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
+        cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
+        cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+
+        cfg.save()
+        self.close()
+
+    @pyqtSlot(bool)
+    def cancel(self, checked):
+        self.close()
+
+    @pyqtSlot(int)
+    def ensure_odd_value(self, value):
+        field: QSpinBox = self.sender()
+        if value % 2 == 0:
+            field.setValue(value - 1)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QDialog</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.add_buttons"><code class="name flex">
+<span>def <span class="ident">add_buttons</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def add_buttons(self):
+    button_box = QDialogButtonBox(QDialogButtonBox.RestoreDefaults | QDialogButtonBox.Save |
+                                  QDialogButtonBox.Cancel)
+    button_box.button(QDialogButtonBox.RestoreDefaults).clicked.connect(self.restore_defaults)
+    button_box.button(QDialogButtonBox.Save).clicked.connect(self.save_configuration)
+    button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.cancel)
+    self.layout.addWidget(button_box)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.add_options"><code class="name flex">
+<span>def <span class="ident">add_options</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def add_options(self):
+    general_options = self.create_general_options()
+    gui_options = self.create_gui_options()
+    scan_options = self.create_scan_options()
+    locking_options = self.create_locking_options()
+    self.set_tooltips()
+
+    form = QWidget()
+    form_layout = QHBoxLayout()
+    form.setLayout(form_layout)
+    column_1 = QVBoxLayout()
+    column_1.addWidget(general_options)
+    column_1.addWidget(gui_options)
+    form_layout.addLayout(column_1)
+    form_layout.addWidget(scan_options)
+    form_layout.addWidget(locking_options)
+    self.layout.addWidget(form)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.cancel"><code class="name flex">
+<span>def <span class="ident">cancel</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@pyqtSlot(bool)
+def cancel(self, checked):
+    self.close()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_general_options"><code class="name flex">
+<span>def <span class="ident">create_general_options</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def create_general_options(self):
+    general_options = QGroupBox(&#39;General&#39;)
+    general_layout = QFormLayout()
+    general_options.setLayout(general_layout)
+    self.matisse_device_id_field = QLineEdit()
+    general_layout.addRow(&#39;Matisse device ID: &#39;, self.matisse_device_id_field)
+    self.wavemeter_port_field = QLineEdit()
+    general_layout.addRow(&#39;Wavemeter port: &#39;, self.wavemeter_port_field)
+    self.wavemeter_precision_field = QSpinBox()
+    self.wavemeter_precision_field.setMinimum(0)
+    general_layout.addRow(&#39;Wavemeter precision: &#39;, self.wavemeter_precision_field)
+    self.wavemeter_measurement_delay_field = QDoubleSpinBox()
+    self.wavemeter_measurement_delay_field.setMinimum(0)
+    self.wavemeter_measurement_delay_field.setSingleStep(0.1)
+    general_layout.addRow(&#39;Wavemeter measurement delay: &#39;, self.wavemeter_measurement_delay_field)
+    self.component_limit_offset_field = QDoubleSpinBox()
+    self.component_limit_offset_field.setMinimum(0)
+    general_layout.addRow(&#39;Component limit offset: &#39;, self.component_limit_offset_field)
+    self.wavelength_lower_limit_field = QDoubleSpinBox()
+    self.wavelength_lower_limit_field.setMinimum(0)
+    self.wavelength_lower_limit_field.setMaximum(2000)
+    general_layout.addRow(&#39;Wavelength lower limit: &#39;, self.wavelength_lower_limit_field)
+    self.wavelength_upper_limit_field = QDoubleSpinBox()
+    self.wavelength_upper_limit_field.setMinimum(0)
+    self.wavelength_upper_limit_field.setMaximum(2000)
+    general_layout.addRow(&#39;Wavelength upper limit: &#39;, self.wavelength_upper_limit_field)
+    self.bifi_reset_pos_field = QSpinBox()
+    self.bifi_reset_pos_field.setMinimum(Matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
+    self.bifi_reset_pos_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
+    general_layout.addRow(&#39;BiFi reset position: &#39;, self.bifi_reset_pos_field)
+    self.thin_eta_reset_pos_field = QSpinBox()
+    self.thin_eta_reset_pos_field.setMinimum(Matisse.THIN_ETALON_LOWER_LIMIT)
+    self.thin_eta_reset_pos_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT)
+    general_layout.addRow(&#39;Thin etalon reset position: &#39;, self.thin_eta_reset_pos_field)
+    self.report_events_field = QCheckBox()
+    general_layout.addRow(&#39;Report events? &#39;, self.report_events_field)
+    return general_options</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_gui_options"><code class="name flex">
+<span>def <span class="ident">create_gui_options</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def create_gui_options(self):
+    gui_options = QGroupBox(&#39;GUI&#39;)
+    gui_layout = QFormLayout()
+    gui_options.setLayout(gui_layout)
+    self.status_monitor_delay_field = QDoubleSpinBox()
+    self.status_monitor_delay_field.setMinimum(0)
+    gui_layout.addRow(&#39;Status monitor update delay: &#39;, self.status_monitor_delay_field)
+    self.status_monitor_font_size_field = QSpinBox()
+    self.status_monitor_font_size_field.setMinimum(0)
+    gui_layout.addRow(&#39;Status monitor font size: &#39;, self.status_monitor_font_size_field)
+    return gui_options</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_locking_options"><code class="name flex">
+<span>def <span class="ident">create_locking_options</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def create_locking_options(self):
+    locking_options = QGroupBox(&#39;Locking/Stabilization&#39;)
+    locking_layout = QFormLayout()
+    locking_options.setLayout(locking_layout)
+    self.locking_timeout_field = QDoubleSpinBox()
+    self.locking_timeout_field.setMinimum(0)
+    locking_layout.addRow(&#39;Locking timeout: &#39;, self.locking_timeout_field)
+    self.fast_pz_setpoint_lower_limit_field = QDoubleSpinBox()
+    self.fast_pz_setpoint_lower_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.fast_pz_setpoint_lower_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    locking_layout.addRow(&#39;Fast piezo setpoint scan lower limit: &#39;, self.fast_pz_setpoint_lower_limit_field)
+    self.fast_pz_setpoint_upper_limit_field = QDoubleSpinBox()
+    self.fast_pz_setpoint_upper_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.fast_pz_setpoint_upper_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    locking_layout.addRow(&#39;Fast piezo setpoint scan upper limit: &#39;, self.fast_pz_setpoint_upper_limit_field)
+    self.fast_pz_setpoint_num_points_field = QSpinBox()
+    self.fast_pz_setpoint_num_points_field.setMinimum(32)
+    self.fast_pz_setpoint_num_points_field.setMaximum(512)
+    locking_layout.addRow(&#39;Fast piezo setpoint scan sample: &#39;, self.fast_pz_setpoint_num_points_field)
+    self.fast_pz_setpoint_num_scans_field = QSpinBox()
+    self.fast_pz_setpoint_num_scans_field.setMinimum(1)
+    locking_layout.addRow(&#39;Fast piezo setpoint number of scans: &#39;, self.fast_pz_setpoint_num_scans_field)
+    self.auto_correction_limit_field = QSpinBox()
+    self.auto_correction_limit_field.setMinimum(1)
+    locking_layout.addRow(&#39;Number of auto-corrections before retry: &#39;, self.auto_correction_limit_field)
+    self.pz_eta_upper_correction_pos_field = QDoubleSpinBox()
+    self.pz_eta_upper_correction_pos_field.setSingleStep(0.01)
+    self.pz_eta_upper_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+    self.pz_eta_upper_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+    locking_layout.addRow(&#39;Piezo etalon upper correction pos: &#39;, self.pz_eta_upper_correction_pos_field)
+    self.slow_pz_upper_correction_pos_field = QDoubleSpinBox()
+    self.slow_pz_upper_correction_pos_field.setSingleStep(0.01)
+    self.slow_pz_upper_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+    self.slow_pz_upper_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+    locking_layout.addRow(&#39;Slow piezo upper correction pos: &#39;, self.slow_pz_upper_correction_pos_field)
+    self.refcell_upper_correction_pos_field = QDoubleSpinBox()
+    self.refcell_upper_correction_pos_field.setSingleStep(0.01)
+    self.refcell_upper_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.refcell_upper_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    locking_layout.addRow(&#39;RefCell upper correction pos: &#39;, self.refcell_upper_correction_pos_field)
+    self.pz_eta_mid_correction_pos_field = QDoubleSpinBox()
+    self.pz_eta_mid_correction_pos_field.setSingleStep(0.01)
+    self.pz_eta_mid_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+    self.pz_eta_mid_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+    locking_layout.addRow(&#39;Piezo etalon mid correction pos: &#39;, self.pz_eta_mid_correction_pos_field)
+    self.slow_pz_mid_correction_pos_field = QDoubleSpinBox()
+    self.slow_pz_mid_correction_pos_field.setSingleStep(0.01)
+    self.slow_pz_mid_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+    self.slow_pz_mid_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+    locking_layout.addRow(&#39;Slow piezo mid correction pos: &#39;, self.slow_pz_mid_correction_pos_field)
+    self.refcell_mid_correction_pos_field = QDoubleSpinBox()
+    self.refcell_mid_correction_pos_field.setSingleStep(0.01)
+    self.refcell_mid_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.refcell_mid_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    locking_layout.addRow(&#39;RefCell mid correction pos: &#39;, self.refcell_mid_correction_pos_field)
+    self.pz_eta_lower_correction_pos_field = QDoubleSpinBox()
+    self.pz_eta_lower_correction_pos_field.setSingleStep(0.01)
+    self.pz_eta_lower_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
+    self.pz_eta_lower_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+    locking_layout.addRow(&#39;Piezo etalon lower correction pos: &#39;, self.pz_eta_lower_correction_pos_field)
+    self.slow_pz_lower_correction_pos_field = QDoubleSpinBox()
+    self.slow_pz_lower_correction_pos_field.setSingleStep(0.01)
+    self.slow_pz_lower_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
+    self.slow_pz_lower_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+    locking_layout.addRow(&#39;Slow piezo lower correction pos: &#39;, self.slow_pz_lower_correction_pos_field)
+    self.refcell_lower_correction_pos_field = QDoubleSpinBox()
+    self.refcell_lower_correction_pos_field.setSingleStep(0.01)
+    self.refcell_lower_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.refcell_lower_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    locking_layout.addRow(&#39;RefCell lower correction pos: &#39;, self.refcell_lower_correction_pos_field)
+    self.stabilization_rising_speed_field = QDoubleSpinBox()
+    self.stabilization_rising_speed_field.setDecimals(3)
+    self.stabilization_rising_speed_field.setSingleStep(0.001)
+    self.stabilization_rising_speed_field.setMinimum(0)
+    self.stabilization_rising_speed_field.setMaximum(0.1)
+    locking_layout.addRow(&#39;Auto-stabilization rising speed: &#39;, self.stabilization_rising_speed_field)
+    self.stabilization_falling_speed_field = QDoubleSpinBox()
+    self.stabilization_falling_speed_field.setDecimals(3)
+    self.stabilization_falling_speed_field.setSingleStep(0.001)
+    self.stabilization_falling_speed_field.setMinimum(0)
+    self.stabilization_falling_speed_field.setMaximum(0.1)
+    locking_layout.addRow(&#39;Auto-stabilization falling speed: &#39;, self.stabilization_falling_speed_field)
+    self.stabilization_delay_field = QDoubleSpinBox()
+    self.stabilization_delay_field.setMinimum(0.1)
+    locking_layout.addRow(&#39;Auto-stabilization delay: &#39;, self.stabilization_delay_field)
+    self.stabilization_tolerance_field = QDoubleSpinBox()
+    self.stabilization_tolerance_field.setDecimals(4)
+    self.stabilization_tolerance_field.setSingleStep(0.0001)
+    self.stabilization_tolerance_field.setMinimum(0.0001)
+    locking_layout.addRow(&#39;Auto-stabilization tolerance: &#39;, self.stabilization_tolerance_field)
+    return locking_options</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_scan_options"><code class="name flex">
+<span>def <span class="ident">create_scan_options</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def create_scan_options(self):
+    scan_options = QGroupBox(&#39;Scanning&#39;)
+    scan_layout = QFormLayout()
+    scan_options.setLayout(scan_layout)
+    self.scan_limit_field = QSpinBox()
+    self.scan_limit_field.setMinimum(0)
+    scan_layout.addRow(&#39;Number of scans before retry: &#39;, self.scan_limit_field)
+    self.bifi_scan_range_field = QSpinBox()
+    self.bifi_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
+    scan_layout.addRow(&#39;BiFi normal scan range:&#39;, self.bifi_scan_range_field)
+    self.bifi_small_scan_range_field = QSpinBox()
+    self.bifi_small_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
+    scan_layout.addRow(&#39;BiFi small scan range:&#39;, self.bifi_small_scan_range_field)
+    self.bifi_scan_step_field = QSpinBox()
+    scan_layout.addRow(&#39;BiFi scan step:&#39;, self.bifi_scan_step_field)
+    self.bifi_scan_show_plots_field = QCheckBox()
+    scan_layout.addRow(&#39;Show BiFi scan plots? &#39;, self.bifi_scan_show_plots_field)
+    self.bifi_smoothing_window_field = QSpinBox()
+    self.bifi_smoothing_window_field.setMinimum(1)
+    self.bifi_smoothing_window_field.setSingleStep(2)
+    self.bifi_smoothing_window_field.valueChanged.connect(self.ensure_odd_value)
+    scan_layout.addRow(&#39;BiFi smoothing filter window: &#39;, self.bifi_smoothing_window_field)
+    self.bifi_smoothing_polyorder_field = QSpinBox()
+    self.bifi_smoothing_polyorder_field.setMinimum(1)
+    scan_layout.addRow(&#39;BiFi smoothing filter polyorder: &#39;, self.bifi_smoothing_polyorder_field)
+    self.thin_eta_scan_range_field = QSpinBox()
+    self.thin_eta_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 2)
+    scan_layout.addRow(&#39;Thin etalon normal scan range:&#39;, self.thin_eta_scan_range_field)
+    self.thin_eta_small_scan_range_field = QSpinBox()
+    self.thin_eta_small_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 4)
+    scan_layout.addRow(&#39;Thin etalon small scan range:&#39;, self.thin_eta_small_scan_range_field)
+    self.thin_eta_scan_step_field = QSpinBox()
+    scan_layout.addRow(&#39;Thin etalon scan step:&#39;, self.thin_eta_scan_step_field)
+    self.thin_eta_nudge_field = QSpinBox()
+    scan_layout.addRow(&#39;Thin etalon scan nudge:&#39;, self.thin_eta_nudge_field)
+    self.thin_eta_scan_show_plots_field = QCheckBox()
+    scan_layout.addRow(&#39;Show thin etalon scan plots? &#39;, self.thin_eta_scan_show_plots_field)
+    self.thin_eta_smoothing_window_field = QSpinBox()
+    self.thin_eta_smoothing_window_field.setMinimum(1)
+    self.thin_eta_smoothing_window_field.setSingleStep(2)
+    self.thin_eta_smoothing_window_field.valueChanged.connect(self.ensure_odd_value)
+    scan_layout.addRow(&#39;Thin etalon smoothing filter window: &#39;, self.thin_eta_smoothing_window_field)
+    self.thin_eta_smoothing_polyorder_field = QSpinBox()
+    self.thin_eta_smoothing_polyorder_field.setMinimum(1)
+    scan_layout.addRow(&#39;Thin etalon smoothing filter polyorder: &#39;, self.thin_eta_smoothing_polyorder_field)
+    self.thin_eta_max_allowed_stddev_field = QDoubleSpinBox()
+    self.thin_eta_max_allowed_stddev_field.setMinimum(0)
+    scan_layout.addRow(&#39;Thin etalon max allowed stddev: &#39;, self.thin_eta_max_allowed_stddev_field)
+    self.refcell_rising_speed_field = QDoubleSpinBox()
+    self.refcell_rising_speed_field.setDecimals(3)
+    self.refcell_rising_speed_field.setSingleStep(0.001)
+    self.refcell_rising_speed_field.setMinimum(0)
+    self.refcell_rising_speed_field.setMaximum(0.1)
+    scan_layout.addRow(&#39;RefCell scan rising speed: &#39;, self.refcell_rising_speed_field)
+    self.refcell_falling_speed_field = QDoubleSpinBox()
+    self.refcell_falling_speed_field.setDecimals(3)
+    self.refcell_falling_speed_field.setSingleStep(0.001)
+    self.refcell_falling_speed_field.setMinimum(0)
+    self.refcell_falling_speed_field.setMaximum(0.1)
+    scan_layout.addRow(&#39;RefCell scan falling speed: &#39;, self.refcell_falling_speed_field)
+    self.large_wavelength_drift_field = QDoubleSpinBox()
+    scan_layout.addRow(&#39;Large wavelength drift: &#39;, self.large_wavelength_drift_field)
+    self.medium_wavelength_drift_field = QDoubleSpinBox()
+    scan_layout.addRow(&#39;Medium wavelength drift: &#39;, self.medium_wavelength_drift_field)
+    self.small_wavelength_drift_field = QDoubleSpinBox()
+    scan_layout.addRow(&#39;Small wavelength drift: &#39;, self.small_wavelength_drift_field)
+    return scan_options</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.ensure_odd_value"><code class="name flex">
+<span>def <span class="ident">ensure_odd_value</span></span>(<span>self, value)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@pyqtSlot(int)
+def ensure_odd_value(self, value):
+    field: QSpinBox = self.sender()
+    if value % 2 == 0:
+        field.setValue(value - 1)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.restore_defaults"><code class="name flex">
+<span>def <span class="ident">restore_defaults</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@pyqtSlot(bool)
+def restore_defaults(self, checked):
+    cfg.restore_defaults()
+    self.set_current_values_from_config()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.save_configuration"><code class="name flex">
+<span>def <span class="ident">save_configuration</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@pyqtSlot(bool)
+def save_configuration(self, checked):
+    print(&#39;Saving configuration.&#39;)
+    cfg.set(cfg.MATISSE_DEVICE_ID, self.matisse_device_id_field.text())
+    cfg.set(cfg.WAVEMETER_PORT, self.wavemeter_port_field.text())
+    cfg.set(cfg.WAVEMETER_PRECISION, self.wavemeter_precision_field.value())
+    cfg.set(cfg.WAVEMETER_MEASUREMENT_DELAY, self.wavemeter_measurement_delay_field.value())
+
+    cfg.set(cfg.STATUS_MONITOR_DELAY, self.status_monitor_delay_field.value())
+    cfg.set(cfg.STATUS_MONITOR_FONT_SIZE, self.status_monitor_font_size_field.value())
+
+    cfg.set(cfg.COMPONENT_LIMIT_OFFSET, self.component_limit_offset_field.value())
+    cfg.set(cfg.WAVELENGTH_LOWER_LIMIT, self.wavelength_lower_limit_field.value())
+    cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
+    cfg.set(cfg.BIFI_RESET_POS, self.bifi_reset_pos_field.value())
+    cfg.set(cfg.THIN_ETA_RESET_POS, self.thin_eta_reset_pos_field.value())
+
+    cfg.set(cfg.REPORT_EVENTS, self.report_events_field.isChecked())
+
+    cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
+    cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
+    cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
+    cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())
+    cfg.set(cfg.BIFI_SCAN_SHOW_PLOTS, self.bifi_scan_show_plots_field.isChecked())
+    cfg.set(cfg.BIFI_SMOOTHING_FILTER_WINDOW, self.bifi_smoothing_window_field.value())
+    cfg.set(cfg.BIFI_SMOOTHING_FILTER_POLYORDER, self.bifi_smoothing_polyorder_field.value())
+
+    cfg.set(cfg.THIN_ETA_SCAN_RANGE, self.thin_eta_scan_range_field.value())
+    cfg.set(cfg.THIN_ETA_SCAN_RANGE_SMALL, self.thin_eta_small_scan_range_field.value())
+    cfg.set(cfg.THIN_ETA_SCAN_STEP, self.thin_eta_scan_step_field.value())
+    cfg.set(cfg.THIN_ETA_NUDGE, self.thin_eta_nudge_field.value())
+    cfg.set(cfg.THIN_ETA_SHOW_PLOTS, self.thin_eta_scan_show_plots_field.isChecked())
+    cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW, self.thin_eta_smoothing_window_field.value())
+    cfg.set(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER, self.thin_eta_smoothing_polyorder_field.value())
+    cfg.set(cfg.THIN_ETA_MAX_ALLOWED_STDDEV, self.thin_eta_max_allowed_stddev_field.value())
+
+    cfg.set(cfg.REFCELL_SCAN_RISING_SPEED, self.refcell_rising_speed_field.value())
+    cfg.set(cfg.REFCELL_SCAN_FALLING_SPEED, self.refcell_falling_speed_field.value())
+
+    cfg.set(cfg.LARGE_WAVELENGTH_DRIFT, self.large_wavelength_drift_field.value())
+    cfg.set(cfg.MEDIUM_WAVELENGTH_DRIFT, self.medium_wavelength_drift_field.value())
+    cfg.set(cfg.SMALL_WAVELENGTH_DRIFT, self.small_wavelength_drift_field.value())
+
+    cfg.set(cfg.LOCKING_TIMEOUT, self.locking_timeout_field.value())
+    cfg.set(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT, self.fast_pz_setpoint_lower_limit_field.value())
+    cfg.set(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT, self.fast_pz_setpoint_upper_limit_field.value())
+    cfg.set(cfg.FAST_PZ_SETPOINT_NUM_POINTS, self.fast_pz_setpoint_num_points_field.value())
+    cfg.set(cfg.FAST_PZ_SETPOINT_NUM_SCANS, self.fast_pz_setpoint_num_scans_field.value())
+
+    cfg.set(cfg.CORRECTION_LIMIT, self.auto_correction_limit_field.value())
+
+    cfg.set(cfg.PIEZO_ETA_UPPER_CORRECTION_POS, self.pz_eta_upper_correction_pos_field.value())
+    cfg.set(cfg.SLOW_PIEZO_UPPER_CORRECTION_POS, self.slow_pz_upper_correction_pos_field.value())
+    cfg.set(cfg.REFCELL_UPPER_CORRECTION_POS, self.refcell_upper_correction_pos_field.value())
+    cfg.set(cfg.PIEZO_ETA_MID_CORRECTION_POS, self.pz_eta_mid_correction_pos_field.value())
+    cfg.set(cfg.SLOW_PIEZO_MID_CORRECTION_POS, self.slow_pz_mid_correction_pos_field.value())
+    cfg.set(cfg.REFCELL_MID_CORRECTION_POS, self.refcell_mid_correction_pos_field.value())
+    cfg.set(cfg.PIEZO_ETA_LOWER_CORRECTION_POS, self.pz_eta_lower_correction_pos_field.value())
+    cfg.set(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS, self.slow_pz_lower_correction_pos_field.value())
+    cfg.set(cfg.REFCELL_LOWER_CORRECTION_POS, self.refcell_lower_correction_pos_field.value())
+
+    cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
+    cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
+    cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
+    cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+
+    cfg.save()
+    self.close()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.set_current_values_from_config"><code class="name flex">
+<span>def <span class="ident">set_current_values_from_config</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_current_values_from_config(self):
+    self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
+    self.wavemeter_port_field.setText(cfg.get(cfg.WAVEMETER_PORT))
+    self.wavemeter_precision_field.setValue(cfg.get(cfg.WAVEMETER_PRECISION))
+    self.wavemeter_measurement_delay_field.setValue(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+
+    self.status_monitor_delay_field.setValue(cfg.get(cfg.STATUS_MONITOR_DELAY))
+    self.status_monitor_font_size_field.setValue(cfg.get(cfg.STATUS_MONITOR_FONT_SIZE))
+
+    self.component_limit_offset_field.setValue(cfg.get(cfg.COMPONENT_LIMIT_OFFSET))
+    self.wavelength_lower_limit_field.setValue(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+    self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+    self.bifi_reset_pos_field.setValue(cfg.get(cfg.BIFI_RESET_POS))
+    self.thin_eta_reset_pos_field.setValue(cfg.get(cfg.THIN_ETA_RESET_POS))
+
+    self.report_events_field.setChecked(cfg.get(cfg.REPORT_EVENTS))
+
+    self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
+    self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
+    self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+    self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
+    self.bifi_scan_show_plots_field.setChecked(cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS))
+    self.bifi_smoothing_window_field.setValue(cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW))
+    self.bifi_smoothing_polyorder_field.setValue(cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER))
+
+    self.thin_eta_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE))
+    self.thin_eta_small_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+    self.thin_eta_scan_step_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_STEP))
+    self.thin_eta_nudge_field.setValue(cfg.get(cfg.THIN_ETA_NUDGE))
+    self.thin_eta_scan_show_plots_field.setChecked(cfg.get(cfg.THIN_ETA_SHOW_PLOTS))
+    self.thin_eta_smoothing_window_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW))
+    self.thin_eta_smoothing_polyorder_field.setValue(cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
+    self.thin_eta_max_allowed_stddev_field.setValue(cfg.get(cfg.THIN_ETA_MAX_ALLOWED_STDDEV))
+
+    self.refcell_rising_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_RISING_SPEED))
+    self.refcell_falling_speed_field.setValue(cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED))
+
+    self.large_wavelength_drift_field.setValue(cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+    self.medium_wavelength_drift_field.setValue(cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT))
+    self.small_wavelength_drift_field.setValue(cfg.get(cfg.SMALL_WAVELENGTH_DRIFT))
+
+    self.locking_timeout_field.setValue(cfg.get(cfg.LOCKING_TIMEOUT))
+    self.fast_pz_setpoint_lower_limit_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT))
+    self.fast_pz_setpoint_upper_limit_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT))
+    self.fast_pz_setpoint_num_points_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
+    self.fast_pz_setpoint_num_scans_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS))
+
+    self.auto_correction_limit_field.setValue(cfg.get(cfg.CORRECTION_LIMIT))
+
+    self.pz_eta_upper_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS))
+    self.slow_pz_upper_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_UPPER_CORRECTION_POS))
+    self.refcell_upper_correction_pos_field.setValue(cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS))
+    self.pz_eta_mid_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_MID_CORRECTION_POS))
+    self.slow_pz_mid_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS))
+    self.refcell_mid_correction_pos_field.setValue(cfg.get(cfg.REFCELL_MID_CORRECTION_POS))
+    self.pz_eta_lower_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_LOWER_CORRECTION_POS))
+    self.slow_pz_lower_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS))
+    self.refcell_lower_correction_pos_field.setValue(cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS))
+
+    self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
+    self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
+    self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
+    self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.set_tooltips"><code class="name flex">
+<span>def <span class="ident">set_tooltips</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_tooltips(self):
+    self.matisse_device_id_field.setToolTip(tooltips.MATISSE_DEVICE_ID)
+    self.wavemeter_port_field.setToolTip(tooltips.WAVEMETER_PORT)
+    self.wavemeter_precision_field.setToolTip(tooltips.WAVEMETER_PRECISION)
+    self.wavemeter_measurement_delay_field.setToolTip(tooltips.WAVEMETER_MEASUREMENT_DELAY)
+
+    self.status_monitor_delay_field.setToolTip(tooltips.STATUS_MONITOR_DELAY)
+    self.status_monitor_font_size_field.setToolTip(tooltips.STATUS_MONITOR_FONT_SIZE)
+
+    self.bifi_reset_pos_field.setToolTip(tooltips.BIFI_RESET_POS)
+    self.thin_eta_reset_pos_field.setToolTip(tooltips.THIN_ETA_RESET_POS)
+
+    self.report_events_field.setToolTip(tooltips.REPORT_EVENTS)
+
+    self.component_limit_offset_field.setToolTip(tooltips.COMPONENT_LIMIT_OFFSET)
+
+    self.wavelength_lower_limit_field.setToolTip(tooltips.WAVELENGTH_LOWER_LIMIT)
+    self.wavelength_upper_limit_field.setToolTip(tooltips.WAVELENGTH_UPPER_LIMIT)
+
+    self.scan_limit_field.setToolTip(tooltips.SCAN_LIMIT)
+
+    self.bifi_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE)
+    self.bifi_small_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE_SMALL)
+    self.bifi_scan_step_field.setToolTip(tooltips.BIFI_SCAN_STEP)
+    self.bifi_scan_show_plots_field.setToolTip(tooltips.BIFI_SCAN_SHOW_PLOTS)
+    self.bifi_smoothing_window_field.setToolTip(tooltips.BIFI_SMOOTHING_FILTER_WINDOW)
+    self.bifi_smoothing_polyorder_field.setToolTip(tooltips.BIFI_SMOOTHING_FILTER_POLYORDER)
+
+    self.thin_eta_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE)
+    self.thin_eta_small_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE_SMALL)
+    self.thin_eta_scan_step_field.setToolTip(tooltips.THIN_ETA_SCAN_STEP)
+    self.thin_eta_nudge_field.setToolTip(tooltips.THIN_ETA_NUDGE)
+    self.thin_eta_scan_show_plots_field.setToolTip(tooltips.THIN_ETA_SHOW_PLOTS)
+    self.thin_eta_smoothing_window_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_WINDOW)
+    self.thin_eta_smoothing_polyorder_field.setToolTip(tooltips.THIN_ETA_SMOOTHING_FILTER_POLYORDER)
+    self.thin_eta_max_allowed_stddev_field.setToolTip(tooltips.THIN_ETA_MAX_ALLOWED_STDDEV)
+
+    self.refcell_rising_speed_field.setToolTip(tooltips.REFCELL_SCAN_RISING_SPEED)
+    self.refcell_falling_speed_field.setToolTip(tooltips.REFCELL_SCAN_FALLING_SPEED)
+
+    self.large_wavelength_drift_field.setToolTip(tooltips.LARGE_WAVELENGTH_DRIFT)
+    self.medium_wavelength_drift_field.setToolTip(tooltips.MEDIUM_WAVELENGTH_DRIFT)
+    self.small_wavelength_drift_field.setToolTip(tooltips.SMALL_WAVELENGTH_DRIFT)
+
+    self.locking_timeout_field.setToolTip(tooltips.LOCKING_TIMEOUT)
+    self.fast_pz_setpoint_lower_limit_field.setToolTip(tooltips.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT)
+    self.fast_pz_setpoint_upper_limit_field.setToolTip(tooltips.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT)
+    self.fast_pz_setpoint_num_points_field.setToolTip(tooltips.FAST_PZ_SETPOINT_NUM_POINTS)
+    self.fast_pz_setpoint_num_scans_field.setToolTip(tooltips.FAST_PZ_SETPOINT_NUM_SCANS)
+
+    self.stabilization_rising_speed_field.setToolTip(tooltips.STABILIZATION_RISING_SPEED)
+    self.stabilization_falling_speed_field.setToolTip(tooltips.STABILIZATION_FALLING_SPEED)
+    self.stabilization_delay_field.setToolTip(tooltips.STABILIZATION_DELAY)
+    self.stabilization_tolerance_field.setToolTip(tooltips.STABILIZATION_TOLERANCE)
+
+    self.auto_correction_limit_field.setToolTip(tooltips.CORRECTION_LIMIT)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="matisse_controller.gui.dialogs" href="index.html">matisse_controller.gui.dialogs</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.main" href="#matisse_controller.gui.dialogs.configuration_dialog.main">main</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog">ConfigurationDialog</a></code></h4>
+<ul class="">
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.add_buttons" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.add_buttons">add_buttons</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.add_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.add_options">add_options</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.cancel" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.cancel">cancel</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_general_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_general_options">create_general_options</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_gui_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_gui_options">create_gui_options</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_locking_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_locking_options">create_locking_options</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_scan_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_scan_options">create_scan_options</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.ensure_odd_value" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.ensure_odd_value">ensure_odd_value</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.restore_defaults" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.restore_defaults">restore_defaults</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.save_configuration" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.save_configuration">save_configuration</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.set_current_values_from_config" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.set_current_values_from_config">set_current_values_from_config</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.set_tooltips" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.set_tooltips">set_tooltips</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

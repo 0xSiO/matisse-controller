@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>matisse_controller.gui.control_application API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>matisse_controller.gui.control_application</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">import queue
+import sys
+import traceback
+from concurrent.futures import Future
+from concurrent.futures.thread import ThreadPoolExecutor
+from contextlib import redirect_stdout
+
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication
+
+import matisse_controller.config as cfg
+from matisse_controller.gui import utils
+from matisse_controller.gui.dialogs import ConfigurationDialog
+from matisse_controller.gui.logging_stream import LoggingStream
+from matisse_controller.gui.utils import handled_function, handled_slot
+from matisse_controller.gui.widgets import LoggingArea, StatusMonitor
+from matisse_controller.matisse import Matisse
+
+
+class ControlApplication(QApplication):
+    &#34;&#34;&#34;
+    A comprehensive control center to make use of the APIs provided in this package.
+    &#34;&#34;&#34;
+
+    EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
+    CONFIRM_WAVELENGTH_CHANGE_THRESHOLD = 10
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Non-handled functions only here
+        self.setup_window()
+        self.setup_logging()
+        self.setup_menus()
+        self.setup_slots()
+
+        # Handled functions can go here
+        self.setup_matisse()
+        self.setup_widgets()
+
+        # Other setup
+        self.aboutToQuit.connect(self.clean_up)
+        self.work_executor = ThreadPoolExecutor()
+        self.matisse_worker: Future = None
+
+        container = QWidget()
+        container.setLayout(self.layout)
+        self.window.setCentralWidget(container)
+        self.window.show()
+
+    def setup_window(self):
+        self.window = window = QMainWindow()
+        self.layout = QVBoxLayout()
+        window.setWindowTitle(&#39;Matisse Controller&#39;)
+        window.resize(700, 300)
+
+    def setup_logging(self):
+        &#34;&#34;&#34;Initialize logging queue and redirect stdout to the logging area.&#34;&#34;&#34;
+        self.log_queue = queue.Queue()
+        self.log_area = LoggingArea(self.log_queue)
+        self.log_area.setReadOnly(True)
+        self.layout.addWidget(self.log_area)
+
+        # Set up a context manager to redirect stdout to the log window
+        self.log_redirector = redirect_stdout(LoggingStream(self.log_queue))
+        self.log_redirector.__enter__()
+
+    def setup_menus(self):
+        &#34;&#34;&#34;Initialization of items in the menu bar go here.&#34;&#34;&#34;
+        menu_bar = self.window.menuBar()
+
+        console_menu = menu_bar.addMenu(&#39;Console&#39;)
+        self.clear_log_area_action = console_menu.addAction(&#39;Clear Log&#39;)
+        self.configuration_action = console_menu.addAction(&#39;Configuration&#39;)
+        self.reset_action = console_menu.addAction(&#39;Reset&#39;)
+        self.restart_action = console_menu.addAction(&#39;Restart&#39;)
+
+        set_menu = menu_bar.addMenu(&#39;Set&#39;)
+        self.set_wavelength_action = set_menu.addAction(&#39;Wavelength&#39;)
+        self.set_bifi_approx_wavelength_action = set_menu.addAction(&#39;BiFi Approx. Wavelength&#39;)
+        self.set_bifi_motor_pos_action = set_menu.addAction(&#39;BiFi Motor Position&#39;)
+        self.set_thin_eta_motor_pos_action = set_menu.addAction(&#39;Thin Etalon Motor Position&#39;)
+        self.set_piezo_eta_pos_action = set_menu.addAction(&#39;Piezo Etalon Position&#39;)
+        self.set_slow_piezo_pos_action = set_menu.addAction(&#39;Slow Piezo Position&#39;)
+        self.set_refcell_pos_action = set_menu.addAction(&#39;RefCell Position&#39;)
+
+        scan_menu = menu_bar.addMenu(&#39;Scan&#39;)
+        self.bifi_scan_action = scan_menu.addAction(&#39;Birefringent Filter&#39;)
+        self.thin_eta_scan_action = scan_menu.addAction(&#39;Thin Etalon&#39;)
+        self.scan_device_up_action = scan_menu.addAction(&#39;Scan Device Up&#39;)
+        self.scan_device_down_action = scan_menu.addAction(&#39;Scan Device Down&#39;)
+        self.stop_scan_device_action = scan_menu.addAction(&#39;Stop Scanning Device&#39;)
+
+        stabilization_menu = menu_bar.addMenu(&#39;Stabilization&#39;)
+        toggle_control_loop_menu = stabilization_menu.addMenu(&#39;Toggle Control Loop&#39;)
+        self.slow_pz_control_action = toggle_control_loop_menu.addAction(&#39;Slow Piezo&#39;)
+        self.slow_pz_control_action.setCheckable(True)
+        self.thin_eta_control_action = toggle_control_loop_menu.addAction(&#39;Thin Etalon&#39;)
+        self.thin_eta_control_action.setCheckable(True)
+        self.piezo_eta_control_action = toggle_control_loop_menu.addAction(&#39;Piezo Etalon&#39;)
+        self.piezo_eta_control_action.setCheckable(True)
+        self.fast_pz_control_action = toggle_control_loop_menu.addAction(&#39;Fast Piezo&#39;)
+        self.fast_pz_control_action.setCheckable(True)
+        self.lock_laser_action = stabilization_menu.addAction(&#39;Toggle Lock Laser&#39;)
+        self.set_recommended_fast_pz_setpoint_action = stabilization_menu.addAction(&#39;Set Recommended Fast Pz Setpoint&#39;)
+        self.auto_stabilize_action = stabilization_menu.addAction(&#39;Toggle Auto Stabilization&#39;)
+
+        ple_menu = menu_bar.addMenu(&#39;Shamrock&#39;)
+        self.start_ple_scan_action = ple_menu.addAction(&#39;Start PLE Scan&#39;)
+
+        self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
+                                     self.piezo_eta_control_action, self.fast_pz_control_action]
+
+    def setup_slots(self):
+        &#34;&#34;&#34;
+        Connection of Qt signals to Qt slots goes here.
+
+        Please note that execution of slots will block the UI thread by default.
+        &#34;&#34;&#34;
+        # Console
+        self.clear_log_area_action.triggered.connect(self.clear_log_area)
+        self.configuration_action.triggered.connect(self.open_configuration)
+        self.reset_action.triggered.connect(self.reset_matisse)
+        self.restart_action.triggered.connect(self.restart)
+
+        # Set
+        self.set_wavelength_action.triggered.connect(self.set_wavelength_dialog)
+        self.set_bifi_approx_wavelength_action.triggered.connect(self.set_bifi_approx_wavelength_dialog)
+        self.set_bifi_motor_pos_action.triggered.connect(self.set_bifi_motor_pos_dialog)
+        self.set_thin_eta_motor_pos_action.triggered.connect(self.set_thin_eta_motor_pos_dialog)
+        self.set_piezo_eta_pos_action.triggered.connect(self.set_piezo_eta_pos_dialog)
+        self.set_slow_piezo_pos_action.triggered.connect(self.set_slow_piezo_pos_dialog)
+        self.set_refcell_pos_action.triggered.connect(self.set_refcell_pos_dialog)
+
+        # Scan
+        self.bifi_scan_action.triggered.connect(self.start_bifi_scan)
+        self.thin_eta_scan_action.triggered.connect(self.start_thin_etalon_scan)
+
+        # PLE
+        self.scan_device_up_action.triggered.connect(self.scan_device_up)
+        self.scan_device_down_action.triggered.connect(self.scan_device_down)
+        self.stop_scan_device_action.triggered.connect(self.stop_scanning_device)
+
+        # Stabilization
+        self.slow_pz_control_action.triggered.connect(self.toggle_slow_piezo_control)
+        self.thin_eta_control_action.triggered.connect(self.toggle_thin_etalon_control)
+        self.piezo_eta_control_action.triggered.connect(self.toggle_piezo_etalon_control)
+        self.fast_pz_control_action.triggered.connect(self.toggle_fast_piezo_control)
+        self.lock_laser_action.triggered.connect(self.toggle_lock_laser)
+        self.set_recommended_fast_pz_setpoint_action.triggered.connect(self.set_recommended_fast_pz_setpoint)
+        self.auto_stabilize_action.triggered.connect(self.toggle_auto_stabilization)
+
+        # Shamrock
+        self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
+
+    @handled_function
+    def setup_widgets(self):
+        &#34;&#34;&#34;Initialize any widgets the UI needs to run correctly.&#34;&#34;&#34;
+        self.status_monitor_queue = queue.Queue()
+        self.status_monitor = StatusMonitor(self.matisse, self.status_monitor_queue)
+        self.layout.addWidget(self.status_monitor)
+
+    @handled_function
+    def setup_matisse(self):
+        try:
+            self.matisse: Matisse = Matisse()
+        except Exception as err:
+            self.matisse: Matisse = None
+            raise err
+
+    @pyqtSlot()
+    def clean_up(self):
+        &#34;&#34;&#34;
+        This method is run before the GUI exits, think of it like `__del__`.
+
+        Don&#39;t call this elsewhere unless you know what you&#39;re doing.
+        &#34;&#34;&#34;
+        self.reset_matisse()
+
+        # Clean up widgets with running threads.
+        self.status_monitor.clean_up()
+        self.log_area.clean_up()
+
+        self.log_redirector.__exit__(None, None, None)
+
+    def error_dialog(self):
+        &#34;&#34;&#34;Display an error dialog box with details of the most recent exception raised.&#34;&#34;&#34;
+        stack = list(traceback.format_exception(*sys.exc_info()))
+        # Pick length of longest line in stack, with a cutoff at 185
+        desired_width = min(max([len(line) for line in stack]), 185)
+        description = stack.pop()
+        print(utils.red_text(description), end=&#39;&#39;)
+        # Remove entries for handled_function decorator, for clarity
+        stack = list(filter(lambda item: &#39;in handled_function_wrapper&#39; not in item, stack))
+        dialog = QMessageBox(icon=QMessageBox.Critical)
+        dialog.setWindowTitle(&#39;Error&#39;)
+        # Adding the underscores is a hack to resize the QMessageBox because it&#39;s not normally resizable.
+        # This looks good in Windows, haven&#39;t tested other platforms. Sorry :(
+        dialog.setText(f&#34;{description + &#39;_&#39; * desired_width}\n\n{&#39;&#39;.join(stack)}&#34;)
+        dialog.exec()
+
+    @handled_slot(bool)
+    def clear_log_area(self, checked):
+        self.log_area.clear()
+
+    @handled_slot(bool)
+    def open_configuration(self, checked):
+        dialog = ConfigurationDialog()
+        dialog.exec()
+
+    @handled_slot(bool)
+    def reset_matisse(self, checked=False):
+        &#34;&#34;&#34;Reset Matisse to a &#39;good&#39; default state: not locked or stabilizing, motors reset, all tasks finished, etc.&#34;&#34;&#34;
+        print(&#39;Starting reset.&#39;)
+        if self.matisse is not None:
+            self.matisse.exit_flag = True
+            if self.matisse_worker is not None and self.matisse_worker.running():
+                print(&#39;Waiting for running tasks to complete.&#39;)
+                self.matisse_worker.result()
+            self.matisse_worker = None
+            self.matisse.stabilize_off()
+            self.matisse.stop_laser_lock_correction()
+            self.matisse.reset_motors()
+            self.matisse.reset_stabilization_piezos()
+            self.matisse.exit_flag = False
+        print(&#39;Reset complete.&#39;)
+
+    @handled_slot(bool)
+    def restart(self, checked):
+        self.exit(ControlApplication.EXIT_CODE_RESTART)
+
+    @handled_slot(bool)
+    def set_wavelength_dialog(self, checked):
+        &#34;&#34;&#34;
+        Open a dialog to set the wavelength of the Matisse. If the difference in wavleength is greater than or equal to
+        the wavelength change threshold, display a warning to confirm the change.
+        &#34;&#34;&#34;
+        current_wavelength = self.matisse.target_wavelength
+        if current_wavelength is None:
+            current_wavelength = self.matisse.wavemeter_wavelength()
+        target_wavelength, success = QInputDialog.getDouble(self.window, &#39;Set Wavelength&#39;, &#39;Wavelength (nm): &#39;,
+                                                            current_wavelength, decimals=3,
+                                                            min=cfg.get(cfg.WAVELENGTH_LOWER_LIMIT),
+                                                            max=cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        if success:
+            if abs(current_wavelength - target_wavelength) &gt;= ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD:
+                answer = QMessageBox.warning(self.window, &#39;Large Wavelength Change&#39;,
+                                             f&#34;The desired wavelength, {target_wavelength} nm, is more than &#34;
+                                             f&#34;{ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD} nm &#34;
+                                             &#39;away from the current wavelength. Are you sure?&#39;,
+                                             QMessageBox.Yes | QMessageBox.No, defaultButton=QMessageBox.No)
+                if answer == QMessageBox.No:
+                    return
+
+            print(f&#34;Setting wavelength to {target_wavelength} nm...&#34;)
+            self.run_matisse_task(self.matisse.set_wavelength, target_wavelength)
+
+    @handled_slot(bool)
+    def set_bifi_approx_wavelength_dialog(self, checked):
+        target_wavelength, success = QInputDialog.getDouble(self.window, &#39;Set Approx. Wavelength&#39;, &#39;Wavelength (nm): &#39;,
+                                                            self.matisse.query(&#39;MOTBI:WL?&#39;, numeric_result=True))
+        if success:
+            print(f&#34;Setting BiFi approximate wavelength to {target_wavelength} nm...&#34;)
+            self.matisse.set_bifi_wavelength(target_wavelength)
+
+    @handled_slot(bool)
+    def set_bifi_motor_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getInt(self.window, &#39;Set BiFi Motor Position&#39;, &#39;Absolute Position:&#39;,
+                                                  self.matisse.query(&#39;MOTBI:POS?&#39;, numeric_result=True))
+        if success:
+            print(f&#34;Setting BiFi motor position to {target_pos}.&#34;)
+            self.matisse.set_bifi_motor_pos(target_pos)
+
+    @handled_slot(bool)
+    def set_thin_eta_motor_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getInt(self.window, &#39;Set Thin Etalon Motor Position&#39;, &#39;Absolute Position:&#39;,
+                                                  self.matisse.query(&#39;MOTTE:POS?&#39;, numeric_result=True))
+        if success:
+            print(f&#34;Setting thin etalon motor position to {target_pos}.&#34;)
+            self.matisse.set_thin_etalon_motor_pos(target_pos)
+
+    @handled_slot(bool)
+    def set_piezo_eta_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getDouble(self.window, &#39;Set Piezo Etalon Position&#39;, &#39;Position: &#39;,
+                                                     self.matisse.query(&#39;PZETL:BASE?&#39;, numeric_result=True))
+        if success:
+            self.matisse.query(f&#34;PZETL:BASE {target_pos}&#34;)
+
+    @handled_slot(bool)
+    def set_slow_piezo_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getDouble(self.window, &#39;Set Slow Piezo Position&#39;, &#39;Position: &#39;,
+                                                     self.matisse.query(&#39;SPZT:NOW?&#39;, numeric_result=True))
+        if success:
+            self.matisse.query(f&#34;SPZT:NOW {target_pos}&#34;)
+
+    @handled_slot(bool)
+    def set_refcell_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getDouble(self.window, &#39;Set RefCell Position&#39;, &#39;Position: &#39;,
+                                                     self.matisse.query(&#39;SCAN:NOW?&#39;, numeric_result=True))
+        if success:
+            self.matisse.query(f&#34;SCAN:NOW {target_pos}&#34;)
+
+    @handled_slot(bool)
+    def start_bifi_scan(self, checked):
+        self.run_matisse_task(self.matisse.birefringent_filter_scan)
+
+    @handled_slot(bool)
+    def start_thin_etalon_scan(self, checked):
+        self.run_matisse_task(self.matisse.thin_etalon_scan)
+
+    @handled_slot(bool)
+    def scan_device_up(self, checked):
+        if self.matisse.is_stabilizing():
+            print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
+        else:
+            self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
+            self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
+            self.matisse.start_scan(Matisse.SCAN_MODE_UP)
+
+    @handled_slot(bool)
+    def scan_device_down(self, checked):
+        if self.matisse.is_stabilizing():
+            print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
+        else:
+            self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
+            self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
+            self.matisse.start_scan(Matisse.SCAN_MODE_DOWN)
+
+    @handled_slot(bool)
+    def stop_scanning_device(self, checked):
+        if self.matisse.is_stabilizing():
+            print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
+        else:
+            self.matisse.stop_scan()
+
+    @handled_slot(bool)
+    def toggle_lock_laser(self, checked):
+        if self.matisse.is_lock_correction_on():
+            self.matisse.stop_laser_lock_correction()
+            [action.setEnabled(True) for action in self.control_loop_actions]
+            [action.setChecked(False) for action in self.control_loop_actions]
+        else:
+            self.matisse.start_laser_lock_correction()
+            [action.setEnabled(False) for action in self.control_loop_actions]
+            [action.setChecked(True) for action in self.control_loop_actions]
+
+    @handled_slot(bool)
+    def set_recommended_fast_pz_setpoint(self, checked):
+        self.matisse.set_recommended_fast_piezo_setpoint()
+
+    @handled_slot(bool)
+    def toggle_slow_piezo_control(self, checked):
+        print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} slow piezo.&#34;)
+        self.slow_pz_control_action.setChecked(not checked)
+        self.matisse.set_slow_piezo_control(checked)
+        self.slow_pz_control_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def toggle_thin_etalon_control(self, checked):
+        print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} thin etalon.&#34;)
+        self.thin_eta_control_action.setChecked(not checked)
+        self.matisse.set_thin_etalon_control(checked)
+        self.thin_eta_control_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def toggle_piezo_etalon_control(self, checked):
+        print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} piezo etalon.&#34;)
+        self.piezo_eta_control_action.setChecked(not checked)
+        self.matisse.set_piezo_etalon_control(checked)
+        self.piezo_eta_control_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def toggle_fast_piezo_control(self, checked):
+        print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} fast piezo.&#34;)
+        self.fast_pz_control_action.setChecked(not checked)
+        self.matisse.set_piezo_etalon_control(checked)
+        self.fast_pz_control_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def toggle_auto_stabilization(self, checked):
+        if self.matisse.is_stabilizing():
+            self.matisse.stabilize_off()
+        else:
+            self.matisse.stabilize_on()
+
+    @handled_slot(bool)
+    def start_ple_scan(self, checked):
+        raise NotImplementedError(&#39;PLE scan logic currently in development.&#39;)
+
+    def run_matisse_task(self, function, *args, **kwargs) -&gt; bool:
+        &#34;&#34;&#34;
+        Run an asynchronous Matisse-related task in the worker thread pool. Only one such task may be run at a time.
+        Any task run using this method MUST exit gracefully at some point by checking the Matisse `exit_flag`.
+
+        Parameters
+        ----------
+        function : function
+            the function to run in the thread pool
+        *args
+            positional arguments to pass to the given function
+        **kwargs
+            keyword arguments to pass to the given function
+
+        Returns
+        -------
+        bool
+            whether the task was successfully started
+        &#34;&#34;&#34;
+        if self.matisse_worker is not None and self.matisse_worker.running():
+            print(&#34;WARNING: Cannot perform requested action. A Matisse-related task is currently running.&#34;)
+            return False
+        else:
+            self.matisse_worker = self.work_executor.submit(function, *args, **kwargs)
+            self.matisse_worker.add_done_callback(self.raise_error_from_future)
+            return True
+
+    def raise_error_from_future(self, future: Future):
+        &#34;&#34;&#34;
+        If you&#39;d lke to log errors that occur in worker threads, call `add_done_callback` on the future returned from
+        the work executor and pass in this function.
+        &#34;&#34;&#34;
+        async_task_error: Exception = future.exception()
+        if async_task_error is not None:
+            # Using the error_dialog method here seems to just hang the application forever.
+            # Workaround: log error, make a noise, alert the user, and hope for the best
+            message = f&#34;An error occurred while running an asynchronous task: &lt;pre&gt;{traceback.format_exc()}&lt;/pre&gt;&#34;
+            self.alert(self.window)
+            self.beep()
+            print(utils.red_text(message))
+
+
+def main():
+    exit_code = ControlApplication.EXIT_CODE_RESTART
+    while exit_code == ControlApplication.EXIT_CODE_RESTART:
+        gui = ControlApplication([])
+        exit_code = gui.exec()
+        del gui
+
+
+if __name__ == &#39;__main__&#39;:
+    main()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="matisse_controller.gui.control_application.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def main():
+    exit_code = ControlApplication.EXIT_CODE_RESTART
+    while exit_code == ControlApplication.EXIT_CODE_RESTART:
+        gui = ControlApplication([])
+        exit_code = gui.exec()
+        del gui</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="matisse_controller.gui.control_application.ControlApplication"><code class="flex name class">
+<span>class <span class="ident">ControlApplication</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A comprehensive control center to make use of the APIs provided in this package.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class ControlApplication(QApplication):
+    &#34;&#34;&#34;
+    A comprehensive control center to make use of the APIs provided in this package.
+    &#34;&#34;&#34;
+
+    EXIT_CODE_RESTART = 42  # Answer to the Ultimate Question of Life, the Universe, and Everything
+    CONFIRM_WAVELENGTH_CHANGE_THRESHOLD = 10
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Non-handled functions only here
+        self.setup_window()
+        self.setup_logging()
+        self.setup_menus()
+        self.setup_slots()
+
+        # Handled functions can go here
+        self.setup_matisse()
+        self.setup_widgets()
+
+        # Other setup
+        self.aboutToQuit.connect(self.clean_up)
+        self.work_executor = ThreadPoolExecutor()
+        self.matisse_worker: Future = None
+
+        container = QWidget()
+        container.setLayout(self.layout)
+        self.window.setCentralWidget(container)
+        self.window.show()
+
+    def setup_window(self):
+        self.window = window = QMainWindow()
+        self.layout = QVBoxLayout()
+        window.setWindowTitle(&#39;Matisse Controller&#39;)
+        window.resize(700, 300)
+
+    def setup_logging(self):
+        &#34;&#34;&#34;Initialize logging queue and redirect stdout to the logging area.&#34;&#34;&#34;
+        self.log_queue = queue.Queue()
+        self.log_area = LoggingArea(self.log_queue)
+        self.log_area.setReadOnly(True)
+        self.layout.addWidget(self.log_area)
+
+        # Set up a context manager to redirect stdout to the log window
+        self.log_redirector = redirect_stdout(LoggingStream(self.log_queue))
+        self.log_redirector.__enter__()
+
+    def setup_menus(self):
+        &#34;&#34;&#34;Initialization of items in the menu bar go here.&#34;&#34;&#34;
+        menu_bar = self.window.menuBar()
+
+        console_menu = menu_bar.addMenu(&#39;Console&#39;)
+        self.clear_log_area_action = console_menu.addAction(&#39;Clear Log&#39;)
+        self.configuration_action = console_menu.addAction(&#39;Configuration&#39;)
+        self.reset_action = console_menu.addAction(&#39;Reset&#39;)
+        self.restart_action = console_menu.addAction(&#39;Restart&#39;)
+
+        set_menu = menu_bar.addMenu(&#39;Set&#39;)
+        self.set_wavelength_action = set_menu.addAction(&#39;Wavelength&#39;)
+        self.set_bifi_approx_wavelength_action = set_menu.addAction(&#39;BiFi Approx. Wavelength&#39;)
+        self.set_bifi_motor_pos_action = set_menu.addAction(&#39;BiFi Motor Position&#39;)
+        self.set_thin_eta_motor_pos_action = set_menu.addAction(&#39;Thin Etalon Motor Position&#39;)
+        self.set_piezo_eta_pos_action = set_menu.addAction(&#39;Piezo Etalon Position&#39;)
+        self.set_slow_piezo_pos_action = set_menu.addAction(&#39;Slow Piezo Position&#39;)
+        self.set_refcell_pos_action = set_menu.addAction(&#39;RefCell Position&#39;)
+
+        scan_menu = menu_bar.addMenu(&#39;Scan&#39;)
+        self.bifi_scan_action = scan_menu.addAction(&#39;Birefringent Filter&#39;)
+        self.thin_eta_scan_action = scan_menu.addAction(&#39;Thin Etalon&#39;)
+        self.scan_device_up_action = scan_menu.addAction(&#39;Scan Device Up&#39;)
+        self.scan_device_down_action = scan_menu.addAction(&#39;Scan Device Down&#39;)
+        self.stop_scan_device_action = scan_menu.addAction(&#39;Stop Scanning Device&#39;)
+
+        stabilization_menu = menu_bar.addMenu(&#39;Stabilization&#39;)
+        toggle_control_loop_menu = stabilization_menu.addMenu(&#39;Toggle Control Loop&#39;)
+        self.slow_pz_control_action = toggle_control_loop_menu.addAction(&#39;Slow Piezo&#39;)
+        self.slow_pz_control_action.setCheckable(True)
+        self.thin_eta_control_action = toggle_control_loop_menu.addAction(&#39;Thin Etalon&#39;)
+        self.thin_eta_control_action.setCheckable(True)
+        self.piezo_eta_control_action = toggle_control_loop_menu.addAction(&#39;Piezo Etalon&#39;)
+        self.piezo_eta_control_action.setCheckable(True)
+        self.fast_pz_control_action = toggle_control_loop_menu.addAction(&#39;Fast Piezo&#39;)
+        self.fast_pz_control_action.setCheckable(True)
+        self.lock_laser_action = stabilization_menu.addAction(&#39;Toggle Lock Laser&#39;)
+        self.set_recommended_fast_pz_setpoint_action = stabilization_menu.addAction(&#39;Set Recommended Fast Pz Setpoint&#39;)
+        self.auto_stabilize_action = stabilization_menu.addAction(&#39;Toggle Auto Stabilization&#39;)
+
+        ple_menu = menu_bar.addMenu(&#39;Shamrock&#39;)
+        self.start_ple_scan_action = ple_menu.addAction(&#39;Start PLE Scan&#39;)
+
+        self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
+                                     self.piezo_eta_control_action, self.fast_pz_control_action]
+
+    def setup_slots(self):
+        &#34;&#34;&#34;
+        Connection of Qt signals to Qt slots goes here.
+
+        Please note that execution of slots will block the UI thread by default.
+        &#34;&#34;&#34;
+        # Console
+        self.clear_log_area_action.triggered.connect(self.clear_log_area)
+        self.configuration_action.triggered.connect(self.open_configuration)
+        self.reset_action.triggered.connect(self.reset_matisse)
+        self.restart_action.triggered.connect(self.restart)
+
+        # Set
+        self.set_wavelength_action.triggered.connect(self.set_wavelength_dialog)
+        self.set_bifi_approx_wavelength_action.triggered.connect(self.set_bifi_approx_wavelength_dialog)
+        self.set_bifi_motor_pos_action.triggered.connect(self.set_bifi_motor_pos_dialog)
+        self.set_thin_eta_motor_pos_action.triggered.connect(self.set_thin_eta_motor_pos_dialog)
+        self.set_piezo_eta_pos_action.triggered.connect(self.set_piezo_eta_pos_dialog)
+        self.set_slow_piezo_pos_action.triggered.connect(self.set_slow_piezo_pos_dialog)
+        self.set_refcell_pos_action.triggered.connect(self.set_refcell_pos_dialog)
+
+        # Scan
+        self.bifi_scan_action.triggered.connect(self.start_bifi_scan)
+        self.thin_eta_scan_action.triggered.connect(self.start_thin_etalon_scan)
+
+        # PLE
+        self.scan_device_up_action.triggered.connect(self.scan_device_up)
+        self.scan_device_down_action.triggered.connect(self.scan_device_down)
+        self.stop_scan_device_action.triggered.connect(self.stop_scanning_device)
+
+        # Stabilization
+        self.slow_pz_control_action.triggered.connect(self.toggle_slow_piezo_control)
+        self.thin_eta_control_action.triggered.connect(self.toggle_thin_etalon_control)
+        self.piezo_eta_control_action.triggered.connect(self.toggle_piezo_etalon_control)
+        self.fast_pz_control_action.triggered.connect(self.toggle_fast_piezo_control)
+        self.lock_laser_action.triggered.connect(self.toggle_lock_laser)
+        self.set_recommended_fast_pz_setpoint_action.triggered.connect(self.set_recommended_fast_pz_setpoint)
+        self.auto_stabilize_action.triggered.connect(self.toggle_auto_stabilization)
+
+        # Shamrock
+        self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
+
+    @handled_function
+    def setup_widgets(self):
+        &#34;&#34;&#34;Initialize any widgets the UI needs to run correctly.&#34;&#34;&#34;
+        self.status_monitor_queue = queue.Queue()
+        self.status_monitor = StatusMonitor(self.matisse, self.status_monitor_queue)
+        self.layout.addWidget(self.status_monitor)
+
+    @handled_function
+    def setup_matisse(self):
+        try:
+            self.matisse: Matisse = Matisse()
+        except Exception as err:
+            self.matisse: Matisse = None
+            raise err
+
+    @pyqtSlot()
+    def clean_up(self):
+        &#34;&#34;&#34;
+        This method is run before the GUI exits, think of it like `__del__`.
+
+        Don&#39;t call this elsewhere unless you know what you&#39;re doing.
+        &#34;&#34;&#34;
+        self.reset_matisse()
+
+        # Clean up widgets with running threads.
+        self.status_monitor.clean_up()
+        self.log_area.clean_up()
+
+        self.log_redirector.__exit__(None, None, None)
+
+    def error_dialog(self):
+        &#34;&#34;&#34;Display an error dialog box with details of the most recent exception raised.&#34;&#34;&#34;
+        stack = list(traceback.format_exception(*sys.exc_info()))
+        # Pick length of longest line in stack, with a cutoff at 185
+        desired_width = min(max([len(line) for line in stack]), 185)
+        description = stack.pop()
+        print(utils.red_text(description), end=&#39;&#39;)
+        # Remove entries for handled_function decorator, for clarity
+        stack = list(filter(lambda item: &#39;in handled_function_wrapper&#39; not in item, stack))
+        dialog = QMessageBox(icon=QMessageBox.Critical)
+        dialog.setWindowTitle(&#39;Error&#39;)
+        # Adding the underscores is a hack to resize the QMessageBox because it&#39;s not normally resizable.
+        # This looks good in Windows, haven&#39;t tested other platforms. Sorry :(
+        dialog.setText(f&#34;{description + &#39;_&#39; * desired_width}\n\n{&#39;&#39;.join(stack)}&#34;)
+        dialog.exec()
+
+    @handled_slot(bool)
+    def clear_log_area(self, checked):
+        self.log_area.clear()
+
+    @handled_slot(bool)
+    def open_configuration(self, checked):
+        dialog = ConfigurationDialog()
+        dialog.exec()
+
+    @handled_slot(bool)
+    def reset_matisse(self, checked=False):
+        &#34;&#34;&#34;Reset Matisse to a &#39;good&#39; default state: not locked or stabilizing, motors reset, all tasks finished, etc.&#34;&#34;&#34;
+        print(&#39;Starting reset.&#39;)
+        if self.matisse is not None:
+            self.matisse.exit_flag = True
+            if self.matisse_worker is not None and self.matisse_worker.running():
+                print(&#39;Waiting for running tasks to complete.&#39;)
+                self.matisse_worker.result()
+            self.matisse_worker = None
+            self.matisse.stabilize_off()
+            self.matisse.stop_laser_lock_correction()
+            self.matisse.reset_motors()
+            self.matisse.reset_stabilization_piezos()
+            self.matisse.exit_flag = False
+        print(&#39;Reset complete.&#39;)
+
+    @handled_slot(bool)
+    def restart(self, checked):
+        self.exit(ControlApplication.EXIT_CODE_RESTART)
+
+    @handled_slot(bool)
+    def set_wavelength_dialog(self, checked):
+        &#34;&#34;&#34;
+        Open a dialog to set the wavelength of the Matisse. If the difference in wavleength is greater than or equal to
+        the wavelength change threshold, display a warning to confirm the change.
+        &#34;&#34;&#34;
+        current_wavelength = self.matisse.target_wavelength
+        if current_wavelength is None:
+            current_wavelength = self.matisse.wavemeter_wavelength()
+        target_wavelength, success = QInputDialog.getDouble(self.window, &#39;Set Wavelength&#39;, &#39;Wavelength (nm): &#39;,
+                                                            current_wavelength, decimals=3,
+                                                            min=cfg.get(cfg.WAVELENGTH_LOWER_LIMIT),
+                                                            max=cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        if success:
+            if abs(current_wavelength - target_wavelength) &gt;= ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD:
+                answer = QMessageBox.warning(self.window, &#39;Large Wavelength Change&#39;,
+                                             f&#34;The desired wavelength, {target_wavelength} nm, is more than &#34;
+                                             f&#34;{ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD} nm &#34;
+                                             &#39;away from the current wavelength. Are you sure?&#39;,
+                                             QMessageBox.Yes | QMessageBox.No, defaultButton=QMessageBox.No)
+                if answer == QMessageBox.No:
+                    return
+
+            print(f&#34;Setting wavelength to {target_wavelength} nm...&#34;)
+            self.run_matisse_task(self.matisse.set_wavelength, target_wavelength)
+
+    @handled_slot(bool)
+    def set_bifi_approx_wavelength_dialog(self, checked):
+        target_wavelength, success = QInputDialog.getDouble(self.window, &#39;Set Approx. Wavelength&#39;, &#39;Wavelength (nm): &#39;,
+                                                            self.matisse.query(&#39;MOTBI:WL?&#39;, numeric_result=True))
+        if success:
+            print(f&#34;Setting BiFi approximate wavelength to {target_wavelength} nm...&#34;)
+            self.matisse.set_bifi_wavelength(target_wavelength)
+
+    @handled_slot(bool)
+    def set_bifi_motor_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getInt(self.window, &#39;Set BiFi Motor Position&#39;, &#39;Absolute Position:&#39;,
+                                                  self.matisse.query(&#39;MOTBI:POS?&#39;, numeric_result=True))
+        if success:
+            print(f&#34;Setting BiFi motor position to {target_pos}.&#34;)
+            self.matisse.set_bifi_motor_pos(target_pos)
+
+    @handled_slot(bool)
+    def set_thin_eta_motor_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getInt(self.window, &#39;Set Thin Etalon Motor Position&#39;, &#39;Absolute Position:&#39;,
+                                                  self.matisse.query(&#39;MOTTE:POS?&#39;, numeric_result=True))
+        if success:
+            print(f&#34;Setting thin etalon motor position to {target_pos}.&#34;)
+            self.matisse.set_thin_etalon_motor_pos(target_pos)
+
+    @handled_slot(bool)
+    def set_piezo_eta_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getDouble(self.window, &#39;Set Piezo Etalon Position&#39;, &#39;Position: &#39;,
+                                                     self.matisse.query(&#39;PZETL:BASE?&#39;, numeric_result=True))
+        if success:
+            self.matisse.query(f&#34;PZETL:BASE {target_pos}&#34;)
+
+    @handled_slot(bool)
+    def set_slow_piezo_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getDouble(self.window, &#39;Set Slow Piezo Position&#39;, &#39;Position: &#39;,
+                                                     self.matisse.query(&#39;SPZT:NOW?&#39;, numeric_result=True))
+        if success:
+            self.matisse.query(f&#34;SPZT:NOW {target_pos}&#34;)
+
+    @handled_slot(bool)
+    def set_refcell_pos_dialog(self, checked):
+        target_pos, success = QInputDialog.getDouble(self.window, &#39;Set RefCell Position&#39;, &#39;Position: &#39;,
+                                                     self.matisse.query(&#39;SCAN:NOW?&#39;, numeric_result=True))
+        if success:
+            self.matisse.query(f&#34;SCAN:NOW {target_pos}&#34;)
+
+    @handled_slot(bool)
+    def start_bifi_scan(self, checked):
+        self.run_matisse_task(self.matisse.birefringent_filter_scan)
+
+    @handled_slot(bool)
+    def start_thin_etalon_scan(self, checked):
+        self.run_matisse_task(self.matisse.thin_etalon_scan)
+
+    @handled_slot(bool)
+    def scan_device_up(self, checked):
+        if self.matisse.is_stabilizing():
+            print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
+        else:
+            self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
+            self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
+            self.matisse.start_scan(Matisse.SCAN_MODE_UP)
+
+    @handled_slot(bool)
+    def scan_device_down(self, checked):
+        if self.matisse.is_stabilizing():
+            print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
+        else:
+            self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
+            self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
+            self.matisse.start_scan(Matisse.SCAN_MODE_DOWN)
+
+    @handled_slot(bool)
+    def stop_scanning_device(self, checked):
+        if self.matisse.is_stabilizing():
+            print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
+        else:
+            self.matisse.stop_scan()
+
+    @handled_slot(bool)
+    def toggle_lock_laser(self, checked):
+        if self.matisse.is_lock_correction_on():
+            self.matisse.stop_laser_lock_correction()
+            [action.setEnabled(True) for action in self.control_loop_actions]
+            [action.setChecked(False) for action in self.control_loop_actions]
+        else:
+            self.matisse.start_laser_lock_correction()
+            [action.setEnabled(False) for action in self.control_loop_actions]
+            [action.setChecked(True) for action in self.control_loop_actions]
+
+    @handled_slot(bool)
+    def set_recommended_fast_pz_setpoint(self, checked):
+        self.matisse.set_recommended_fast_piezo_setpoint()
+
+    @handled_slot(bool)
+    def toggle_slow_piezo_control(self, checked):
+        print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} slow piezo.&#34;)
+        self.slow_pz_control_action.setChecked(not checked)
+        self.matisse.set_slow_piezo_control(checked)
+        self.slow_pz_control_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def toggle_thin_etalon_control(self, checked):
+        print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} thin etalon.&#34;)
+        self.thin_eta_control_action.setChecked(not checked)
+        self.matisse.set_thin_etalon_control(checked)
+        self.thin_eta_control_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def toggle_piezo_etalon_control(self, checked):
+        print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} piezo etalon.&#34;)
+        self.piezo_eta_control_action.setChecked(not checked)
+        self.matisse.set_piezo_etalon_control(checked)
+        self.piezo_eta_control_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def toggle_fast_piezo_control(self, checked):
+        print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} fast piezo.&#34;)
+        self.fast_pz_control_action.setChecked(not checked)
+        self.matisse.set_piezo_etalon_control(checked)
+        self.fast_pz_control_action.setChecked(checked)
+
+    @handled_slot(bool)
+    def toggle_auto_stabilization(self, checked):
+        if self.matisse.is_stabilizing():
+            self.matisse.stabilize_off()
+        else:
+            self.matisse.stabilize_on()
+
+    @handled_slot(bool)
+    def start_ple_scan(self, checked):
+        raise NotImplementedError(&#39;PLE scan logic currently in development.&#39;)
+
+    def run_matisse_task(self, function, *args, **kwargs) -&gt; bool:
+        &#34;&#34;&#34;
+        Run an asynchronous Matisse-related task in the worker thread pool. Only one such task may be run at a time.
+        Any task run using this method MUST exit gracefully at some point by checking the Matisse `exit_flag`.
+
+        Parameters
+        ----------
+        function : function
+            the function to run in the thread pool
+        *args
+            positional arguments to pass to the given function
+        **kwargs
+            keyword arguments to pass to the given function
+
+        Returns
+        -------
+        bool
+            whether the task was successfully started
+        &#34;&#34;&#34;
+        if self.matisse_worker is not None and self.matisse_worker.running():
+            print(&#34;WARNING: Cannot perform requested action. A Matisse-related task is currently running.&#34;)
+            return False
+        else:
+            self.matisse_worker = self.work_executor.submit(function, *args, **kwargs)
+            self.matisse_worker.add_done_callback(self.raise_error_from_future)
+            return True
+
+    def raise_error_from_future(self, future: Future):
+        &#34;&#34;&#34;
+        If you&#39;d lke to log errors that occur in worker threads, call `add_done_callback` on the future returned from
+        the work executor and pass in this function.
+        &#34;&#34;&#34;
+        async_task_error: Exception = future.exception()
+        if async_task_error is not None:
+            # Using the error_dialog method here seems to just hang the application forever.
+            # Workaround: log error, make a noise, alert the user, and hope for the best
+            message = f&#34;An error occurred while running an asynchronous task: &lt;pre&gt;{traceback.format_exc()}&lt;/pre&gt;&#34;
+            self.alert(self.window)
+            self.beep()
+            print(utils.red_text(message))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QApplication</li>
+<li>PyQt5.QtGui.QGuiApplication</li>
+<li>PyQt5.QtCore.QCoreApplication</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="matisse_controller.gui.control_application.ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD"><code class="name">var <span class="ident">CONFIRM_WAVELENGTH_CHANGE_THRESHOLD</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.EXIT_CODE_RESTART"><code class="name">var <span class="ident">EXIT_CODE_RESTART</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="matisse_controller.gui.control_application.ControlApplication.clean_up"><code class="name flex">
+<span>def <span class="ident">clean_up</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>This method is run before the GUI exits, think of it like <code>__del__</code>.</p>
+<p>Don't call this elsewhere unless you know what you're doing.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@pyqtSlot()
+def clean_up(self):
+    &#34;&#34;&#34;
+    This method is run before the GUI exits, think of it like `__del__`.
+
+    Don&#39;t call this elsewhere unless you know what you&#39;re doing.
+    &#34;&#34;&#34;
+    self.reset_matisse()
+
+    # Clean up widgets with running threads.
+    self.status_monitor.clean_up()
+    self.log_area.clean_up()
+
+    self.log_redirector.__exit__(None, None, None)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.clear_log_area"><code class="name flex">
+<span>def <span class="ident">clear_log_area</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def clear_log_area(self, checked):
+    self.log_area.clear()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.error_dialog"><code class="name flex">
+<span>def <span class="ident">error_dialog</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Display an error dialog box with details of the most recent exception raised.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def error_dialog(self):
+    &#34;&#34;&#34;Display an error dialog box with details of the most recent exception raised.&#34;&#34;&#34;
+    stack = list(traceback.format_exception(*sys.exc_info()))
+    # Pick length of longest line in stack, with a cutoff at 185
+    desired_width = min(max([len(line) for line in stack]), 185)
+    description = stack.pop()
+    print(utils.red_text(description), end=&#39;&#39;)
+    # Remove entries for handled_function decorator, for clarity
+    stack = list(filter(lambda item: &#39;in handled_function_wrapper&#39; not in item, stack))
+    dialog = QMessageBox(icon=QMessageBox.Critical)
+    dialog.setWindowTitle(&#39;Error&#39;)
+    # Adding the underscores is a hack to resize the QMessageBox because it&#39;s not normally resizable.
+    # This looks good in Windows, haven&#39;t tested other platforms. Sorry :(
+    dialog.setText(f&#34;{description + &#39;_&#39; * desired_width}\n\n{&#39;&#39;.join(stack)}&#34;)
+    dialog.exec()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.open_configuration"><code class="name flex">
+<span>def <span class="ident">open_configuration</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def open_configuration(self, checked):
+    dialog = ConfigurationDialog()
+    dialog.exec()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.raise_error_from_future"><code class="name flex">
+<span>def <span class="ident">raise_error_from_future</span></span>(<span>self, future)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>If you'd lke to log errors that occur in worker threads, call <code>add_done_callback</code> on the future returned from
+the work executor and pass in this function.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def raise_error_from_future(self, future: Future):
+    &#34;&#34;&#34;
+    If you&#39;d lke to log errors that occur in worker threads, call `add_done_callback` on the future returned from
+    the work executor and pass in this function.
+    &#34;&#34;&#34;
+    async_task_error: Exception = future.exception()
+    if async_task_error is not None:
+        # Using the error_dialog method here seems to just hang the application forever.
+        # Workaround: log error, make a noise, alert the user, and hope for the best
+        message = f&#34;An error occurred while running an asynchronous task: &lt;pre&gt;{traceback.format_exc()}&lt;/pre&gt;&#34;
+        self.alert(self.window)
+        self.beep()
+        print(utils.red_text(message))</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.reset_matisse"><code class="name flex">
+<span>def <span class="ident">reset_matisse</span></span>(<span>self, checked=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Reset Matisse to a 'good' default state: not locked or stabilizing, motors reset, all tasks finished, etc.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def reset_matisse(self, checked=False):
+    &#34;&#34;&#34;Reset Matisse to a &#39;good&#39; default state: not locked or stabilizing, motors reset, all tasks finished, etc.&#34;&#34;&#34;
+    print(&#39;Starting reset.&#39;)
+    if self.matisse is not None:
+        self.matisse.exit_flag = True
+        if self.matisse_worker is not None and self.matisse_worker.running():
+            print(&#39;Waiting for running tasks to complete.&#39;)
+            self.matisse_worker.result()
+        self.matisse_worker = None
+        self.matisse.stabilize_off()
+        self.matisse.stop_laser_lock_correction()
+        self.matisse.reset_motors()
+        self.matisse.reset_stabilization_piezos()
+        self.matisse.exit_flag = False
+    print(&#39;Reset complete.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.restart"><code class="name flex">
+<span>def <span class="ident">restart</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def restart(self, checked):
+    self.exit(ControlApplication.EXIT_CODE_RESTART)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.run_matisse_task"><code class="name flex">
+<span>def <span class="ident">run_matisse_task</span></span>(<span>self, function, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Run an asynchronous Matisse-related task in the worker thread pool. Only one such task may be run at a time.
+Any task run using this method MUST exit gracefully at some point by checking the Matisse <code>exit_flag</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>function</code></strong> :&ensp;<code>function</code></dt>
+<dd>the function to run in the thread pool</dd>
+<dt><strong><code>*args</code></strong></dt>
+<dd>positional arguments to pass to the given function</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>keyword arguments to pass to the given function</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>whether the task was successfully started</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def run_matisse_task(self, function, *args, **kwargs) -&gt; bool:
+    &#34;&#34;&#34;
+    Run an asynchronous Matisse-related task in the worker thread pool. Only one such task may be run at a time.
+    Any task run using this method MUST exit gracefully at some point by checking the Matisse `exit_flag`.
+
+    Parameters
+    ----------
+    function : function
+        the function to run in the thread pool
+    *args
+        positional arguments to pass to the given function
+    **kwargs
+        keyword arguments to pass to the given function
+
+    Returns
+    -------
+    bool
+        whether the task was successfully started
+    &#34;&#34;&#34;
+    if self.matisse_worker is not None and self.matisse_worker.running():
+        print(&#34;WARNING: Cannot perform requested action. A Matisse-related task is currently running.&#34;)
+        return False
+    else:
+        self.matisse_worker = self.work_executor.submit(function, *args, **kwargs)
+        self.matisse_worker.add_done_callback(self.raise_error_from_future)
+        return True</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.scan_device_down"><code class="name flex">
+<span>def <span class="ident">scan_device_down</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def scan_device_down(self, checked):
+    if self.matisse.is_stabilizing():
+        print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
+    else:
+        self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
+        self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
+        self.matisse.start_scan(Matisse.SCAN_MODE_DOWN)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.scan_device_up"><code class="name flex">
+<span>def <span class="ident">scan_device_up</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def scan_device_up(self, checked):
+    if self.matisse.is_stabilizing():
+        print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
+    else:
+        self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
+        self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
+        self.matisse.start_scan(Matisse.SCAN_MODE_UP)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.set_bifi_approx_wavelength_dialog"><code class="name flex">
+<span>def <span class="ident">set_bifi_approx_wavelength_dialog</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def set_bifi_approx_wavelength_dialog(self, checked):
+    target_wavelength, success = QInputDialog.getDouble(self.window, &#39;Set Approx. Wavelength&#39;, &#39;Wavelength (nm): &#39;,
+                                                        self.matisse.query(&#39;MOTBI:WL?&#39;, numeric_result=True))
+    if success:
+        print(f&#34;Setting BiFi approximate wavelength to {target_wavelength} nm...&#34;)
+        self.matisse.set_bifi_wavelength(target_wavelength)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.set_bifi_motor_pos_dialog"><code class="name flex">
+<span>def <span class="ident">set_bifi_motor_pos_dialog</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def set_bifi_motor_pos_dialog(self, checked):
+    target_pos, success = QInputDialog.getInt(self.window, &#39;Set BiFi Motor Position&#39;, &#39;Absolute Position:&#39;,
+                                              self.matisse.query(&#39;MOTBI:POS?&#39;, numeric_result=True))
+    if success:
+        print(f&#34;Setting BiFi motor position to {target_pos}.&#34;)
+        self.matisse.set_bifi_motor_pos(target_pos)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.set_piezo_eta_pos_dialog"><code class="name flex">
+<span>def <span class="ident">set_piezo_eta_pos_dialog</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def set_piezo_eta_pos_dialog(self, checked):
+    target_pos, success = QInputDialog.getDouble(self.window, &#39;Set Piezo Etalon Position&#39;, &#39;Position: &#39;,
+                                                 self.matisse.query(&#39;PZETL:BASE?&#39;, numeric_result=True))
+    if success:
+        self.matisse.query(f&#34;PZETL:BASE {target_pos}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.set_recommended_fast_pz_setpoint"><code class="name flex">
+<span>def <span class="ident">set_recommended_fast_pz_setpoint</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def set_recommended_fast_pz_setpoint(self, checked):
+    self.matisse.set_recommended_fast_piezo_setpoint()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.set_refcell_pos_dialog"><code class="name flex">
+<span>def <span class="ident">set_refcell_pos_dialog</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def set_refcell_pos_dialog(self, checked):
+    target_pos, success = QInputDialog.getDouble(self.window, &#39;Set RefCell Position&#39;, &#39;Position: &#39;,
+                                                 self.matisse.query(&#39;SCAN:NOW?&#39;, numeric_result=True))
+    if success:
+        self.matisse.query(f&#34;SCAN:NOW {target_pos}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.set_slow_piezo_pos_dialog"><code class="name flex">
+<span>def <span class="ident">set_slow_piezo_pos_dialog</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def set_slow_piezo_pos_dialog(self, checked):
+    target_pos, success = QInputDialog.getDouble(self.window, &#39;Set Slow Piezo Position&#39;, &#39;Position: &#39;,
+                                                 self.matisse.query(&#39;SPZT:NOW?&#39;, numeric_result=True))
+    if success:
+        self.matisse.query(f&#34;SPZT:NOW {target_pos}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.set_thin_eta_motor_pos_dialog"><code class="name flex">
+<span>def <span class="ident">set_thin_eta_motor_pos_dialog</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def set_thin_eta_motor_pos_dialog(self, checked):
+    target_pos, success = QInputDialog.getInt(self.window, &#39;Set Thin Etalon Motor Position&#39;, &#39;Absolute Position:&#39;,
+                                              self.matisse.query(&#39;MOTTE:POS?&#39;, numeric_result=True))
+    if success:
+        print(f&#34;Setting thin etalon motor position to {target_pos}.&#34;)
+        self.matisse.set_thin_etalon_motor_pos(target_pos)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.set_wavelength_dialog"><code class="name flex">
+<span>def <span class="ident">set_wavelength_dialog</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Open a dialog to set the wavelength of the Matisse. If the difference in wavleength is greater than or equal to
+the wavelength change threshold, display a warning to confirm the change.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def set_wavelength_dialog(self, checked):
+    &#34;&#34;&#34;
+    Open a dialog to set the wavelength of the Matisse. If the difference in wavleength is greater than or equal to
+    the wavelength change threshold, display a warning to confirm the change.
+    &#34;&#34;&#34;
+    current_wavelength = self.matisse.target_wavelength
+    if current_wavelength is None:
+        current_wavelength = self.matisse.wavemeter_wavelength()
+    target_wavelength, success = QInputDialog.getDouble(self.window, &#39;Set Wavelength&#39;, &#39;Wavelength (nm): &#39;,
+                                                        current_wavelength, decimals=3,
+                                                        min=cfg.get(cfg.WAVELENGTH_LOWER_LIMIT),
+                                                        max=cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+    if success:
+        if abs(current_wavelength - target_wavelength) &gt;= ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD:
+            answer = QMessageBox.warning(self.window, &#39;Large Wavelength Change&#39;,
+                                         f&#34;The desired wavelength, {target_wavelength} nm, is more than &#34;
+                                         f&#34;{ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD} nm &#34;
+                                         &#39;away from the current wavelength. Are you sure?&#39;,
+                                         QMessageBox.Yes | QMessageBox.No, defaultButton=QMessageBox.No)
+            if answer == QMessageBox.No:
+                return
+
+        print(f&#34;Setting wavelength to {target_wavelength} nm...&#34;)
+        self.run_matisse_task(self.matisse.set_wavelength, target_wavelength)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.setup_logging"><code class="name flex">
+<span>def <span class="ident">setup_logging</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Initialize logging queue and redirect stdout to the logging area.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def setup_logging(self):
+    &#34;&#34;&#34;Initialize logging queue and redirect stdout to the logging area.&#34;&#34;&#34;
+    self.log_queue = queue.Queue()
+    self.log_area = LoggingArea(self.log_queue)
+    self.log_area.setReadOnly(True)
+    self.layout.addWidget(self.log_area)
+
+    # Set up a context manager to redirect stdout to the log window
+    self.log_redirector = redirect_stdout(LoggingStream(self.log_queue))
+    self.log_redirector.__enter__()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.setup_matisse"><code class="name flex">
+<span>def <span class="ident">setup_matisse</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_function
+def setup_matisse(self):
+    try:
+        self.matisse: Matisse = Matisse()
+    except Exception as err:
+        self.matisse: Matisse = None
+        raise err</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.setup_menus"><code class="name flex">
+<span>def <span class="ident">setup_menus</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Initialization of items in the menu bar go here.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def setup_menus(self):
+    &#34;&#34;&#34;Initialization of items in the menu bar go here.&#34;&#34;&#34;
+    menu_bar = self.window.menuBar()
+
+    console_menu = menu_bar.addMenu(&#39;Console&#39;)
+    self.clear_log_area_action = console_menu.addAction(&#39;Clear Log&#39;)
+    self.configuration_action = console_menu.addAction(&#39;Configuration&#39;)
+    self.reset_action = console_menu.addAction(&#39;Reset&#39;)
+    self.restart_action = console_menu.addAction(&#39;Restart&#39;)
+
+    set_menu = menu_bar.addMenu(&#39;Set&#39;)
+    self.set_wavelength_action = set_menu.addAction(&#39;Wavelength&#39;)
+    self.set_bifi_approx_wavelength_action = set_menu.addAction(&#39;BiFi Approx. Wavelength&#39;)
+    self.set_bifi_motor_pos_action = set_menu.addAction(&#39;BiFi Motor Position&#39;)
+    self.set_thin_eta_motor_pos_action = set_menu.addAction(&#39;Thin Etalon Motor Position&#39;)
+    self.set_piezo_eta_pos_action = set_menu.addAction(&#39;Piezo Etalon Position&#39;)
+    self.set_slow_piezo_pos_action = set_menu.addAction(&#39;Slow Piezo Position&#39;)
+    self.set_refcell_pos_action = set_menu.addAction(&#39;RefCell Position&#39;)
+
+    scan_menu = menu_bar.addMenu(&#39;Scan&#39;)
+    self.bifi_scan_action = scan_menu.addAction(&#39;Birefringent Filter&#39;)
+    self.thin_eta_scan_action = scan_menu.addAction(&#39;Thin Etalon&#39;)
+    self.scan_device_up_action = scan_menu.addAction(&#39;Scan Device Up&#39;)
+    self.scan_device_down_action = scan_menu.addAction(&#39;Scan Device Down&#39;)
+    self.stop_scan_device_action = scan_menu.addAction(&#39;Stop Scanning Device&#39;)
+
+    stabilization_menu = menu_bar.addMenu(&#39;Stabilization&#39;)
+    toggle_control_loop_menu = stabilization_menu.addMenu(&#39;Toggle Control Loop&#39;)
+    self.slow_pz_control_action = toggle_control_loop_menu.addAction(&#39;Slow Piezo&#39;)
+    self.slow_pz_control_action.setCheckable(True)
+    self.thin_eta_control_action = toggle_control_loop_menu.addAction(&#39;Thin Etalon&#39;)
+    self.thin_eta_control_action.setCheckable(True)
+    self.piezo_eta_control_action = toggle_control_loop_menu.addAction(&#39;Piezo Etalon&#39;)
+    self.piezo_eta_control_action.setCheckable(True)
+    self.fast_pz_control_action = toggle_control_loop_menu.addAction(&#39;Fast Piezo&#39;)
+    self.fast_pz_control_action.setCheckable(True)
+    self.lock_laser_action = stabilization_menu.addAction(&#39;Toggle Lock Laser&#39;)
+    self.set_recommended_fast_pz_setpoint_action = stabilization_menu.addAction(&#39;Set Recommended Fast Pz Setpoint&#39;)
+    self.auto_stabilize_action = stabilization_menu.addAction(&#39;Toggle Auto Stabilization&#39;)
+
+    ple_menu = menu_bar.addMenu(&#39;Shamrock&#39;)
+    self.start_ple_scan_action = ple_menu.addAction(&#39;Start PLE Scan&#39;)
+
+    self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
+                                 self.piezo_eta_control_action, self.fast_pz_control_action]</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.setup_slots"><code class="name flex">
+<span>def <span class="ident">setup_slots</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Connection of Qt signals to Qt slots goes here.</p>
+<p>Please note that execution of slots will block the UI thread by default.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def setup_slots(self):
+    &#34;&#34;&#34;
+    Connection of Qt signals to Qt slots goes here.
+
+    Please note that execution of slots will block the UI thread by default.
+    &#34;&#34;&#34;
+    # Console
+    self.clear_log_area_action.triggered.connect(self.clear_log_area)
+    self.configuration_action.triggered.connect(self.open_configuration)
+    self.reset_action.triggered.connect(self.reset_matisse)
+    self.restart_action.triggered.connect(self.restart)
+
+    # Set
+    self.set_wavelength_action.triggered.connect(self.set_wavelength_dialog)
+    self.set_bifi_approx_wavelength_action.triggered.connect(self.set_bifi_approx_wavelength_dialog)
+    self.set_bifi_motor_pos_action.triggered.connect(self.set_bifi_motor_pos_dialog)
+    self.set_thin_eta_motor_pos_action.triggered.connect(self.set_thin_eta_motor_pos_dialog)
+    self.set_piezo_eta_pos_action.triggered.connect(self.set_piezo_eta_pos_dialog)
+    self.set_slow_piezo_pos_action.triggered.connect(self.set_slow_piezo_pos_dialog)
+    self.set_refcell_pos_action.triggered.connect(self.set_refcell_pos_dialog)
+
+    # Scan
+    self.bifi_scan_action.triggered.connect(self.start_bifi_scan)
+    self.thin_eta_scan_action.triggered.connect(self.start_thin_etalon_scan)
+
+    # PLE
+    self.scan_device_up_action.triggered.connect(self.scan_device_up)
+    self.scan_device_down_action.triggered.connect(self.scan_device_down)
+    self.stop_scan_device_action.triggered.connect(self.stop_scanning_device)
+
+    # Stabilization
+    self.slow_pz_control_action.triggered.connect(self.toggle_slow_piezo_control)
+    self.thin_eta_control_action.triggered.connect(self.toggle_thin_etalon_control)
+    self.piezo_eta_control_action.triggered.connect(self.toggle_piezo_etalon_control)
+    self.fast_pz_control_action.triggered.connect(self.toggle_fast_piezo_control)
+    self.lock_laser_action.triggered.connect(self.toggle_lock_laser)
+    self.set_recommended_fast_pz_setpoint_action.triggered.connect(self.set_recommended_fast_pz_setpoint)
+    self.auto_stabilize_action.triggered.connect(self.toggle_auto_stabilization)
+
+    # Shamrock
+    self.start_ple_scan_action.triggered.connect(self.start_ple_scan)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.setup_widgets"><code class="name flex">
+<span>def <span class="ident">setup_widgets</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Initialize any widgets the UI needs to run correctly.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_function
+def setup_widgets(self):
+    &#34;&#34;&#34;Initialize any widgets the UI needs to run correctly.&#34;&#34;&#34;
+    self.status_monitor_queue = queue.Queue()
+    self.status_monitor = StatusMonitor(self.matisse, self.status_monitor_queue)
+    self.layout.addWidget(self.status_monitor)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.setup_window"><code class="name flex">
+<span>def <span class="ident">setup_window</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def setup_window(self):
+    self.window = window = QMainWindow()
+    self.layout = QVBoxLayout()
+    window.setWindowTitle(&#39;Matisse Controller&#39;)
+    window.resize(700, 300)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.start_bifi_scan"><code class="name flex">
+<span>def <span class="ident">start_bifi_scan</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def start_bifi_scan(self, checked):
+    self.run_matisse_task(self.matisse.birefringent_filter_scan)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.start_ple_scan"><code class="name flex">
+<span>def <span class="ident">start_ple_scan</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def start_ple_scan(self, checked):
+    raise NotImplementedError(&#39;PLE scan logic currently in development.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.start_thin_etalon_scan"><code class="name flex">
+<span>def <span class="ident">start_thin_etalon_scan</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def start_thin_etalon_scan(self, checked):
+    self.run_matisse_task(self.matisse.thin_etalon_scan)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.stop_scanning_device"><code class="name flex">
+<span>def <span class="ident">stop_scanning_device</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def stop_scanning_device(self, checked):
+    if self.matisse.is_stabilizing():
+        print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
+    else:
+        self.matisse.stop_scan()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.toggle_auto_stabilization"><code class="name flex">
+<span>def <span class="ident">toggle_auto_stabilization</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def toggle_auto_stabilization(self, checked):
+    if self.matisse.is_stabilizing():
+        self.matisse.stabilize_off()
+    else:
+        self.matisse.stabilize_on()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.toggle_fast_piezo_control"><code class="name flex">
+<span>def <span class="ident">toggle_fast_piezo_control</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def toggle_fast_piezo_control(self, checked):
+    print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} fast piezo.&#34;)
+    self.fast_pz_control_action.setChecked(not checked)
+    self.matisse.set_piezo_etalon_control(checked)
+    self.fast_pz_control_action.setChecked(checked)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.toggle_lock_laser"><code class="name flex">
+<span>def <span class="ident">toggle_lock_laser</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def toggle_lock_laser(self, checked):
+    if self.matisse.is_lock_correction_on():
+        self.matisse.stop_laser_lock_correction()
+        [action.setEnabled(True) for action in self.control_loop_actions]
+        [action.setChecked(False) for action in self.control_loop_actions]
+    else:
+        self.matisse.start_laser_lock_correction()
+        [action.setEnabled(False) for action in self.control_loop_actions]
+        [action.setChecked(True) for action in self.control_loop_actions]</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.toggle_piezo_etalon_control"><code class="name flex">
+<span>def <span class="ident">toggle_piezo_etalon_control</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def toggle_piezo_etalon_control(self, checked):
+    print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} piezo etalon.&#34;)
+    self.piezo_eta_control_action.setChecked(not checked)
+    self.matisse.set_piezo_etalon_control(checked)
+    self.piezo_eta_control_action.setChecked(checked)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.toggle_slow_piezo_control"><code class="name flex">
+<span>def <span class="ident">toggle_slow_piezo_control</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def toggle_slow_piezo_control(self, checked):
+    print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} slow piezo.&#34;)
+    self.slow_pz_control_action.setChecked(not checked)
+    self.matisse.set_slow_piezo_control(checked)
+    self.slow_pz_control_action.setChecked(checked)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.toggle_thin_etalon_control"><code class="name flex">
+<span>def <span class="ident">toggle_thin_etalon_control</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def toggle_thin_etalon_control(self, checked):
+    print(f&#34;{&#39;Locking&#39; if checked else &#39;Unlocking&#39;} thin etalon.&#34;)
+    self.thin_eta_control_action.setChecked(not checked)
+    self.matisse.set_thin_etalon_control(checked)
+    self.thin_eta_control_action.setChecked(checked)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="matisse_controller.gui" href="index.html">matisse_controller.gui</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="matisse_controller.gui.control_application.main" href="#matisse_controller.gui.control_application.main">main</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="matisse_controller.gui.control_application.ControlApplication" href="#matisse_controller.gui.control_application.ControlApplication">ControlApplication</a></code></h4>
+<ul class="">
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD" href="#matisse_controller.gui.control_application.ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD">CONFIRM_WAVELENGTH_CHANGE_THRESHOLD</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.EXIT_CODE_RESTART" href="#matisse_controller.gui.control_application.ControlApplication.EXIT_CODE_RESTART">EXIT_CODE_RESTART</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.clean_up" href="#matisse_controller.gui.control_application.ControlApplication.clean_up">clean_up</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.clear_log_area" href="#matisse_controller.gui.control_application.ControlApplication.clear_log_area">clear_log_area</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.error_dialog" href="#matisse_controller.gui.control_application.ControlApplication.error_dialog">error_dialog</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.open_configuration" href="#matisse_controller.gui.control_application.ControlApplication.open_configuration">open_configuration</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.raise_error_from_future" href="#matisse_controller.gui.control_application.ControlApplication.raise_error_from_future">raise_error_from_future</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.reset_matisse" href="#matisse_controller.gui.control_application.ControlApplication.reset_matisse">reset_matisse</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.restart" href="#matisse_controller.gui.control_application.ControlApplication.restart">restart</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.run_matisse_task" href="#matisse_controller.gui.control_application.ControlApplication.run_matisse_task">run_matisse_task</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.scan_device_down" href="#matisse_controller.gui.control_application.ControlApplication.scan_device_down">scan_device_down</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.scan_device_up" href="#matisse_controller.gui.control_application.ControlApplication.scan_device_up">scan_device_up</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.set_bifi_approx_wavelength_dialog" href="#matisse_controller.gui.control_application.ControlApplication.set_bifi_approx_wavelength_dialog">set_bifi_approx_wavelength_dialog</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.set_bifi_motor_pos_dialog" href="#matisse_controller.gui.control_application.ControlApplication.set_bifi_motor_pos_dialog">set_bifi_motor_pos_dialog</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.set_piezo_eta_pos_dialog" href="#matisse_controller.gui.control_application.ControlApplication.set_piezo_eta_pos_dialog">set_piezo_eta_pos_dialog</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.set_recommended_fast_pz_setpoint" href="#matisse_controller.gui.control_application.ControlApplication.set_recommended_fast_pz_setpoint">set_recommended_fast_pz_setpoint</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.set_refcell_pos_dialog" href="#matisse_controller.gui.control_application.ControlApplication.set_refcell_pos_dialog">set_refcell_pos_dialog</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.set_slow_piezo_pos_dialog" href="#matisse_controller.gui.control_application.ControlApplication.set_slow_piezo_pos_dialog">set_slow_piezo_pos_dialog</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.set_thin_eta_motor_pos_dialog" href="#matisse_controller.gui.control_application.ControlApplication.set_thin_eta_motor_pos_dialog">set_thin_eta_motor_pos_dialog</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.set_wavelength_dialog" href="#matisse_controller.gui.control_application.ControlApplication.set_wavelength_dialog">set_wavelength_dialog</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.setup_logging" href="#matisse_controller.gui.control_application.ControlApplication.setup_logging">setup_logging</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.setup_matisse" href="#matisse_controller.gui.control_application.ControlApplication.setup_matisse">setup_matisse</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.setup_menus" href="#matisse_controller.gui.control_application.ControlApplication.setup_menus">setup_menus</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.setup_slots" href="#matisse_controller.gui.control_application.ControlApplication.setup_slots">setup_slots</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.setup_widgets" href="#matisse_controller.gui.control_application.ControlApplication.setup_widgets">setup_widgets</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.setup_window" href="#matisse_controller.gui.control_application.ControlApplication.setup_window">setup_window</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.start_bifi_scan" href="#matisse_controller.gui.control_application.ControlApplication.start_bifi_scan">start_bifi_scan</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.start_ple_scan" href="#matisse_controller.gui.control_application.ControlApplication.start_ple_scan">start_ple_scan</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.start_thin_etalon_scan" href="#matisse_controller.gui.control_application.ControlApplication.start_thin_etalon_scan">start_thin_etalon_scan</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.stop_scanning_device" href="#matisse_controller.gui.control_application.ControlApplication.stop_scanning_device">stop_scanning_device</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_auto_stabilization" href="#matisse_controller.gui.control_application.ControlApplication.toggle_auto_stabilization">toggle_auto_stabilization</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_fast_piezo_control" href="#matisse_controller.gui.control_application.ControlApplication.toggle_fast_piezo_control">toggle_fast_piezo_control</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_lock_laser" href="#matisse_controller.gui.control_application.ControlApplication.toggle_lock_laser">toggle_lock_laser</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_piezo_etalon_control" href="#matisse_controller.gui.control_application.ControlApplication.toggle_piezo_etalon_control">toggle_piezo_etalon_control</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_slow_piezo_control" href="#matisse_controller.gui.control_application.ControlApplication.toggle_slow_piezo_control">toggle_slow_piezo_control</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_thin_etalon_control" href="#matisse_controller.gui.control_application.ControlApplication.toggle_thin_etalon_control">toggle_thin_etalon_control</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
