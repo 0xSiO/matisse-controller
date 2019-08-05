@@ -175,7 +175,7 @@ class ControlApplication(QApplication):
 
         Don't call this elsewhere unless you know what you're doing.
         """
-        self.reset_matisse()
+        self.reset_matisse(reset_motors=False, reset_piezos=False)
 
         # Clean up widgets with running threads.
         self.status_monitor.clean_up()
@@ -209,7 +209,7 @@ class ControlApplication(QApplication):
         dialog.exec()
 
     @handled_slot(bool)
-    def reset_matisse(self, checked=False):
+    def reset_matisse(self, checked=False, reset_motors=True, reset_piezos=True):
         """Reset Matisse to a 'good' default state: not locked or stabilizing, motors reset, all tasks finished, etc."""
         print('Starting reset.')
         if self.matisse is not None:
@@ -220,8 +220,10 @@ class ControlApplication(QApplication):
             self.matisse_worker = None
             self.matisse.stabilize_off()
             self.matisse.stop_laser_lock_correction()
-            self.matisse.reset_motors()
-            self.matisse.reset_stabilization_piezos()
+            if reset_motors:
+                self.matisse.reset_motors()
+            if reset_piezos:
+                self.matisse.reset_stabilization_piezos()
             self.matisse.exit_flag = False
         print('Reset complete.')
 
