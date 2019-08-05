@@ -12,7 +12,7 @@ setup(name='matisse-controller',
       description="A Python package to control the Matisse 2 TS.",
       long_description=long_description,
       long_description_content_type='text/markdown',
-      url='http://github.com/lucis-fluxum/matisse-controller',
+      url='https://lucis-fluxum.github.io/matisse-controller/',
       author='Luc Street',
       license='MIT',
       classifiers=[
@@ -26,7 +26,10 @@ setup(name='matisse-controller',
 
       ],
       keywords='ni-visa matisse laser',
-      # TODO: Documentation URL
+      project_urls={
+          'Documentation': 'https://lucis-fluxum.github.io/matisse-controller/docs/',
+          'Source Code': 'https://github.com/lucis-fluxum/matisse-controller'
+      },
       packages=find_packages(exclude=['docs', 'tests*']),
       install_requires=['pyvisa >=1, <2', 'pyserial >=3, <4', 'scipy >=1, <2', 'matplotlib >=3, <4', 'pyqt5 >=5'],
       # TODO: Test other python versions
