@@ -8,8 +8,9 @@ class ControlLoopsOn(AbstractContextManager):
         """
         Initialize the context manager.
 
-        :param matisse: an instance of Matisse
-        :type matisse: matisse_controller.Matisse
+        Parameters
+        ----------
+        matisse : matisse_controller.matisse.matisse.Matisse
         """
         self.matisse = matisse
 

@@ -21,13 +21,15 @@ class StatusUpdateThread(QThread):
 
     def __init__(self, matisse, messages: Queue, *args, **kwargs):
         """
-        Initialize an instance of StatusUpdateThread.
-
-        :param matisse: an instance of Matisse
-        :type matisse: matisse.Matisse
-        :param messages: a message queue
-        :param args: args to pass to QThread.__init__
-        :param kwargs: kwargs to pass to QThread.__init__
+        Parameters
+        ----------
+        matisse : matisse_controller.matisse.matisse.Matisse
+        messages
+            a message queue
+        *args
+            args to pass to `QThread.__init__`
+        **kwargs
+            kwargs to pass to `QThread.__init__`
         """
         super().__init__(*args, **kwargs)
         self.matisse = matisse

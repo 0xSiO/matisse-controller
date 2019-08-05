@@ -9,13 +9,15 @@ from matisse_controller.matisse.event_report import log_event
 class StabilizationThread(threading.Thread):
     def __init__(self, matisse, messages: Queue, *args, **kwargs):
         """
-        Initialize stabilization thread.
-
-        :param matisse: instance of Matisse to which we should send commands
-        :type matisse: matisse_controller.Matisse
-        :param messages: a message queue
-        :param args: args to pass to Thread.__init__
-        :param kwargs: kwargs to pass to Thread.__init__
+        Parameters
+        ----------
+        matisse : matisse_controller.matisse.matisse.Matisse
+        messages
+            a message queue
+        *args
+            args to pass to `Thread.__init__`
+        **kwargs
+            kwargs to pass to `Thread.__init__`
         """
         super().__init__(*args, **kwargs)
         self._matisse = matisse
@@ -66,6 +68,7 @@ class StabilizationThread(threading.Thread):
                 break
 
     def do_stabilization_correction(self, wavelength, drift):
+        """Reset the stabilization piezos and optionally log the correction event."""
         print('WARNING: A component has hit a limit while adjusting the RefCell. Attempting automatic corrections.')
         self._matisse.stop_scan()
         if cfg.get(cfg.REPORT_EVENTS):

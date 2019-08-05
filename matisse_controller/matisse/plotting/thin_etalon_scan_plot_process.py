@@ -1,3 +1,5 @@
+"""Provides a class to plot positions and voltages for thin etalon scans."""
+
 import multiprocessing
 
 import matplotlib.pyplot as plt

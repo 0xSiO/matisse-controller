@@ -1,3 +1,5 @@
+"""Provides a class to plot positions and voltages for birefringent filter scans."""
+
 import multiprocessing
 
 import matplotlib.pyplot as plt

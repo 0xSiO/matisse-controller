@@ -19,14 +19,17 @@ class LockCorrectionThread(threading.Thread):
 
     def __init__(self, matisse, timeout: float, messages: Queue, *args, **kwargs):
         """
-        Initialize the thread.
-
-        :param matisse: an instance of Matisse
-        :type matisse: matisse_controller.Matisse
-        :param timeout: the locking timeout, usually cfg.LOCKING_TIMEOUT is passed here
-        :param messages: a message queue
-        :param args: args to pass to Thread.__init__
-        :param kwargs: kwargs to pass to Thread.__init__
+        Parameters
+        ----------
+        matisse : matisse_controller.matisse.matisse.Matisse
+        timeout : float
+            the locking timeout, usually cfg.LOCKING_TIMEOUT
+        messages
+            a message queue
+        *args
+            args to pass to `Thread.__init__`
+        **kwargs
+            kwargs to pass to `Thread.__init__`
         """
         super().__init__(*args, **kwargs)
         self.matisse = matisse

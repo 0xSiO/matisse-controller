@@ -22,12 +22,15 @@ class LoggingArea(QTextEdit):
 
     def __init__(self, messages: Queue, *args, **kwargs):
         """
-        Initialize an instance of LoggingArea.
-
-        :param messages: a message queue. Messages pushed to this queue will be emitted from the LoggingThread and then
-        appended to the text area.
-        :param args: args to pass to QTextEdit.__init__
-        :param kwargs: kwargs to pass to QTextEdit.__init__
+        Parameters
+        ----------
+        messages
+            a message queue. Messages pushed to this queue will be emitted from the LoggingThread and then
+            appended to the text area.
+        *args
+            args to pass to `QTextEdit.__init__`
+        **kwargs
+            kwargs to pass to `QTextEdit.__init__`
         """
 
         super().__init__(*args, **kwargs)
