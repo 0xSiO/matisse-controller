@@ -37,7 +37,7 @@ To configure the behavior of the program using a GUI, click the 'Configuration' 
 Hovering over most fields in this configuration dialog will reveal tooltips with more information about what the options do. 
 
 ## Documentation
-Documentation for this project can be found at https://lucis-fluxum.github.io/matisse-controller/docs.
+Documentation for this project can be found at <https://lucis-fluxum.github.io/matisse-controller/docs>.
 
 ## Terminology
 There are a few important bits of terminology that may be confusing: 
@@ -130,7 +130,7 @@ Modify the Matisse class `__init__` method to use your chosen wavemeter and an i
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/lucis-fluxum/matisse-controller.
+Bug reports and pull requests are welcome on GitHub at <https://github.com/lucis-fluxum/matisse-controller>.
 
 ## License
 
