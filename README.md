@@ -10,6 +10,7 @@ Tested on Windows 10 (x64).
 - [Installation](#installation)
 - [Usage](#usage)
 - [API Documentation](#api-documentation)
+- [Changelog](#changelog)
 - [Terminology](#terminology)
 - [GUI Options](#gui-options)
 - [Development](#development)
@@ -38,6 +39,9 @@ Hovering over most fields in this configuration dialog will reveal tooltips with
 
 ## API Documentation
 API documentation for this project can be found at <https://lucis-fluxum.github.io/matisse-controller/docs>.
+
+## Changelog
+The changelog for this project can be found at <https://lucis-fluxum.github.io/matisse-controller/CHANGELOG>.
 
 ## Terminology
 There are a few important bits of terminology that may be confusing: 
