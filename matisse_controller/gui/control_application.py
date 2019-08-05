@@ -170,7 +170,7 @@ class ControlApplication(QApplication):
     @pyqtSlot()
     def clean_up(self):
         """
-        This method is run before the GUI exits, think of it like __del__.
+        This method is run before the GUI exits, think of it like `__del__`.
 
         Don't call this elsewhere unless you know what you're doing.
         """
@@ -389,12 +389,21 @@ class ControlApplication(QApplication):
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
         Run an asynchronous Matisse-related task in the worker thread pool. Only one such task may be run at a time.
-        Any task run using this method MUST exit gracefully at some point by checking the Matisse exit_flag.
+        Any task run using this method MUST exit gracefully at some point by checking the Matisse `exit_flag`.
 
-        :param function: the function to run in the thread pool
-        :param args: positional arguments to pass to the given function
-        :param kwargs: keyword arguments to pass to the given function
-        :return: whether the task was successfully started
+        Parameters
+        ----------
+        function : function
+            the function to run in the thread pool
+        *args
+            positional arguments to pass to the given function
+        **kwargs
+            keyword arguments to pass to the given function
+
+        Returns
+        -------
+        bool
+            whether the task was successfully started
         """
         if self.matisse_worker is not None and self.matisse_worker.running():
             print("WARNING: Cannot perform requested action. A Matisse-related task is currently running.")
@@ -406,7 +415,7 @@ class ControlApplication(QApplication):
 
     def raise_error_from_future(self, future: Future):
         """
-        If you'd lke to log errors that occur in worker threads, call add_done_callback on the future returned from
+        If you'd lke to log errors that occur in worker threads, call `add_done_callback` on the future returned from
         the work executor and pass in this function.
         """
         async_task_error: Exception = future.exception()

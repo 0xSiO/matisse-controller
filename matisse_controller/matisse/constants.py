@@ -1,6 +1,7 @@
-class Constants:
-    """Important Matisse-related non-configurable constants."""
+"""Important Matisse-related non-configurable constants."""
 
+
+class Constants:
     # Scanning ################################################################
 
     SCAN_MODE_UP = 0

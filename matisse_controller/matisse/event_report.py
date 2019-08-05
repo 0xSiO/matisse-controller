@@ -13,11 +13,15 @@ def log_event(event_type: str, matisse, current_wavelength: float, other_comment
     """
     Write an event to the Matisse event report CSV file.
 
-    :param event_type: a string describing the type of event that occurred
-    :param matisse: an instance of Matisse
-    :type matisse: matisse_controller.Matisse
-    :param current_wavelength: the wavelength at which this event occurred
-    :param other_comments: additional information to include with the event
+    Parameters
+    ----------
+    event_type : str
+        a string describing the type of event that occurred
+    matisse : matisse_controller.matisse.matisse.Matisse
+    current_wavelength : float
+        the wavelength at which this event occurred
+    other_comments : str
+        additional information to include with the event
     """
     with open(FILE_NAME, 'a', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, FIELDS)

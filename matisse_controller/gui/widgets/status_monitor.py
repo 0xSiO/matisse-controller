@@ -15,13 +15,16 @@ class StatusMonitor(QLabel):
 
     def __init__(self, matisse, messages: Queue, *args, **kwargs):
         """
-        Initialize an instance of StatusMonitor.
-
-        :param matisse: an instance of Matisse to be provided to the StatusUpdateThread
-        :type matisse: matisse.Matisse
-        :param messages: a message queue to be given to the StatusUpdateThread
-        :param args: args to pass to QLabel.__init__
-        :param kwargs: kwargs to pass to QLabel.__init__
+        Parameters
+        ----------
+        matisse : matisse_controller.matisse.matisse.Matisse
+            an instance of Matisse to be provided to the StatusUpdateThread
+        messages
+            a message queue to be given to the StatusUpdateThread
+        *args
+            args to pass to `QLabel.__init__`
+        **kwargs
+            kwargs to pass to `QLabel.__init__`
         """
         super().__init__(*args, **kwargs)
         self.messages = messages
