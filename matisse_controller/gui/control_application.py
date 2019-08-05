@@ -66,6 +66,7 @@ class ControlApplication(QApplication):
         self.log_redirector = redirect_stdout(LoggingStream(self.log_queue))
         self.log_redirector.__enter__()
 
+    # TODO: Add menu item to close plot windows
     def setup_menus(self):
         """Initialization of items in the menu bar go here."""
         menu_bar = self.window.menuBar()
