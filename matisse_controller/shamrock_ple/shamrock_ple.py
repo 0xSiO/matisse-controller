@@ -15,10 +15,12 @@ os.chdir(lib_dir)
 try:
     andor: WinDLL = windll.LoadLibrary('atmcd64d.dll')
 except OSError:
+    andor = None
     print('Unable to load Andor CCD API.')
 try:
-    shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF64.dll')
+    shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF.dll')
 except OSError:
+    shamrock = None
     print('Unable to load Andor Shamrock API.')
 os.chdir(old_dir)
 
