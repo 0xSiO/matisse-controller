@@ -25,7 +25,7 @@ class Matisse:
             self.target_wavelength = None
             self._stabilization_thread = None
             self._lock_correction_thread = None
-            self._plotting_processes = []  # TODO: Add a method to close all of these plots
+            self._plotting_processes = []
             self.exit_flag = False
             self._scan_attempts = 0
             self._force_large_scan = True
@@ -211,6 +211,11 @@ class Matisse:
         """Move the birefringent filter and thin etalon motors to their configured reset positions."""
         self.query(f"MOTBI:POS {cfg.get(cfg.BIFI_RESET_POS)}")
         self.query(f"MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}")
+
+    def close_all_plots(self):
+        """Close all plot windows."""
+        for process in self._plotting_processes:
+            process.terminate()
 
     def birefringent_filter_scan(self, scan_range: int = None, repeat=False):
         """
