@@ -76,6 +76,9 @@ class ShamrockPLE:
         shamrock.ShamrockClose()
 
     def setup_ccd(self, exposure_time, acquisition_mode, readout_mode, temperature):
+        num_cameras = c_long()
+        andor.GetAvailableCameras(pointer(num_cameras))
+        print(num_cameras.value, 'CCD cameras found.')
         andor.Initialize()
         min_temp, max_temp = c_int(), c_int()
         andor.GetTemperatureRange(pointer(min_temp), pointer(max_temp))
