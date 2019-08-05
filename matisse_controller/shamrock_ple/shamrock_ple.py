@@ -49,7 +49,7 @@ class ShamrockPLE:
         tolerance = 0.001
         for wavelength in wavelengths:
             if self.exit_flag:
-                print('Received exit signal, stopping PLE scan.')
+                print('Received exit signal, saving scan data.')
                 break
             self.matisse.set_wavelength(wavelength)
             self.matisse.set_recommended_fast_piezo_setpoint()
@@ -66,6 +66,7 @@ class ShamrockPLE:
             pickle.dump(scans, full_data_file)
 
     def stop_ple_scan(self):
+        print('Stopping PLE scan.')
         self.exit_flag = True
 
     def setup_spectrometer(self):
