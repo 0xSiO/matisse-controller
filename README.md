@@ -9,7 +9,7 @@ Tested on Windows 10 (x64).
 ## Contents
 - [Installation](#installation)
 - [Usage](#usage)
-- [Documentation](#documentation)
+- [API Documentation](#api-documentation)
 - [Terminology](#terminology)
 - [GUI Options](#gui-options)
 - [Development](#development)
@@ -36,8 +36,8 @@ To configure the behavior of the program using a GUI, click the 'Configuration' 
 
 Hovering over most fields in this configuration dialog will reveal tooltips with more information about what the options do. 
 
-## Documentation
-Documentation for this project can be found at <https://lucis-fluxum.github.io/matisse-controller/docs>.
+## API Documentation
+API documentation for this project can be found at <https://lucis-fluxum.github.io/matisse-controller/docs>.
 
 ## Terminology
 There are a few important bits of terminology that may be confusing: 
