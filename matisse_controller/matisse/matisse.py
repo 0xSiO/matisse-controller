@@ -7,7 +7,7 @@ from pyvisa import ResourceManager, VisaIOError
 from scipy.signal import savgol_filter, argrelextrema
 
 import matisse_controller.config as cfg
-from matisse_controller.matisse.constants import Constants
+from matisse_controller.matisse.constants import *
 from matisse_controller.matisse.lock_correction_thread import LockCorrectionThread
 from matisse_controller.matisse.plotting import BirefringentFilterScanPlotProcess, ThinEtalonScanPlotProcess
 from matisse_controller.matisse.stabilization_thread import StabilizationThread
@@ -15,7 +15,7 @@ from matisse_controller.shamrock_ple import ShamrockPLE
 from matisse_controller.wavemaster import WaveMaster
 
 
-class Matisse(Constants):  # TODO: No need to extend constants, maybe just import them
+class Matisse:
     matisse_lock = threading.Lock()
 
     def __init__(self):
@@ -233,10 +233,10 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
         old_pos = int(self.query('MOTBI:POS?', numeric_result=True))
         lower_end = old_pos - scan_range
         upper_end = old_pos + scan_range
-        assert (0 < lower_end < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
-                and 0 < upper_end < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
+        assert (0 < lower_end < BIREFRINGENT_FILTER_UPPER_LIMIT
+                and 0 < upper_end < BIREFRINGENT_FILTER_UPPER_LIMIT
                 and lower_end < upper_end), 'Conditions for BiFi scan invalid. Motor position must be between ' + \
-                                            f"{scan_range} and {Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT - scan_range}"
+                                            f"{scan_range} and {BIREFRINGENT_FILTER_UPPER_LIMIT - scan_range}"
         positions = np.array(range(lower_end, upper_end, cfg.get(cfg.BIFI_SCAN_STEP)))
         voltages = np.array([])
         print('Starting BiFi scan... ')
@@ -299,13 +299,13 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
         pos : int
             the desired motor position
         """
-        assert 0 < pos < Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, 'Target motor position out of range.'
+        assert 0 < pos < BIREFRINGENT_FILTER_UPPER_LIMIT, 'Target motor position out of range.'
         # Wait for motor to be ready to accept commands
-        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        while not self.bifi_motor_status() == MOTOR_STATUS_IDLE:
             pass
         self.query(f"MOTBI:POS {pos}")
         # Wait for motor to finish movement
-        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        while not self.bifi_motor_status() == MOTOR_STATUS_IDLE:
             pass
 
     def set_bifi_wavelength(self, value: float):
@@ -321,11 +321,11 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
         assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) < value < cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
             'Target wavelength out of range.'
         # Wait for motor to be ready to accept commands
-        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        while not self.bifi_motor_status() == MOTOR_STATUS_IDLE:
             pass
         self.query(f"MOTBI:WAVELENGTH {value}")
         # Wait for motor to finish movement
-        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        while not self.bifi_motor_status() == MOTOR_STATUS_IDLE:
             pass
 
     def bifi_motor_status(self):
@@ -466,7 +466,7 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
         upper_limit = current_pos + scan_range
         diff = self.target_wavelength - self.wavemeter_wavelength()
         # Adjust scan limits if we're off by more than 1 mode
-        if abs(diff) > Matisse.THIN_ETALON_NM_PER_MODE:
+        if abs(diff) > THIN_ETALON_NM_PER_MODE:
             if diff < 0:
                 lower_limit = current_pos - scan_range
                 upper_limit = current_pos
@@ -474,8 +474,8 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
                 lower_limit = current_pos
                 upper_limit = current_pos + scan_range
 
-        assert (0 < lower_limit < Matisse.THIN_ETALON_UPPER_LIMIT
-                and 0 < upper_limit < Matisse.THIN_ETALON_UPPER_LIMIT
+        assert (0 < lower_limit < THIN_ETALON_UPPER_LIMIT
+                and 0 < upper_limit < THIN_ETALON_UPPER_LIMIT
                 and lower_limit < upper_limit), \
             'Conditions for thin etalon scan invalid. Continuing would put the motor at its upper or lower limit.'
 
@@ -491,14 +491,14 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
         pos : int
             the desired motor position
         """
-        assert (Matisse.THIN_ETALON_LOWER_LIMIT < pos < Matisse.THIN_ETALON_UPPER_LIMIT), \
+        assert (THIN_ETALON_LOWER_LIMIT < pos < THIN_ETALON_UPPER_LIMIT), \
             f"Can't set thin etalon motor position to {pos}, this is out of range."
         # Wait for motor to be ready to accept commands
-        while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        while not self.thin_etalon_motor_status() == MOTOR_STATUS_IDLE:
             pass
         self.query(f"MOTTE:POS {pos}")
         # Wait for motor to finish movement
-        while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        while not self.thin_etalon_motor_status() == MOTOR_STATUS_IDLE:
             pass
 
     def thin_etalon_motor_status(self):
@@ -641,9 +641,9 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
         """
         refcell_pos, pz_eta_pos, slow_pz_pos = self.get_stabilizing_piezo_positions()
         offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
-        return not (self.REFERENCE_CELL_LOWER_LIMIT + offset < refcell_pos < self.REFERENCE_CELL_UPPER_LIMIT - offset
-                    and self.SLOW_PIEZO_LOWER_LIMIT + offset < slow_pz_pos < self.SLOW_PIEZO_UPPER_LIMIT - offset
-                    and self.PIEZO_ETALON_LOWER_LIMIT + offset < pz_eta_pos < self.PIEZO_ETALON_UPPER_LIMIT - offset)
+        return not (REFERENCE_CELL_LOWER_LIMIT + offset < refcell_pos < REFERENCE_CELL_UPPER_LIMIT - offset
+                    and SLOW_PIEZO_LOWER_LIMIT + offset < slow_pz_pos < SLOW_PIEZO_UPPER_LIMIT - offset
+                    and PIEZO_ETALON_LOWER_LIMIT + offset < pz_eta_pos < PIEZO_ETALON_UPPER_LIMIT - offset)
 
     def reset_stabilization_piezos(self):
         """
@@ -661,11 +661,11 @@ class Matisse(Constants):  # TODO: No need to extend constants, maybe just impor
         current_wavelength = self.wavemeter_wavelength()
 
         offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
-        if (current_refcell_pos > Matisse.REFERENCE_CELL_UPPER_LIMIT - offset
+        if (current_refcell_pos > REFERENCE_CELL_UPPER_LIMIT - offset
                 and current_wavelength < self.target_wavelength):
             self.query(f"SCAN:NOW {cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS)}")
             self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS)}")
-        elif (current_refcell_pos < Matisse.REFERENCE_CELL_LOWER_LIMIT + offset
+        elif (current_refcell_pos < REFERENCE_CELL_LOWER_LIMIT + offset
               and current_wavelength > self.target_wavelength):
             self.query(f"SCAN:NOW {cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS)}")
             self.query(f"PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_LOWER_CORRECTION_POS)}")

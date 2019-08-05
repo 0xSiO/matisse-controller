@@ -9,6 +9,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication, QDialog
 
 import matisse_controller.config as cfg
+import matisse_controller.matisse as matisse
 from matisse_controller.gui import utils
 from matisse_controller.gui.dialogs import ConfigurationDialog
 from matisse_controller.gui.dialogs.ple_scan_dialog import PLEScanDialog
@@ -317,7 +318,7 @@ class ControlApplication(QApplication):
         else:
             self.matisse.query(f"SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}")
             self.matisse.query(f"SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}")
-            self.matisse.start_scan(Matisse.SCAN_MODE_UP)
+            self.matisse.start_scan(matisse.SCAN_MODE_UP)
 
     @handled_slot(bool)
     def scan_device_down(self, checked):
@@ -326,7 +327,7 @@ class ControlApplication(QApplication):
         else:
             self.matisse.query(f"SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}")
             self.matisse.query(f"SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}")
-            self.matisse.start_scan(Matisse.SCAN_MODE_DOWN)
+            self.matisse.start_scan(matisse.SCAN_MODE_DOWN)
 
     @handled_slot(bool)
     def stop_scanning_device(self, checked):
