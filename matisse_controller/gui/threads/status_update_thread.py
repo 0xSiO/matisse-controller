@@ -45,7 +45,7 @@ class StatusUpdateThread(QThread):
                     is_stabilizing = self.matisse.is_stabilizing()
                     is_scanning = self.matisse.is_scanning()
                     is_locked = self.matisse.laser_locked()
-                    wavemeter_value = self.matisse.wavemeter.get_raw_value()
+                    wavemeter_value = self.matisse.wavemeter_raw_value()
 
                     bifi_pos_text = f"BiFi:{bifi_pos}"
                     thin_eta_pos_text = f"Thin Eta:{thin_eta_pos}"

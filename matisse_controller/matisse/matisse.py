@@ -21,21 +21,20 @@ class Matisse:
     def __init__(self):
         try:
             # Initialize VISA resource manager, connect to Matisse and wavemeter, clear any errors.
-            # TODO: Add access modifiers on all these instance variables
-            self.instrument = ResourceManager().open_resource(cfg.get(cfg.MATISSE_DEVICE_ID))
+            self._instrument = ResourceManager().open_resource(cfg.get(cfg.MATISSE_DEVICE_ID))
             self.target_wavelength = None
-            self.stabilization_thread = None
-            self.lock_correction_thread = None
-            self.plotting_processes = []  # TODO: Add a method to close all of these plots
+            self._stabilization_thread = None
+            self._lock_correction_thread = None
+            self._plotting_processes = []  # TODO: Add a method to close all of these plots
             self.exit_flag = False
-            self.scan_attempts = 0
-            self.force_large_scan = True
-            self.restart_set_wavelength = False
+            self._scan_attempts = 0
+            self._force_large_scan = True
+            self._restart_set_wavelength = False
             self.stabilization_auto_corrections = 0
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.query('MOTORBIREFRINGENT:CLEAR')
             self.query('MOTORTHINETALON:CLEAR')
-            self.wavemeter = WaveMaster(cfg.get(cfg.WAVEMETER_PORT))
+            self._wavemeter = WaveMaster(cfg.get(cfg.WAVEMETER_PORT))
             self.ple_scanner = ShamrockPLE(self)
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
@@ -67,7 +66,7 @@ class Matisse:
         """
         try:
             with Matisse.matisse_lock:
-                result: str = self.instrument.query(command).strip()
+                result: str = self._instrument.query(command).strip()
         except VisaIOError as ioerr:
             raise IOError("Couldn't execute command. Check Matisse is on and connected via USB.") from ioerr
 
@@ -87,7 +86,16 @@ class Matisse:
         float
             the wavelength (in nanometers) as measured by the wavemeter
         """
-        return self.wavemeter.get_wavelength()
+        return self._wavemeter.get_wavelength()
+
+    def wavemeter_raw_value(self) -> str:
+        """
+        Returns
+        -------
+        str
+            the raw reading from the wavemeter (what's on the display at the moment)
+        """
+        return self._wavemeter.get_raw_value()
 
     def set_wavelength(self, wavelength: float):
         """
@@ -143,10 +151,10 @@ class Matisse:
             self.stabilize_off()
 
         while True:
-            self.scan_attempts = 0
+            self._scan_attempts = 0
             diff = abs(wavelength - self.wavemeter_wavelength())
 
-            if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self.force_large_scan:
+            if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self._force_large_scan:
                 self.query(f"MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}")
                 self.reset_stabilization_piezos()
                 # Normal BiFi scan
@@ -177,22 +185,22 @@ class Matisse:
             # Restart/exit conditions
             if self.exit_flag:
                 return
-            if self.restart_set_wavelength:
-                self.restart_set_wavelength = False
+            if self._restart_set_wavelength:
+                self._restart_set_wavelength = False
                 print('Restarting wavelength-setting process.')
                 continue
-            elif self.scan_attempts > cfg.get(cfg.SCAN_LIMIT):
+            elif self._scan_attempts > cfg.get(cfg.SCAN_LIMIT):
                 print('WARNING: Number of scan attempts exceeded. Starting wavelength-setting process over again.')
-                self.force_large_scan = True
+                self._force_large_scan = True
                 continue
             elif self.stabilization_auto_corrections > cfg.get(cfg.CORRECTION_LIMIT):
                 print('WARNING: Number of stabilization auto-corrections exceeded. Starting wavelength-setting process '
                       'over again.')
                 self.stabilization_auto_corrections = 0
-                self.force_large_scan = True
+                self._force_large_scan = True
                 continue
             else:
-                self.force_large_scan = False
+                self._force_large_scan = False
                 break
 
         if lock_when_done:
@@ -222,14 +230,14 @@ class Matisse:
         repeat : bool
             whether to repeat the scan until the wavelength difference is less than cfg.MEDIUM_WAVELENGTH_DRIFT
         """
-        if self.exit_flag or self.scan_attempts > cfg.get(cfg.SCAN_LIMIT) or self.restart_set_wavelength:
+        if self.exit_flag or self._scan_attempts > cfg.get(cfg.SCAN_LIMIT) or self._restart_set_wavelength:
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
         if scan_range is None:
             scan_range = cfg.get(cfg.BIFI_SCAN_RANGE)
 
-        self.scan_attempts += 1
+        self._scan_attempts += 1
         old_pos = int(self.query('MOTBI:POS?', numeric_result=True))
         lower_end = old_pos - scan_range
         upper_end = old_pos + scan_range
@@ -280,7 +288,7 @@ class Matisse:
             # TODO: Label wavelength at each peak
             plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, old_pos,
                                                              best_pos, using_new_pos, daemon=True)
-            self.plotting_processes.append(plot_process)
+            self._plotting_processes.append(plot_process)
             plot_process.start()
 
         if repeat:
@@ -362,14 +370,14 @@ class Matisse:
         repeat : bool
             whether to repeat the scan until the wavelength difference is less than cfg.SMALL_WAVELENGTH_DRIFT
         """
-        if self.exit_flag or self.scan_attempts > cfg.get(cfg.SCAN_LIMIT) or self.restart_set_wavelength:
+        if self.exit_flag or self._scan_attempts > cfg.get(cfg.SCAN_LIMIT) or self._restart_set_wavelength:
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
         if scan_range is None:
             scan_range = cfg.get(cfg.THIN_ETA_SCAN_RANGE)
 
-        self.scan_attempts += 1
+        self._scan_attempts += 1
         old_pos = int(self.query('MOTTE:POS?', numeric_result=True))
         lower_end, upper_end = self.limits_for_thin_etalon_scan(old_pos, scan_range)
 
@@ -392,8 +400,8 @@ class Matisse:
         # Example good value: 1.5, example bad value: 2.5
         if normalized_std_dev > cfg.get(cfg.THIN_ETA_MAX_ALLOWED_STDDEV):
             print('Abnormal deviation from smoothed curve detected, the scan region might just contain noise.')
-            self.restart_set_wavelength = True
-            self.force_large_scan = True
+            self._restart_set_wavelength = True
+            self._force_large_scan = True
             return
 
         minima = argrelextrema(smoothed_data, np.less, order=5)
@@ -436,7 +444,7 @@ class Matisse:
         if cfg.get(cfg.THIN_ETA_SHOW_PLOTS):
             plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, old_pos, best_pos,
                                                      using_new_pos, daemon=True)
-            self.plotting_processes.append(plot_process)
+            self._plotting_processes.append(plot_process)
             plot_process.start()
 
         if repeat:
@@ -568,19 +576,19 @@ class Matisse:
         if self.is_stabilizing():
             print('WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.')
         else:
-            self.stabilization_thread = StabilizationThread(self, queue.Queue(), daemon=True)
+            self._stabilization_thread = StabilizationThread(self, queue.Queue(), daemon=True)
 
             if self.target_wavelength is None:
                 self.target_wavelength = self.wavemeter_wavelength()
             print(f"Stabilizing laser at {self.target_wavelength} nm...")
-            self.stabilization_thread.start()
+            self._stabilization_thread.start()
 
     def stabilize_off(self):
         """Exit the stabilization loop, which stops the stabilization thread."""
         if self.is_stabilizing():
             print('Stopping stabilization thread.')
-            self.stabilization_thread.messages.put('stop')
-            self.stabilization_thread.join()
+            self._stabilization_thread.messages.put('stop')
+            self._stabilization_thread.join()
             print('Stabilization thread has been stopped.')
         else:
             print('WARNING: Stabilization thread is not running.')
@@ -618,7 +626,7 @@ class Matisse:
         bool
             whether the stabilization thread is running
         """
-        return self.stabilization_thread is not None and self.stabilization_thread.is_alive()
+        return self._stabilization_thread is not None and self._stabilization_thread.is_alive()
 
     def get_stabilizing_piezo_positions(self):
         """
@@ -737,17 +745,17 @@ class Matisse:
             print('WARNING: Lock correction is already running.')
         else:
             print('Starting laser lock.')
-            self.lock_correction_thread = LockCorrectionThread(self, cfg.get(cfg.LOCKING_TIMEOUT), queue.Queue(),
-                                                               daemon=True)
+            self._lock_correction_thread = LockCorrectionThread(self, cfg.get(cfg.LOCKING_TIMEOUT), queue.Queue(),
+                                                                daemon=True)
             if self.target_wavelength is None:
                 self.target_wavelength = self.wavemeter_wavelength()
-            self.lock_correction_thread.start()
+            self._lock_correction_thread.start()
 
     def stop_laser_lock_correction(self):
         """Disable the lock correction loop, which stops the lock correction thread."""
         if self.is_lock_correction_on():
-            self.lock_correction_thread.messages.put('stop')
-            self.lock_correction_thread.join()
+            self._lock_correction_thread.messages.put('stop')
+            self._lock_correction_thread.join()
         else:
             print('WARNING: laser is not locked.')
 
@@ -758,4 +766,4 @@ class Matisse:
         bool
             whether the lock correction thread is running
         """
-        return self.lock_correction_thread is not None and self.lock_correction_thread.is_alive()
+        return self._lock_correction_thread is not None and self._lock_correction_thread.is_alive()
