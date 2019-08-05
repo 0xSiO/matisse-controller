@@ -6,11 +6,12 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from contextlib import redirect_stdout
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication
+from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication, QDialog
 
 import matisse_controller.config as cfg
 from matisse_controller.gui import utils
 from matisse_controller.gui.dialogs import ConfigurationDialog
+from matisse_controller.gui.dialogs.ple_scan_dialog import PLEScanDialog
 from matisse_controller.gui.logging_stream import LoggingStream
 from matisse_controller.gui.utils import handled_function, handled_slot
 from matisse_controller.gui.widgets import LoggingArea, StatusMonitor
@@ -384,7 +385,15 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_ple_scan(self, checked):
-        raise NotImplementedError('PLE scan logic currently in development.')
+        dialog = PLEScanDialog(parent=self.window)
+        if dialog.exec() == QDialog.Accepted:
+            ple_options = dialog.get_form_data()
+            print(f"Starting PLE scan with options {ple_options}")
+            # TODO: Validate options inside the dialog class first
+
+    @handled_slot(bool)
+    def stop_ple_scan(self, checked):
+        self.matisse.ple_scanner.stop_ple_scan()
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
