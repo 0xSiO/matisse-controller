@@ -2,19 +2,31 @@ import os
 import pickle
 import time
 from ctypes import *
+from os import path
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from matisse_controller.shamrock_ple.constants import *
 
-andor: WinDLL  # TODO: andor: WinDLL = windll.LoadLibrary('ATMCD64D.dll')
-shamrock: WinDLL  # TODO: shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF64.dll')
+old_dir = os.getcwd()
+lib_dir = path.join(path.abspath(path.dirname(__file__)), 'lib')
+os.chdir(lib_dir)
+try:
+    andor: WinDLL = windll.LoadLibrary('atmcd64d.dll')
+except OSError:
+    print('Unable to load Andor CCD API.')
+try:
+    shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF64.dll')
+except OSError:
+    print('Unable to load Andor Shamrock API.')
+os.chdir(old_dir)
 
 
 class ShamrockPLE:
     """PLE scanning functionality with the Andor Shamrock and Newton CCD."""
-    # TODO: Currently untested, waiting on Andor to send me the SDK
+
+    # TODO: Currently untested
 
     def __init__(self, matisse):
         self.matisse = matisse
@@ -23,7 +35,7 @@ class ShamrockPLE:
     def start_ple_scan(self, name, initial_wavelength, final_wavelength, step, exposure_time,
                        acquisition_mode=ACQ_MODE_ACCUMULATE, readout_mode=READ_MODE_FVB, temperature=-70):
         """Perform a PLE scan using the Andor Shamrock spectrometer."""
-        if os.path.exists(f"{name}_full_pickled.dat"):
+        if path.exists(f"{name}_full_pickled.dat"):
             raise FileExistsError(
                 f"A PLE scan has already been run for '{name}'. Please choose a different name and try again.")
 

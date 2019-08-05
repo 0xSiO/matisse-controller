@@ -7,3 +7,4 @@ dist/
 __pycache__/
 
 matisse_controller/shamrock_ple/lib/
+!matisse_controller/shamrock_ple/lib/README.md
