@@ -1,0 +1,2797 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>matisse_controller.matisse.matisse API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>matisse_controller.matisse.matisse</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">import queue
+import threading
+import time
+
+import numpy as np
+from pyvisa import ResourceManager, VisaIOError
+from scipy.signal import savgol_filter, argrelextrema
+
+import matisse_controller.config as cfg
+from matisse_controller.matisse.constants import Constants
+from matisse_controller.matisse.lock_correction_thread import LockCorrectionThread
+from matisse_controller.matisse.plotting import BirefringentFilterScanPlotProcess, ThinEtalonScanPlotProcess
+from matisse_controller.matisse.stabilization_thread import StabilizationThread
+from matisse_controller.shamrock_ple import ShamrockPLE
+from matisse_controller.wavemaster import WaveMaster
+
+
+class Matisse(Constants):  # TODO: No need to extend constants, maybe just import them
+    matisse_lock = threading.Lock()
+
+    def __init__(self):
+        try:
+            # Initialize VISA resource manager, connect to Matisse and wavemeter, clear any errors.
+            # TODO: Add access modifiers on all these instance variables
+            self.instrument = ResourceManager().open_resource(cfg.get(cfg.MATISSE_DEVICE_ID))
+            self.target_wavelength = None
+            self.stabilization_thread = None
+            self.lock_correction_thread = None
+            self.plotting_processes = []  # TODO: Add a method to close all of these plots
+            self.exit_flag = False
+            self.scan_attempts = 0
+            self.force_large_scan = True
+            self.restart_set_wavelength = False
+            self.stabilization_auto_corrections = 0
+            self.query(&#39;ERROR:CLEAR&#39;)  # start with a clean slate
+            self.query(&#39;MOTORBIREFRINGENT:CLEAR&#39;)
+            self.query(&#39;MOTORTHINETALON:CLEAR&#39;)
+            self.wavemeter = WaveMaster(cfg.get(cfg.WAVEMETER_PORT))
+            self.ple_scanner = ShamrockPLE(self)
+        except VisaIOError as ioerr:
+            raise IOError(&#34;Can&#39;t reach Matisse. Make sure it&#39;s on and connected via USB.&#34;) from ioerr
+
+    def query(self, command: str, numeric_result=False, raise_on_error=True):
+        &#34;&#34;&#34;
+        Send a command to the Matisse and return the response.
+
+        Note that some commands (like setting the position of a stepper motor) take additional time to execute, so do
+        not assume the command has finished executing just because the query returns &#34;OK&#34;.
+
+        This doesn&#39;t raise errors if the error occurred in the controller for a specific component of the Matisse, like
+        the birefringent filter motor, for example. That motor has a separate status register with error information
+        that can be queried and cleared separately.
+
+        Parameters
+        ----------
+        command : str
+            the command to send
+        numeric_result : bool
+            whether to convert the second portion of the result to a float
+        raise_on_error : bool
+            whether to raise a Python error if Matisse error occurs
+
+        Returns
+        -------
+        str
+            The response from the Matisse to the given command
+        &#34;&#34;&#34;
+        try:
+            with Matisse.matisse_lock:
+                result: str = self.instrument.query(command).strip()
+        except VisaIOError as ioerr:
+            raise IOError(&#34;Couldn&#39;t execute command. Check Matisse is on and connected via USB.&#34;) from ioerr
+
+        if result.startswith(&#39;!ERROR&#39;):
+            if raise_on_error:
+                err_codes = self.query(&#39;ERROR:CODE?&#39;)
+                self.query(&#39;ERROR:CLEAR&#39;)
+                raise RuntimeError(&#34;Error executing Matisse command &#39;&#34; + command + &#34;&#39; &#34; + err_codes)
+        elif numeric_result:
+            result: float = float(result.split()[1])
+        return result
+
+    def wavemeter_wavelength(self) -&gt; float:
+        &#34;&#34;&#34;
+        Returns
+        -------
+        float
+            the wavelength (in nanometers) as measured by the wavemeter
+        &#34;&#34;&#34;
+        return self.wavemeter.get_wavelength()
+
+    def set_wavelength(self, wavelength: float):
+        &#34;&#34;&#34;
+        Configure the Matisse to output a given wavelength.
+
+        If the laser is locked and/or stabilizing, pause those operations for the duration of the method.
+
+        First I&#39;ll check the difference between the current wavelength and the target wavelength.
+
+        - If this is the first time this is being run, do a large birefringent scan regardless of the difference.
+        - If it&#39;s greater than cfg.LARGE_WAVELENGTH_DRIFT, do a large birefringent scan to choose a better peak.
+        - If it&#39;s between about cfg.MEDIUM_WAVELENGTH_DRIFT and cfg.LARGE_WAVELENGTH_DRIFT, do a small birefringent scan
+          to keep it on the peak.
+        - If it&#39;s between cfg.SMALL_WAVELENGTH_DRIFT nm and cfg.MEDIUM_WAVELENGTH_DRIFT, skip the first birefringent
+          scan and go right to the thin etalon scan.
+        - If it&#39;s less than cfg.SMALL_WAVELENGTH_DRIFT, skip all BiFi and TE scans, and just do a RefCell scan.
+
+        This is generally the process I&#39;ll follow:
+
+        1. Decide whether to skip any scans, as described above.
+        2. Set approx. wavelength using BiFi. This is supposed to be good to about +-1 nm but it&#39;s usually very far off.
+        3. Scan the BiFi back and forth and measure the total laser power at each point.
+        4. Find all local maxima, move the BiFi to the maximum that&#39;s closest to the desired wavelength.
+        5. Move the thin etalon motor directly to a position close to the target wavelength.
+        6. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
+        7. Find all local minima. Move the TE to the minimum that&#39;s closest to the desired wavelength.
+        8. Shift the thin etalon a over bit by cfg.THIN_ETA_NUDGE. We want to be on the &#34;flank&#34; of the chosen parabola.
+        9. Do a small BiFi scan to make sure we&#39;re still on the location with maximum power. If the distance to the new
+           motor location is very small, just leave the motor where it is.
+        10. Do a small thin etalon scan to make sure we&#39;re still on the flank of the right parabola.
+        11. Enable RefCell stabilization, which scans the device up or down until the desired wavelength is reached.
+
+        If more than cfg.SCAN_LIMIT scan attempts pass before stabilizing, restart the whole process over again.
+        If, during stabilization, more than cfg.CORRECTION_LIMIT corrections are made, start with a large birefringent
+        scan the next time this method is run.
+        A scan may decide it needs to start the process over again for some other reason, like the thin etalon moving to
+        a location with just noise.
+
+        Parameters
+        ----------
+        wavelength : float
+            the desired wavelength
+        &#34;&#34;&#34;
+        assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) &lt; wavelength &lt; cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
+            &#39;Target wavelength out of range.&#39;
+
+        self.target_wavelength = wavelength
+
+        lock_when_done = self.is_lock_correction_on()
+        if self.is_lock_correction_on():
+            self.stop_laser_lock_correction()
+        if self.is_stabilizing():
+            self.stabilize_off()
+
+        while True:
+            self.scan_attempts = 0
+            diff = abs(wavelength - self.wavemeter_wavelength())
+
+            if diff &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self.force_large_scan:
+                self.query(f&#34;MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}&#34;)
+                self.reset_stabilization_piezos()
+                # Normal BiFi scan
+                print(f&#34;Setting BiFi to ~{wavelength} nm... &#34;)
+                self.set_bifi_wavelength(wavelength)
+                time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+                print(f&#34;Done. Wavelength is now {self.wavemeter_wavelength()} nm. &#34;
+                      &#34;(This is often very wrong, don&#39;t worry)&#34;)
+                self.birefringent_filter_scan(repeat=True)
+                self.thin_etalon_scan(repeat=True)
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+            elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) &lt; diff &lt;= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+                # Small BiFi scan
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(repeat=True)
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+            elif cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) &lt; diff &lt;= cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
+                # No BiFi scan, TE scan only
+                self.thin_etalon_scan(repeat=True)
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+            else:
+                # No BiFi, no TE. Scan device only.
+                pass
+
+            # Restart/exit conditions
+            if self.exit_flag:
+                return
+            if self.restart_set_wavelength:
+                self.restart_set_wavelength = False
+                print(&#39;Restarting wavelength-setting process.&#39;)
+                continue
+            elif self.scan_attempts &gt; cfg.get(cfg.SCAN_LIMIT):
+                print(&#39;WARNING: Number of scan attempts exceeded. Starting wavelength-setting process over again.&#39;)
+                self.force_large_scan = True
+                continue
+            elif self.stabilization_auto_corrections &gt; cfg.get(cfg.CORRECTION_LIMIT):
+                print(&#39;WARNING: Number of stabilization auto-corrections exceeded. Starting wavelength-setting process &#39;
+                      &#39;over again.&#39;)
+                self.stabilization_auto_corrections = 0
+                self.force_large_scan = True
+                continue
+            else:
+                self.force_large_scan = False
+                break
+
+        if lock_when_done:
+            self.start_laser_lock_correction()
+        self.stabilize_on()
+
+    def reset_motors(self):
+        &#34;&#34;&#34;Move the birefringent filter and thin etalon motors to their configured reset positions.&#34;&#34;&#34;
+        self.query(f&#34;MOTBI:POS {cfg.get(cfg.BIFI_RESET_POS)}&#34;)
+        self.query(f&#34;MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}&#34;)
+
+    def birefringent_filter_scan(self, scan_range: int = None, repeat=False):
+        &#34;&#34;&#34;
+        Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.
+
+        A configurable Savitzky-Golay filter is used to smooth the data for analysis.
+
+        The position is not changed if the difference between the current position and the &#34;best&#34; position is less than
+        1/6 of the average separation between peaks in the power diode curve.
+
+        Additionally, plot the power data and motor position selection if plotting is enabled for this scan.
+
+        Parameters
+        ----------
+        scan_range : int
+            number of motor positions to scan left and right
+        repeat : bool
+            whether to repeat the scan until the wavelength difference is less than cfg.MEDIUM_WAVELENGTH_DRIFT
+        &#34;&#34;&#34;
+        if self.exit_flag or self.scan_attempts &gt; cfg.get(cfg.SCAN_LIMIT) or self.restart_set_wavelength:
+            return
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
+        if scan_range is None:
+            scan_range = cfg.get(cfg.BIFI_SCAN_RANGE)
+
+        self.scan_attempts += 1
+        old_pos = int(self.query(&#39;MOTBI:POS?&#39;, numeric_result=True))
+        lower_end = old_pos - scan_range
+        upper_end = old_pos + scan_range
+        assert (0 &lt; lower_end &lt; Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
+                and 0 &lt; upper_end &lt; Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
+                and lower_end &lt; upper_end), &#39;Conditions for BiFi scan invalid. Motor position must be between &#39; + \
+                                            f&#34;{scan_range} and {Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT - scan_range}&#34;
+        positions = np.array(range(lower_end, upper_end, cfg.get(cfg.BIFI_SCAN_STEP)))
+        voltages = np.array([])
+        print(&#39;Starting BiFi scan... &#39;)
+        for pos in positions:
+            self.set_bifi_motor_pos(pos)
+            voltages = np.append(voltages, self.query(&#39;DPOW:DC?&#39;, numeric_result=True))
+        self.set_bifi_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
+        print(&#39;Done.&#39;)
+
+        print(&#39;Analyzing scan data... &#39;)
+        # Smooth out the data and find extrema
+        smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW),
+                                      polyorder=cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER))
+        maxima = argrelextrema(smoothed_data, np.greater, order=5)
+
+        # Find the position of the extremum closest to the target wavelength
+        wavelength_differences = np.array([])
+        for pos in positions[maxima]:
+            self.set_bifi_motor_pos(pos)
+            time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+            wavelength_differences = np.append(wavelength_differences,
+                                               abs(self.wavemeter_wavelength() - self.target_wavelength))
+        best_pos = positions[maxima][np.argmin(wavelength_differences)]
+
+        # By default, let&#39;s assume we&#39;re using the new position.
+        using_new_pos = True
+
+        if len(positions[maxima]) &gt; 1:
+            difference_threshold = np.mean(np.diff(positions[maxima])) / 6
+            if abs(old_pos - best_pos) &gt; difference_threshold:
+                self.set_bifi_motor_pos(best_pos)
+            else:
+                print(&#39;Current BiFi motor position is close enough, leaving it alone.&#39;)
+                self.set_bifi_motor_pos(old_pos)
+                using_new_pos = False
+        else:
+            self.set_bifi_motor_pos(best_pos)
+        print(&#39;Done.&#39;)
+
+        if cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS):
+            # TODO: Label wavelength at each peak
+            plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, old_pos,
+                                                             best_pos, using_new_pos, daemon=True)
+            self.plotting_processes.append(plot_process)
+            plot_process.start()
+
+        if repeat:
+            new_diff = np.min(wavelength_differences)
+            if abs(new_diff) &gt; cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
+                print(&#39;Wavelength still too far away from target value. Starting another scan.&#39;)
+                self.birefringent_filter_scan(scan_range, repeat=True)
+
+    def set_bifi_motor_pos(self, pos: int):
+        &#34;&#34;&#34;
+        Set the birefringent filter motor to the selected position. This method will block the calling thread until the
+        motor status is idle again.
+
+        Parameters
+        ----------
+        pos : int
+            the desired motor position
+        &#34;&#34;&#34;
+        assert 0 &lt; pos &lt; Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, &#39;Target motor position out of range.&#39;
+        # Wait for motor to be ready to accept commands
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+        self.query(f&#34;MOTBI:POS {pos}&#34;)
+        # Wait for motor to finish movement
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+
+    def set_bifi_wavelength(self, value: float):
+        &#34;&#34;&#34;
+        Set the birefringent filter motor to the approximate position corresponding to the given wavelength. This
+        position is determined by the Matisse.
+
+        Parameters
+        ----------
+        value : float
+            the desired wavelength
+        &#34;&#34;&#34;
+        assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) &lt; value &lt; cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
+            &#39;Target wavelength out of range.&#39;
+        # Wait for motor to be ready to accept commands
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+        self.query(f&#34;MOTBI:WAVELENGTH {value}&#34;)
+        # Wait for motor to finish movement
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+
+    def bifi_motor_status(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        int
+            the last 8 bits of the birefringent filter motor status
+        &#34;&#34;&#34;
+        return int(self.query(&#39;MOTBI:STATUS?&#39;, numeric_result=True)) &amp; 0b000000011111111
+
+    def thin_etalon_scan(self, scan_range: int = None, repeat=False):
+        &#34;&#34;&#34;
+        Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
+
+        A configurable Savitzky-Golay filter is used to smooth the data for analysis.
+
+        The position is not changed if the difference between the current position and the &#34;best&#34; position is less than
+        1/6 of the average separation between valleys in the reflex curve.
+
+        If the thin etalon moves too far to one side and we end up in a valley of the power diode curve, the wavelength
+        will make large jumps, so a small birefringent scan is performed to correct this.
+
+        If the thin etalon moves into a region with too much noise (as determined by a normalized RMS deviation), quit
+        early and perform a large scan next time set_wavelength is called.
+
+        Nudges the motor position a little bit away from the minimum to ensure good locking later.
+        Additionally, plot the reflex data and motor position selection.
+
+        Parameters
+        ----------
+        scan_range : int
+            number of motor positions to scan left and right
+        repeat : bool
+            whether to repeat the scan until the wavelength difference is less than cfg.SMALL_WAVELENGTH_DRIFT
+        &#34;&#34;&#34;
+        if self.exit_flag or self.scan_attempts &gt; cfg.get(cfg.SCAN_LIMIT) or self.restart_set_wavelength:
+            return
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
+        if scan_range is None:
+            scan_range = cfg.get(cfg.THIN_ETA_SCAN_RANGE)
+
+        self.scan_attempts += 1
+        old_pos = int(self.query(&#39;MOTTE:POS?&#39;, numeric_result=True))
+        lower_end, upper_end = self.limits_for_thin_etalon_scan(old_pos, scan_range)
+
+        positions = np.array(range(lower_end, upper_end, cfg.get(cfg.THIN_ETA_SCAN_STEP)))
+        voltages = np.array([])
+        print(&#39;Starting thin etalon scan... &#39;)
+        for pos in positions:
+            self.set_thin_etalon_motor_pos(pos)
+            voltages = np.append(voltages, self.query(&#39;TE:DC?&#39;, numeric_result=True))
+        self.set_thin_etalon_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
+        print(&#39;Done.&#39;)
+
+        print(&#39;Analyzing scan data... &#39;)
+        # Smooth out the data and find extrema
+        smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW),
+                                      polyorder=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
+
+        normalized_std_dev = np.sqrt(np.sum(((smoothed_data - voltages) / smoothed_data) ** 2))
+        print(f&#34;Normalized standard deviation from smoothed data: {normalized_std_dev}&#34;)
+        # Example good value: 1.5, example bad value: 2.5
+        if normalized_std_dev &gt; cfg.get(cfg.THIN_ETA_MAX_ALLOWED_STDDEV):
+            print(&#39;Abnormal deviation from smoothed curve detected, the scan region might just contain noise.&#39;)
+            self.restart_set_wavelength = True
+            self.force_large_scan = True
+            return
+
+        minima = argrelextrema(smoothed_data, np.less, order=5)
+
+        # Find the position of the extremum closest to the target wavelength
+        wavelength_differences = np.array([])
+        for pos in positions[minima]:
+            self.set_thin_etalon_motor_pos(pos)
+            time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+            wavelength_differences = np.append(wavelength_differences,
+                                               abs(self.wavemeter_wavelength() - self.target_wavelength))
+        best_minimum_index = np.argmin(wavelength_differences)
+        best_pos = positions[minima][best_minimum_index] + cfg.get(cfg.THIN_ETA_NUDGE)
+
+        # By default, let&#39;s assume we&#39;re using the new position.
+        using_new_pos = True
+
+        if len(positions[minima]) &gt; 1:
+            difference_threshold = np.mean(np.diff(positions[minima])) / 6
+            if abs(old_pos - best_pos) &gt; difference_threshold:
+                self.set_thin_etalon_motor_pos(best_pos)
+            else:
+                print(&#39;Current thin etalon motor position is close enough, leaving it alone.&#39;)
+                self.set_thin_etalon_motor_pos(old_pos)
+                using_new_pos = False
+        else:
+            self.set_thin_etalon_motor_pos(best_pos)
+        print(&#39;Done.&#39;)
+
+        adjacent_differences = np.diff(wavelength_differences)
+        left_too_large = (best_minimum_index &gt;= 1 and
+                          adjacent_differences[best_minimum_index - 1] &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+        right_too_large = (best_minimum_index &lt; len(wavelength_differences) - 1 and
+                           adjacent_differences[best_minimum_index] &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+        if left_too_large or right_too_large:
+            print(&#39;Large jump in wavelength detected, correcting birefringent filter position.&#39;)
+            self.birefringent_filter_scan(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=False)
+            print(&#39;Returning to thin etalon scan.&#39;)
+
+        if cfg.get(cfg.THIN_ETA_SHOW_PLOTS):
+            plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, old_pos, best_pos,
+                                                     using_new_pos, daemon=True)
+            self.plotting_processes.append(plot_process)
+            plot_process.start()
+
+        if repeat:
+            new_diff = np.min(wavelength_differences)
+            if new_diff &gt; cfg.get(cfg.SMALL_WAVELENGTH_DRIFT):
+                print(&#39;Wavelength still too far away from target value. Starting another scan.&#39;)
+                self.thin_etalon_scan(scan_range, repeat=True)
+
+    def limits_for_thin_etalon_scan(self, current_pos: int, scan_range: int) -&gt; (int, int):
+        &#34;&#34;&#34;
+        Calculate appropriate lower and upper limits for a thin etalon scan.
+
+        If the current wavelength difference is more than 1 thin etalon mode, change the limits of the scan to only go
+        left or right, rather than scanning on both sides of the current position.
+
+        Parameters
+        ----------
+        current_pos: the current position of the thin etalon
+        scan_range: the desired range of the thin etalon scan
+
+        Returns
+        -------
+        int, int
+            the appropriate lower and upper limits for the scan
+        &#34;&#34;&#34;
+        lower_limit = current_pos - scan_range
+        upper_limit = current_pos + scan_range
+        diff = self.target_wavelength - self.wavemeter_wavelength()
+        # Adjust scan limits if we&#39;re off by more than 1 mode
+        if abs(diff) &gt; Matisse.THIN_ETALON_NM_PER_MODE:
+            if diff &lt; 0:
+                lower_limit = current_pos - scan_range
+                upper_limit = current_pos
+            else:
+                lower_limit = current_pos
+                upper_limit = current_pos + scan_range
+
+        assert (0 &lt; lower_limit &lt; Matisse.THIN_ETALON_UPPER_LIMIT
+                and 0 &lt; upper_limit &lt; Matisse.THIN_ETALON_UPPER_LIMIT
+                and lower_limit &lt; upper_limit), \
+            &#39;Conditions for thin etalon scan invalid. Continuing would put the motor at its upper or lower limit.&#39;
+
+        return lower_limit, upper_limit
+
+    def set_thin_etalon_motor_pos(self, pos: int):
+        &#34;&#34;&#34;
+        Set the thin etalon motor to the selected position. This method will block the calling thread until the motor
+        status is idle again.
+
+        Parameters
+        ----------
+        pos : int
+            the desired motor position
+        &#34;&#34;&#34;
+        assert (Matisse.THIN_ETALON_LOWER_LIMIT &lt; pos &lt; Matisse.THIN_ETALON_UPPER_LIMIT), \
+            f&#34;Can&#39;t set thin etalon motor position to {pos}, this is out of range.&#34;
+        # Wait for motor to be ready to accept commands
+        while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+        self.query(f&#34;MOTTE:POS {pos}&#34;)
+        # Wait for motor to finish movement
+        while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+
+    def thin_etalon_motor_status(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        int
+            the last 8 bits of the thin etalon motor status
+        &#34;&#34;&#34;
+        return int(self.query(&#39;MOTTE:STATUS?&#39;, numeric_result=True)) &amp; 0b000000011111111
+
+    def set_slow_piezo_control(self, enable: bool):
+        &#34;&#34;&#34;Set the status of the control loop for the slow piezo.&#34;&#34;&#34;
+        self.query(f&#34;SLOWPIEZO:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)
+
+    def set_fast_piezo_control(self, enable: bool):
+        &#34;&#34;&#34;Set the status of the control loop for the fast piezo.&#34;&#34;&#34;
+        self.query(f&#34;FASTPIEZO:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)
+
+    def set_thin_etalon_control(self, enable: bool):
+        &#34;&#34;&#34;Set the status of the control loop for the thin etalon.&#34;&#34;&#34;
+        self.query(f&#34;THINETALON:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)
+
+    def set_piezo_etalon_control(self, enable: bool):
+        &#34;&#34;&#34;Set the status of the control loop for the piezo etalon.&#34;&#34;&#34;
+        self.query(f&#34;PIEZOETALON:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)
+
+    def all_control_loops_on(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the slow piezo, thin etalon, piezo etalon, and fast piezo all have their control loops enabled
+        &#34;&#34;&#34;
+        return (&#39;RUN&#39; in self.query(&#39;SLOWPIEZO:CONTROLSTATUS?&#39;)
+                and &#39;RUN&#39; in self.query(&#39;THINETALON:CONTROLSTATUS?&#39;)
+                and &#39;RUN&#39; in self.query(&#39;PIEZOETALON:CONTROLSTATUS?&#39;)
+                and &#39;RUN&#39; in self.query(&#39;FASTPIEZO:CONTROLSTATUS?&#39;))
+
+    def fast_piezo_locked(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the fast piezo is currently locked
+        &#34;&#34;&#34;
+        return &#39;TRUE&#39; in self.query(&#39;FASTPIEZO:LOCK?&#39;)
+
+    def laser_locked(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the laser is locked, which means all control loops are on and the fast piezo is locked
+        &#34;&#34;&#34;
+        return self.all_control_loops_on() and self.fast_piezo_locked()
+
+    def stabilize_on(self):
+        &#34;&#34;&#34;
+        Enable stabilization using the stabilization piezos and thin etalon to keep the wavelength constant.
+
+        If there is no target wavelength set, stabilize at the current wavelength.
+
+        Starts a `matisse_controller.matisse.stabilization_thread.StabilizationThread` as a daemon for this purpose.
+        To stop stabilizing the laser, call `Matisse.stabilize_off`.
+        &#34;&#34;&#34;
+        if self.is_stabilizing():
+            print(&#39;WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.&#39;)
+        else:
+            self.stabilization_thread = StabilizationThread(self, queue.Queue(), daemon=True)
+
+            if self.target_wavelength is None:
+                self.target_wavelength = self.wavemeter_wavelength()
+            print(f&#34;Stabilizing laser at {self.target_wavelength} nm...&#34;)
+            self.stabilization_thread.start()
+
+    def stabilize_off(self):
+        &#34;&#34;&#34;Exit the stabilization loop, which stops the stabilization thread.&#34;&#34;&#34;
+        if self.is_stabilizing():
+            print(&#39;Stopping stabilization thread.&#39;)
+            self.stabilization_thread.messages.put(&#39;stop&#39;)
+            self.stabilization_thread.join()
+            print(&#39;Stabilization thread has been stopped.&#39;)
+        else:
+            print(&#39;WARNING: Stabilization thread is not running.&#39;)
+
+    def start_scan(self, direction):
+        &#34;&#34;&#34;
+        Start a device scan in the given direction. To configure the speed of the scan, use the queries
+        SCAN:RISINGSPEED or SCAN:FALLINGSPEED.
+
+        Parameters
+        ----------
+        direction : int
+            `SCAN_MODE_UP` (0) or `SCAN_MODE_DOWN` (1)
+        &#34;&#34;&#34;
+        self.query(f&#34;SCAN:MODE {direction}&#34;)
+        self.query(f&#34;SCAN:STATUS RUN&#34;)
+
+    def stop_scan(self):
+        &#34;&#34;&#34;Terminate a device scan.&#34;&#34;&#34;
+        self.query(f&#34;SCAN:STATUS STOP&#34;)
+
+    def is_scanning(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the device is currently scanning
+        &#34;&#34;&#34;
+        return &#39;RUN&#39; in self.query(&#39;SCAN:STATUS?&#39;)
+
+    def is_stabilizing(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the stabilization thread is running
+        &#34;&#34;&#34;
+        return self.stabilization_thread is not None and self.stabilization_thread.is_alive()
+
+    def get_stabilizing_piezo_positions(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        (float, float, float)
+            the current positions of the &#34;stabilization piezos&#34;: RefCell, piezo etalon, and slow piezo
+        &#34;&#34;&#34;
+        current_refcell_pos = self.query(&#39;SCAN:NOW?&#39;, numeric_result=True)
+        current_slow_pz_pos = self.query(&#39;SLOWPIEZO:NOW?&#39;, numeric_result=True)
+        current_pz_eta_pos = self.query(&#39;PIEZOETALON:BASELINE?&#39;, numeric_result=True)
+        return current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos
+
+    def is_any_limit_reached(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether any of the stabilization piezos are very close to their limits
+        &#34;&#34;&#34;
+        refcell_pos, pz_eta_pos, slow_pz_pos = self.get_stabilizing_piezo_positions()
+        offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
+        return not (self.REFERENCE_CELL_LOWER_LIMIT + offset &lt; refcell_pos &lt; self.REFERENCE_CELL_UPPER_LIMIT - offset
+                    and self.SLOW_PIEZO_LOWER_LIMIT + offset &lt; slow_pz_pos &lt; self.SLOW_PIEZO_UPPER_LIMIT - offset
+                    and self.PIEZO_ETALON_LOWER_LIMIT + offset &lt; pz_eta_pos &lt; self.PIEZO_ETALON_UPPER_LIMIT - offset)
+
+    def reset_stabilization_piezos(self):
+        &#34;&#34;&#34;
+        Reset the slow piezo to the center, and the RefCell and piezo etalon according to the following rules:
+
+        - If RefCell is at upper limit, piezo etalon is likely near lower limit
+        - If wavelength is still too low, move RefCell down lower than usual and piezo etalon higher than usual
+        - If RefCell is at lower limit, piezo etalon is likely near upper limit
+        - If wavelength is still too high, move RefCell up higher than usual and piezo etalon lower than usual
+        - Else, move RefCell and piezo etalon to their center positions.
+
+        A target wavelength must already be set in order to run this method.
+        &#34;&#34;&#34;
+        current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos = self.get_stabilizing_piezo_positions()
+        current_wavelength = self.wavemeter_wavelength()
+
+        offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
+        if (current_refcell_pos &gt; Matisse.REFERENCE_CELL_UPPER_LIMIT - offset
+                and current_wavelength &lt; self.target_wavelength):
+            self.query(f&#34;SCAN:NOW {cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS)}&#34;)
+            self.query(f&#34;PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS)}&#34;)
+        elif (current_refcell_pos &lt; Matisse.REFERENCE_CELL_LOWER_LIMIT + offset
+              and current_wavelength &gt; self.target_wavelength):
+            self.query(f&#34;SCAN:NOW {cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS)}&#34;)
+            self.query(f&#34;PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_LOWER_CORRECTION_POS)}&#34;)
+        else:
+            self.query(f&#34;SCAN:NOW {cfg.get(cfg.REFCELL_MID_CORRECTION_POS)}&#34;)
+            self.query(f&#34;PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_MID_CORRECTION_POS)}&#34;)
+
+        self.query(f&#34;SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS)}&#34;)
+
+    def get_reference_cell_transmission_spectrum(self):
+        &#34;&#34;&#34;
+        Scan the reference cell from cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT to cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT,
+        measuring the input to the fast piezo for each position. This creates a curve that represents the transmission
+        spectrum of the reference cell.
+
+        Returns
+        -------
+        (ndarray, ndarray)
+            the positions and input values measured during the scan
+        &#34;&#34;&#34;
+        # TODO: Make a context manager for pausing stabilization/scanning
+        stabilize_when_done = False
+        if self.is_stabilizing():
+            self.stabilize_off()
+            stabilize_when_done = True
+        self.stop_scan()
+
+        positions = np.linspace(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT),
+                                cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT),
+                                cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
+        values = np.array([])
+        old_refcell_pos = self.query(f&#34;SCAN:NOW?&#34;, numeric_result=True)
+        for pos in positions:
+            self.query(f&#34;SCAN:NOW {pos}&#34;)
+            values = np.append(values, self.query(&#39;FASTPIEZO:INPUT?&#39;, numeric_result=True))
+        self.query(f&#34;SCAN:NOW {old_refcell_pos}&#34;)
+
+        if stabilize_when_done:
+            self.stabilize_on()
+
+        return positions, values
+
+    def set_recommended_fast_piezo_setpoint(self):
+        &#34;&#34;&#34;
+        Analyze the data from the reference cell transmission spectrum, and set the fast piezo setpoint to a point
+        about halfway between the min and max points on the spectrum. The recommended value is determined by averaging
+        a number of scans given by cfg.FAST_PZ_SETPOINT_NUM_SCANS.
+        &#34;&#34;&#34;
+        num_scans = cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS)
+        total = 0
+        for i in range(0, num_scans):
+            positions, values = self.get_reference_cell_transmission_spectrum()
+            setpoint = (np.max(values) + np.min(values)) / 2
+            total += setpoint
+        recommended_setpoint = total / num_scans
+        print(f&#34;Setting fast piezo setpoint to {recommended_setpoint}&#34;)
+        self.query(f&#34;FASTPIEZO:CONTROLSETPOINT {recommended_setpoint}&#34;)
+
+    def start_laser_lock_correction(self):
+        &#34;&#34;&#34;
+        Try to lock the laser, and make automatic corrections to the stabilization piezos if needed.
+
+        If there is no target wavelength set, lock at the current wavelength.
+
+        Starts a `matisse_controller.matisse.lock_correction_thread.LockCorrectionThread` as a daemon for this purpose.
+        Call `Matisse.stop_laser_lock_correction` to disable lock.
+        &#34;&#34;&#34;
+        if self.is_lock_correction_on():
+            print(&#39;WARNING: Lock correction is already running.&#39;)
+        else:
+            print(&#39;Starting laser lock.&#39;)
+            self.lock_correction_thread = LockCorrectionThread(self, cfg.get(cfg.LOCKING_TIMEOUT), queue.Queue(),
+                                                               daemon=True)
+            if self.target_wavelength is None:
+                self.target_wavelength = self.wavemeter_wavelength()
+            self.lock_correction_thread.start()
+
+    def stop_laser_lock_correction(self):
+        &#34;&#34;&#34;Disable the lock correction loop, which stops the lock correction thread.&#34;&#34;&#34;
+        if self.is_lock_correction_on():
+            self.lock_correction_thread.messages.put(&#39;stop&#39;)
+            self.lock_correction_thread.join()
+        else:
+            print(&#39;WARNING: laser is not locked.&#39;)
+
+    def is_lock_correction_on(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the lock correction thread is running
+        &#34;&#34;&#34;
+        return self.lock_correction_thread is not None and self.lock_correction_thread.is_alive()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="matisse_controller.matisse.matisse.Matisse"><code class="flex name class">
+<span>class <span class="ident">Matisse</span></span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class Matisse(Constants):  # TODO: No need to extend constants, maybe just import them
+    matisse_lock = threading.Lock()
+
+    def __init__(self):
+        try:
+            # Initialize VISA resource manager, connect to Matisse and wavemeter, clear any errors.
+            # TODO: Add access modifiers on all these instance variables
+            self.instrument = ResourceManager().open_resource(cfg.get(cfg.MATISSE_DEVICE_ID))
+            self.target_wavelength = None
+            self.stabilization_thread = None
+            self.lock_correction_thread = None
+            self.plotting_processes = []  # TODO: Add a method to close all of these plots
+            self.exit_flag = False
+            self.scan_attempts = 0
+            self.force_large_scan = True
+            self.restart_set_wavelength = False
+            self.stabilization_auto_corrections = 0
+            self.query(&#39;ERROR:CLEAR&#39;)  # start with a clean slate
+            self.query(&#39;MOTORBIREFRINGENT:CLEAR&#39;)
+            self.query(&#39;MOTORTHINETALON:CLEAR&#39;)
+            self.wavemeter = WaveMaster(cfg.get(cfg.WAVEMETER_PORT))
+            self.ple_scanner = ShamrockPLE(self)
+        except VisaIOError as ioerr:
+            raise IOError(&#34;Can&#39;t reach Matisse. Make sure it&#39;s on and connected via USB.&#34;) from ioerr
+
+    def query(self, command: str, numeric_result=False, raise_on_error=True):
+        &#34;&#34;&#34;
+        Send a command to the Matisse and return the response.
+
+        Note that some commands (like setting the position of a stepper motor) take additional time to execute, so do
+        not assume the command has finished executing just because the query returns &#34;OK&#34;.
+
+        This doesn&#39;t raise errors if the error occurred in the controller for a specific component of the Matisse, like
+        the birefringent filter motor, for example. That motor has a separate status register with error information
+        that can be queried and cleared separately.
+
+        Parameters
+        ----------
+        command : str
+            the command to send
+        numeric_result : bool
+            whether to convert the second portion of the result to a float
+        raise_on_error : bool
+            whether to raise a Python error if Matisse error occurs
+
+        Returns
+        -------
+        str
+            The response from the Matisse to the given command
+        &#34;&#34;&#34;
+        try:
+            with Matisse.matisse_lock:
+                result: str = self.instrument.query(command).strip()
+        except VisaIOError as ioerr:
+            raise IOError(&#34;Couldn&#39;t execute command. Check Matisse is on and connected via USB.&#34;) from ioerr
+
+        if result.startswith(&#39;!ERROR&#39;):
+            if raise_on_error:
+                err_codes = self.query(&#39;ERROR:CODE?&#39;)
+                self.query(&#39;ERROR:CLEAR&#39;)
+                raise RuntimeError(&#34;Error executing Matisse command &#39;&#34; + command + &#34;&#39; &#34; + err_codes)
+        elif numeric_result:
+            result: float = float(result.split()[1])
+        return result
+
+    def wavemeter_wavelength(self) -&gt; float:
+        &#34;&#34;&#34;
+        Returns
+        -------
+        float
+            the wavelength (in nanometers) as measured by the wavemeter
+        &#34;&#34;&#34;
+        return self.wavemeter.get_wavelength()
+
+    def set_wavelength(self, wavelength: float):
+        &#34;&#34;&#34;
+        Configure the Matisse to output a given wavelength.
+
+        If the laser is locked and/or stabilizing, pause those operations for the duration of the method.
+
+        First I&#39;ll check the difference between the current wavelength and the target wavelength.
+
+        - If this is the first time this is being run, do a large birefringent scan regardless of the difference.
+        - If it&#39;s greater than cfg.LARGE_WAVELENGTH_DRIFT, do a large birefringent scan to choose a better peak.
+        - If it&#39;s between about cfg.MEDIUM_WAVELENGTH_DRIFT and cfg.LARGE_WAVELENGTH_DRIFT, do a small birefringent scan
+          to keep it on the peak.
+        - If it&#39;s between cfg.SMALL_WAVELENGTH_DRIFT nm and cfg.MEDIUM_WAVELENGTH_DRIFT, skip the first birefringent
+          scan and go right to the thin etalon scan.
+        - If it&#39;s less than cfg.SMALL_WAVELENGTH_DRIFT, skip all BiFi and TE scans, and just do a RefCell scan.
+
+        This is generally the process I&#39;ll follow:
+
+        1. Decide whether to skip any scans, as described above.
+        2. Set approx. wavelength using BiFi. This is supposed to be good to about +-1 nm but it&#39;s usually very far off.
+        3. Scan the BiFi back and forth and measure the total laser power at each point.
+        4. Find all local maxima, move the BiFi to the maximum that&#39;s closest to the desired wavelength.
+        5. Move the thin etalon motor directly to a position close to the target wavelength.
+        6. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
+        7. Find all local minima. Move the TE to the minimum that&#39;s closest to the desired wavelength.
+        8. Shift the thin etalon a over bit by cfg.THIN_ETA_NUDGE. We want to be on the &#34;flank&#34; of the chosen parabola.
+        9. Do a small BiFi scan to make sure we&#39;re still on the location with maximum power. If the distance to the new
+           motor location is very small, just leave the motor where it is.
+        10. Do a small thin etalon scan to make sure we&#39;re still on the flank of the right parabola.
+        11. Enable RefCell stabilization, which scans the device up or down until the desired wavelength is reached.
+
+        If more than cfg.SCAN_LIMIT scan attempts pass before stabilizing, restart the whole process over again.
+        If, during stabilization, more than cfg.CORRECTION_LIMIT corrections are made, start with a large birefringent
+        scan the next time this method is run.
+        A scan may decide it needs to start the process over again for some other reason, like the thin etalon moving to
+        a location with just noise.
+
+        Parameters
+        ----------
+        wavelength : float
+            the desired wavelength
+        &#34;&#34;&#34;
+        assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) &lt; wavelength &lt; cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
+            &#39;Target wavelength out of range.&#39;
+
+        self.target_wavelength = wavelength
+
+        lock_when_done = self.is_lock_correction_on()
+        if self.is_lock_correction_on():
+            self.stop_laser_lock_correction()
+        if self.is_stabilizing():
+            self.stabilize_off()
+
+        while True:
+            self.scan_attempts = 0
+            diff = abs(wavelength - self.wavemeter_wavelength())
+
+            if diff &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self.force_large_scan:
+                self.query(f&#34;MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}&#34;)
+                self.reset_stabilization_piezos()
+                # Normal BiFi scan
+                print(f&#34;Setting BiFi to ~{wavelength} nm... &#34;)
+                self.set_bifi_wavelength(wavelength)
+                time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+                print(f&#34;Done. Wavelength is now {self.wavemeter_wavelength()} nm. &#34;
+                      &#34;(This is often very wrong, don&#39;t worry)&#34;)
+                self.birefringent_filter_scan(repeat=True)
+                self.thin_etalon_scan(repeat=True)
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+            elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) &lt; diff &lt;= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+                # Small BiFi scan
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(repeat=True)
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+            elif cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) &lt; diff &lt;= cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
+                # No BiFi scan, TE scan only
+                self.thin_etalon_scan(repeat=True)
+                self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+                self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+            else:
+                # No BiFi, no TE. Scan device only.
+                pass
+
+            # Restart/exit conditions
+            if self.exit_flag:
+                return
+            if self.restart_set_wavelength:
+                self.restart_set_wavelength = False
+                print(&#39;Restarting wavelength-setting process.&#39;)
+                continue
+            elif self.scan_attempts &gt; cfg.get(cfg.SCAN_LIMIT):
+                print(&#39;WARNING: Number of scan attempts exceeded. Starting wavelength-setting process over again.&#39;)
+                self.force_large_scan = True
+                continue
+            elif self.stabilization_auto_corrections &gt; cfg.get(cfg.CORRECTION_LIMIT):
+                print(&#39;WARNING: Number of stabilization auto-corrections exceeded. Starting wavelength-setting process &#39;
+                      &#39;over again.&#39;)
+                self.stabilization_auto_corrections = 0
+                self.force_large_scan = True
+                continue
+            else:
+                self.force_large_scan = False
+                break
+
+        if lock_when_done:
+            self.start_laser_lock_correction()
+        self.stabilize_on()
+
+    def reset_motors(self):
+        &#34;&#34;&#34;Move the birefringent filter and thin etalon motors to their configured reset positions.&#34;&#34;&#34;
+        self.query(f&#34;MOTBI:POS {cfg.get(cfg.BIFI_RESET_POS)}&#34;)
+        self.query(f&#34;MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}&#34;)
+
+    def birefringent_filter_scan(self, scan_range: int = None, repeat=False):
+        &#34;&#34;&#34;
+        Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.
+
+        A configurable Savitzky-Golay filter is used to smooth the data for analysis.
+
+        The position is not changed if the difference between the current position and the &#34;best&#34; position is less than
+        1/6 of the average separation between peaks in the power diode curve.
+
+        Additionally, plot the power data and motor position selection if plotting is enabled for this scan.
+
+        Parameters
+        ----------
+        scan_range : int
+            number of motor positions to scan left and right
+        repeat : bool
+            whether to repeat the scan until the wavelength difference is less than cfg.MEDIUM_WAVELENGTH_DRIFT
+        &#34;&#34;&#34;
+        if self.exit_flag or self.scan_attempts &gt; cfg.get(cfg.SCAN_LIMIT) or self.restart_set_wavelength:
+            return
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
+        if scan_range is None:
+            scan_range = cfg.get(cfg.BIFI_SCAN_RANGE)
+
+        self.scan_attempts += 1
+        old_pos = int(self.query(&#39;MOTBI:POS?&#39;, numeric_result=True))
+        lower_end = old_pos - scan_range
+        upper_end = old_pos + scan_range
+        assert (0 &lt; lower_end &lt; Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
+                and 0 &lt; upper_end &lt; Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
+                and lower_end &lt; upper_end), &#39;Conditions for BiFi scan invalid. Motor position must be between &#39; + \
+                                            f&#34;{scan_range} and {Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT - scan_range}&#34;
+        positions = np.array(range(lower_end, upper_end, cfg.get(cfg.BIFI_SCAN_STEP)))
+        voltages = np.array([])
+        print(&#39;Starting BiFi scan... &#39;)
+        for pos in positions:
+            self.set_bifi_motor_pos(pos)
+            voltages = np.append(voltages, self.query(&#39;DPOW:DC?&#39;, numeric_result=True))
+        self.set_bifi_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
+        print(&#39;Done.&#39;)
+
+        print(&#39;Analyzing scan data... &#39;)
+        # Smooth out the data and find extrema
+        smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW),
+                                      polyorder=cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER))
+        maxima = argrelextrema(smoothed_data, np.greater, order=5)
+
+        # Find the position of the extremum closest to the target wavelength
+        wavelength_differences = np.array([])
+        for pos in positions[maxima]:
+            self.set_bifi_motor_pos(pos)
+            time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+            wavelength_differences = np.append(wavelength_differences,
+                                               abs(self.wavemeter_wavelength() - self.target_wavelength))
+        best_pos = positions[maxima][np.argmin(wavelength_differences)]
+
+        # By default, let&#39;s assume we&#39;re using the new position.
+        using_new_pos = True
+
+        if len(positions[maxima]) &gt; 1:
+            difference_threshold = np.mean(np.diff(positions[maxima])) / 6
+            if abs(old_pos - best_pos) &gt; difference_threshold:
+                self.set_bifi_motor_pos(best_pos)
+            else:
+                print(&#39;Current BiFi motor position is close enough, leaving it alone.&#39;)
+                self.set_bifi_motor_pos(old_pos)
+                using_new_pos = False
+        else:
+            self.set_bifi_motor_pos(best_pos)
+        print(&#39;Done.&#39;)
+
+        if cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS):
+            # TODO: Label wavelength at each peak
+            plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, old_pos,
+                                                             best_pos, using_new_pos, daemon=True)
+            self.plotting_processes.append(plot_process)
+            plot_process.start()
+
+        if repeat:
+            new_diff = np.min(wavelength_differences)
+            if abs(new_diff) &gt; cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
+                print(&#39;Wavelength still too far away from target value. Starting another scan.&#39;)
+                self.birefringent_filter_scan(scan_range, repeat=True)
+
+    def set_bifi_motor_pos(self, pos: int):
+        &#34;&#34;&#34;
+        Set the birefringent filter motor to the selected position. This method will block the calling thread until the
+        motor status is idle again.
+
+        Parameters
+        ----------
+        pos : int
+            the desired motor position
+        &#34;&#34;&#34;
+        assert 0 &lt; pos &lt; Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, &#39;Target motor position out of range.&#39;
+        # Wait for motor to be ready to accept commands
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+        self.query(f&#34;MOTBI:POS {pos}&#34;)
+        # Wait for motor to finish movement
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+
+    def set_bifi_wavelength(self, value: float):
+        &#34;&#34;&#34;
+        Set the birefringent filter motor to the approximate position corresponding to the given wavelength. This
+        position is determined by the Matisse.
+
+        Parameters
+        ----------
+        value : float
+            the desired wavelength
+        &#34;&#34;&#34;
+        assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) &lt; value &lt; cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
+            &#39;Target wavelength out of range.&#39;
+        # Wait for motor to be ready to accept commands
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+        self.query(f&#34;MOTBI:WAVELENGTH {value}&#34;)
+        # Wait for motor to finish movement
+        while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+
+    def bifi_motor_status(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        int
+            the last 8 bits of the birefringent filter motor status
+        &#34;&#34;&#34;
+        return int(self.query(&#39;MOTBI:STATUS?&#39;, numeric_result=True)) &amp; 0b000000011111111
+
+    def thin_etalon_scan(self, scan_range: int = None, repeat=False):
+        &#34;&#34;&#34;
+        Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
+
+        A configurable Savitzky-Golay filter is used to smooth the data for analysis.
+
+        The position is not changed if the difference between the current position and the &#34;best&#34; position is less than
+        1/6 of the average separation between valleys in the reflex curve.
+
+        If the thin etalon moves too far to one side and we end up in a valley of the power diode curve, the wavelength
+        will make large jumps, so a small birefringent scan is performed to correct this.
+
+        If the thin etalon moves into a region with too much noise (as determined by a normalized RMS deviation), quit
+        early and perform a large scan next time set_wavelength is called.
+
+        Nudges the motor position a little bit away from the minimum to ensure good locking later.
+        Additionally, plot the reflex data and motor position selection.
+
+        Parameters
+        ----------
+        scan_range : int
+            number of motor positions to scan left and right
+        repeat : bool
+            whether to repeat the scan until the wavelength difference is less than cfg.SMALL_WAVELENGTH_DRIFT
+        &#34;&#34;&#34;
+        if self.exit_flag or self.scan_attempts &gt; cfg.get(cfg.SCAN_LIMIT) or self.restart_set_wavelength:
+            return
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
+        if scan_range is None:
+            scan_range = cfg.get(cfg.THIN_ETA_SCAN_RANGE)
+
+        self.scan_attempts += 1
+        old_pos = int(self.query(&#39;MOTTE:POS?&#39;, numeric_result=True))
+        lower_end, upper_end = self.limits_for_thin_etalon_scan(old_pos, scan_range)
+
+        positions = np.array(range(lower_end, upper_end, cfg.get(cfg.THIN_ETA_SCAN_STEP)))
+        voltages = np.array([])
+        print(&#39;Starting thin etalon scan... &#39;)
+        for pos in positions:
+            self.set_thin_etalon_motor_pos(pos)
+            voltages = np.append(voltages, self.query(&#39;TE:DC?&#39;, numeric_result=True))
+        self.set_thin_etalon_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
+        print(&#39;Done.&#39;)
+
+        print(&#39;Analyzing scan data... &#39;)
+        # Smooth out the data and find extrema
+        smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW),
+                                      polyorder=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
+
+        normalized_std_dev = np.sqrt(np.sum(((smoothed_data - voltages) / smoothed_data) ** 2))
+        print(f&#34;Normalized standard deviation from smoothed data: {normalized_std_dev}&#34;)
+        # Example good value: 1.5, example bad value: 2.5
+        if normalized_std_dev &gt; cfg.get(cfg.THIN_ETA_MAX_ALLOWED_STDDEV):
+            print(&#39;Abnormal deviation from smoothed curve detected, the scan region might just contain noise.&#39;)
+            self.restart_set_wavelength = True
+            self.force_large_scan = True
+            return
+
+        minima = argrelextrema(smoothed_data, np.less, order=5)
+
+        # Find the position of the extremum closest to the target wavelength
+        wavelength_differences = np.array([])
+        for pos in positions[minima]:
+            self.set_thin_etalon_motor_pos(pos)
+            time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+            wavelength_differences = np.append(wavelength_differences,
+                                               abs(self.wavemeter_wavelength() - self.target_wavelength))
+        best_minimum_index = np.argmin(wavelength_differences)
+        best_pos = positions[minima][best_minimum_index] + cfg.get(cfg.THIN_ETA_NUDGE)
+
+        # By default, let&#39;s assume we&#39;re using the new position.
+        using_new_pos = True
+
+        if len(positions[minima]) &gt; 1:
+            difference_threshold = np.mean(np.diff(positions[minima])) / 6
+            if abs(old_pos - best_pos) &gt; difference_threshold:
+                self.set_thin_etalon_motor_pos(best_pos)
+            else:
+                print(&#39;Current thin etalon motor position is close enough, leaving it alone.&#39;)
+                self.set_thin_etalon_motor_pos(old_pos)
+                using_new_pos = False
+        else:
+            self.set_thin_etalon_motor_pos(best_pos)
+        print(&#39;Done.&#39;)
+
+        adjacent_differences = np.diff(wavelength_differences)
+        left_too_large = (best_minimum_index &gt;= 1 and
+                          adjacent_differences[best_minimum_index - 1] &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+        right_too_large = (best_minimum_index &lt; len(wavelength_differences) - 1 and
+                           adjacent_differences[best_minimum_index] &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+        if left_too_large or right_too_large:
+            print(&#39;Large jump in wavelength detected, correcting birefringent filter position.&#39;)
+            self.birefringent_filter_scan(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=False)
+            print(&#39;Returning to thin etalon scan.&#39;)
+
+        if cfg.get(cfg.THIN_ETA_SHOW_PLOTS):
+            plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, old_pos, best_pos,
+                                                     using_new_pos, daemon=True)
+            self.plotting_processes.append(plot_process)
+            plot_process.start()
+
+        if repeat:
+            new_diff = np.min(wavelength_differences)
+            if new_diff &gt; cfg.get(cfg.SMALL_WAVELENGTH_DRIFT):
+                print(&#39;Wavelength still too far away from target value. Starting another scan.&#39;)
+                self.thin_etalon_scan(scan_range, repeat=True)
+
+    def limits_for_thin_etalon_scan(self, current_pos: int, scan_range: int) -&gt; (int, int):
+        &#34;&#34;&#34;
+        Calculate appropriate lower and upper limits for a thin etalon scan.
+
+        If the current wavelength difference is more than 1 thin etalon mode, change the limits of the scan to only go
+        left or right, rather than scanning on both sides of the current position.
+
+        Parameters
+        ----------
+        current_pos: the current position of the thin etalon
+        scan_range: the desired range of the thin etalon scan
+
+        Returns
+        -------
+        int, int
+            the appropriate lower and upper limits for the scan
+        &#34;&#34;&#34;
+        lower_limit = current_pos - scan_range
+        upper_limit = current_pos + scan_range
+        diff = self.target_wavelength - self.wavemeter_wavelength()
+        # Adjust scan limits if we&#39;re off by more than 1 mode
+        if abs(diff) &gt; Matisse.THIN_ETALON_NM_PER_MODE:
+            if diff &lt; 0:
+                lower_limit = current_pos - scan_range
+                upper_limit = current_pos
+            else:
+                lower_limit = current_pos
+                upper_limit = current_pos + scan_range
+
+        assert (0 &lt; lower_limit &lt; Matisse.THIN_ETALON_UPPER_LIMIT
+                and 0 &lt; upper_limit &lt; Matisse.THIN_ETALON_UPPER_LIMIT
+                and lower_limit &lt; upper_limit), \
+            &#39;Conditions for thin etalon scan invalid. Continuing would put the motor at its upper or lower limit.&#39;
+
+        return lower_limit, upper_limit
+
+    def set_thin_etalon_motor_pos(self, pos: int):
+        &#34;&#34;&#34;
+        Set the thin etalon motor to the selected position. This method will block the calling thread until the motor
+        status is idle again.
+
+        Parameters
+        ----------
+        pos : int
+            the desired motor position
+        &#34;&#34;&#34;
+        assert (Matisse.THIN_ETALON_LOWER_LIMIT &lt; pos &lt; Matisse.THIN_ETALON_UPPER_LIMIT), \
+            f&#34;Can&#39;t set thin etalon motor position to {pos}, this is out of range.&#34;
+        # Wait for motor to be ready to accept commands
+        while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+        self.query(f&#34;MOTTE:POS {pos}&#34;)
+        # Wait for motor to finish movement
+        while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+            pass
+
+    def thin_etalon_motor_status(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        int
+            the last 8 bits of the thin etalon motor status
+        &#34;&#34;&#34;
+        return int(self.query(&#39;MOTTE:STATUS?&#39;, numeric_result=True)) &amp; 0b000000011111111
+
+    def set_slow_piezo_control(self, enable: bool):
+        &#34;&#34;&#34;Set the status of the control loop for the slow piezo.&#34;&#34;&#34;
+        self.query(f&#34;SLOWPIEZO:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)
+
+    def set_fast_piezo_control(self, enable: bool):
+        &#34;&#34;&#34;Set the status of the control loop for the fast piezo.&#34;&#34;&#34;
+        self.query(f&#34;FASTPIEZO:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)
+
+    def set_thin_etalon_control(self, enable: bool):
+        &#34;&#34;&#34;Set the status of the control loop for the thin etalon.&#34;&#34;&#34;
+        self.query(f&#34;THINETALON:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)
+
+    def set_piezo_etalon_control(self, enable: bool):
+        &#34;&#34;&#34;Set the status of the control loop for the piezo etalon.&#34;&#34;&#34;
+        self.query(f&#34;PIEZOETALON:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)
+
+    def all_control_loops_on(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the slow piezo, thin etalon, piezo etalon, and fast piezo all have their control loops enabled
+        &#34;&#34;&#34;
+        return (&#39;RUN&#39; in self.query(&#39;SLOWPIEZO:CONTROLSTATUS?&#39;)
+                and &#39;RUN&#39; in self.query(&#39;THINETALON:CONTROLSTATUS?&#39;)
+                and &#39;RUN&#39; in self.query(&#39;PIEZOETALON:CONTROLSTATUS?&#39;)
+                and &#39;RUN&#39; in self.query(&#39;FASTPIEZO:CONTROLSTATUS?&#39;))
+
+    def fast_piezo_locked(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the fast piezo is currently locked
+        &#34;&#34;&#34;
+        return &#39;TRUE&#39; in self.query(&#39;FASTPIEZO:LOCK?&#39;)
+
+    def laser_locked(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the laser is locked, which means all control loops are on and the fast piezo is locked
+        &#34;&#34;&#34;
+        return self.all_control_loops_on() and self.fast_piezo_locked()
+
+    def stabilize_on(self):
+        &#34;&#34;&#34;
+        Enable stabilization using the stabilization piezos and thin etalon to keep the wavelength constant.
+
+        If there is no target wavelength set, stabilize at the current wavelength.
+
+        Starts a `matisse_controller.matisse.stabilization_thread.StabilizationThread` as a daemon for this purpose.
+        To stop stabilizing the laser, call `Matisse.stabilize_off`.
+        &#34;&#34;&#34;
+        if self.is_stabilizing():
+            print(&#39;WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.&#39;)
+        else:
+            self.stabilization_thread = StabilizationThread(self, queue.Queue(), daemon=True)
+
+            if self.target_wavelength is None:
+                self.target_wavelength = self.wavemeter_wavelength()
+            print(f&#34;Stabilizing laser at {self.target_wavelength} nm...&#34;)
+            self.stabilization_thread.start()
+
+    def stabilize_off(self):
+        &#34;&#34;&#34;Exit the stabilization loop, which stops the stabilization thread.&#34;&#34;&#34;
+        if self.is_stabilizing():
+            print(&#39;Stopping stabilization thread.&#39;)
+            self.stabilization_thread.messages.put(&#39;stop&#39;)
+            self.stabilization_thread.join()
+            print(&#39;Stabilization thread has been stopped.&#39;)
+        else:
+            print(&#39;WARNING: Stabilization thread is not running.&#39;)
+
+    def start_scan(self, direction):
+        &#34;&#34;&#34;
+        Start a device scan in the given direction. To configure the speed of the scan, use the queries
+        SCAN:RISINGSPEED or SCAN:FALLINGSPEED.
+
+        Parameters
+        ----------
+        direction : int
+            `SCAN_MODE_UP` (0) or `SCAN_MODE_DOWN` (1)
+        &#34;&#34;&#34;
+        self.query(f&#34;SCAN:MODE {direction}&#34;)
+        self.query(f&#34;SCAN:STATUS RUN&#34;)
+
+    def stop_scan(self):
+        &#34;&#34;&#34;Terminate a device scan.&#34;&#34;&#34;
+        self.query(f&#34;SCAN:STATUS STOP&#34;)
+
+    def is_scanning(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the device is currently scanning
+        &#34;&#34;&#34;
+        return &#39;RUN&#39; in self.query(&#39;SCAN:STATUS?&#39;)
+
+    def is_stabilizing(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the stabilization thread is running
+        &#34;&#34;&#34;
+        return self.stabilization_thread is not None and self.stabilization_thread.is_alive()
+
+    def get_stabilizing_piezo_positions(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        (float, float, float)
+            the current positions of the &#34;stabilization piezos&#34;: RefCell, piezo etalon, and slow piezo
+        &#34;&#34;&#34;
+        current_refcell_pos = self.query(&#39;SCAN:NOW?&#39;, numeric_result=True)
+        current_slow_pz_pos = self.query(&#39;SLOWPIEZO:NOW?&#39;, numeric_result=True)
+        current_pz_eta_pos = self.query(&#39;PIEZOETALON:BASELINE?&#39;, numeric_result=True)
+        return current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos
+
+    def is_any_limit_reached(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether any of the stabilization piezos are very close to their limits
+        &#34;&#34;&#34;
+        refcell_pos, pz_eta_pos, slow_pz_pos = self.get_stabilizing_piezo_positions()
+        offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
+        return not (self.REFERENCE_CELL_LOWER_LIMIT + offset &lt; refcell_pos &lt; self.REFERENCE_CELL_UPPER_LIMIT - offset
+                    and self.SLOW_PIEZO_LOWER_LIMIT + offset &lt; slow_pz_pos &lt; self.SLOW_PIEZO_UPPER_LIMIT - offset
+                    and self.PIEZO_ETALON_LOWER_LIMIT + offset &lt; pz_eta_pos &lt; self.PIEZO_ETALON_UPPER_LIMIT - offset)
+
+    def reset_stabilization_piezos(self):
+        &#34;&#34;&#34;
+        Reset the slow piezo to the center, and the RefCell and piezo etalon according to the following rules:
+
+        - If RefCell is at upper limit, piezo etalon is likely near lower limit
+        - If wavelength is still too low, move RefCell down lower than usual and piezo etalon higher than usual
+        - If RefCell is at lower limit, piezo etalon is likely near upper limit
+        - If wavelength is still too high, move RefCell up higher than usual and piezo etalon lower than usual
+        - Else, move RefCell and piezo etalon to their center positions.
+
+        A target wavelength must already be set in order to run this method.
+        &#34;&#34;&#34;
+        current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos = self.get_stabilizing_piezo_positions()
+        current_wavelength = self.wavemeter_wavelength()
+
+        offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
+        if (current_refcell_pos &gt; Matisse.REFERENCE_CELL_UPPER_LIMIT - offset
+                and current_wavelength &lt; self.target_wavelength):
+            self.query(f&#34;SCAN:NOW {cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS)}&#34;)
+            self.query(f&#34;PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS)}&#34;)
+        elif (current_refcell_pos &lt; Matisse.REFERENCE_CELL_LOWER_LIMIT + offset
+              and current_wavelength &gt; self.target_wavelength):
+            self.query(f&#34;SCAN:NOW {cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS)}&#34;)
+            self.query(f&#34;PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_LOWER_CORRECTION_POS)}&#34;)
+        else:
+            self.query(f&#34;SCAN:NOW {cfg.get(cfg.REFCELL_MID_CORRECTION_POS)}&#34;)
+            self.query(f&#34;PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_MID_CORRECTION_POS)}&#34;)
+
+        self.query(f&#34;SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS)}&#34;)
+
+    def get_reference_cell_transmission_spectrum(self):
+        &#34;&#34;&#34;
+        Scan the reference cell from cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT to cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT,
+        measuring the input to the fast piezo for each position. This creates a curve that represents the transmission
+        spectrum of the reference cell.
+
+        Returns
+        -------
+        (ndarray, ndarray)
+            the positions and input values measured during the scan
+        &#34;&#34;&#34;
+        # TODO: Make a context manager for pausing stabilization/scanning
+        stabilize_when_done = False
+        if self.is_stabilizing():
+            self.stabilize_off()
+            stabilize_when_done = True
+        self.stop_scan()
+
+        positions = np.linspace(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT),
+                                cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT),
+                                cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
+        values = np.array([])
+        old_refcell_pos = self.query(f&#34;SCAN:NOW?&#34;, numeric_result=True)
+        for pos in positions:
+            self.query(f&#34;SCAN:NOW {pos}&#34;)
+            values = np.append(values, self.query(&#39;FASTPIEZO:INPUT?&#39;, numeric_result=True))
+        self.query(f&#34;SCAN:NOW {old_refcell_pos}&#34;)
+
+        if stabilize_when_done:
+            self.stabilize_on()
+
+        return positions, values
+
+    def set_recommended_fast_piezo_setpoint(self):
+        &#34;&#34;&#34;
+        Analyze the data from the reference cell transmission spectrum, and set the fast piezo setpoint to a point
+        about halfway between the min and max points on the spectrum. The recommended value is determined by averaging
+        a number of scans given by cfg.FAST_PZ_SETPOINT_NUM_SCANS.
+        &#34;&#34;&#34;
+        num_scans = cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS)
+        total = 0
+        for i in range(0, num_scans):
+            positions, values = self.get_reference_cell_transmission_spectrum()
+            setpoint = (np.max(values) + np.min(values)) / 2
+            total += setpoint
+        recommended_setpoint = total / num_scans
+        print(f&#34;Setting fast piezo setpoint to {recommended_setpoint}&#34;)
+        self.query(f&#34;FASTPIEZO:CONTROLSETPOINT {recommended_setpoint}&#34;)
+
+    def start_laser_lock_correction(self):
+        &#34;&#34;&#34;
+        Try to lock the laser, and make automatic corrections to the stabilization piezos if needed.
+
+        If there is no target wavelength set, lock at the current wavelength.
+
+        Starts a `matisse_controller.matisse.lock_correction_thread.LockCorrectionThread` as a daemon for this purpose.
+        Call `Matisse.stop_laser_lock_correction` to disable lock.
+        &#34;&#34;&#34;
+        if self.is_lock_correction_on():
+            print(&#39;WARNING: Lock correction is already running.&#39;)
+        else:
+            print(&#39;Starting laser lock.&#39;)
+            self.lock_correction_thread = LockCorrectionThread(self, cfg.get(cfg.LOCKING_TIMEOUT), queue.Queue(),
+                                                               daemon=True)
+            if self.target_wavelength is None:
+                self.target_wavelength = self.wavemeter_wavelength()
+            self.lock_correction_thread.start()
+
+    def stop_laser_lock_correction(self):
+        &#34;&#34;&#34;Disable the lock correction loop, which stops the lock correction thread.&#34;&#34;&#34;
+        if self.is_lock_correction_on():
+            self.lock_correction_thread.messages.put(&#39;stop&#39;)
+            self.lock_correction_thread.join()
+        else:
+            print(&#39;WARNING: laser is not locked.&#39;)
+
+    def is_lock_correction_on(self):
+        &#34;&#34;&#34;
+        Returns
+        -------
+        bool
+            whether the lock correction thread is running
+        &#34;&#34;&#34;
+        return self.lock_correction_thread is not None and self.lock_correction_thread.is_alive()</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="matisse_controller.matisse.constants.Constants" href="constants.html#matisse_controller.matisse.constants.Constants">Constants</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="matisse_controller.matisse.matisse.Matisse.matisse_lock"><code class="name">var <span class="ident">matisse_lock</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="matisse_controller.matisse.matisse.Matisse.all_control_loops_on"><code class="name flex">
+<span>def <span class="ident">all_control_loops_on</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>whether the slow piezo, thin etalon, piezo etalon, and fast piezo all have their control loops enabled</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def all_control_loops_on(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    bool
+        whether the slow piezo, thin etalon, piezo etalon, and fast piezo all have their control loops enabled
+    &#34;&#34;&#34;
+    return (&#39;RUN&#39; in self.query(&#39;SLOWPIEZO:CONTROLSTATUS?&#39;)
+            and &#39;RUN&#39; in self.query(&#39;THINETALON:CONTROLSTATUS?&#39;)
+            and &#39;RUN&#39; in self.query(&#39;PIEZOETALON:CONTROLSTATUS?&#39;)
+            and &#39;RUN&#39; in self.query(&#39;FASTPIEZO:CONTROLSTATUS?&#39;))</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.bifi_motor_status"><code class="name flex">
+<span>def <span class="ident">bifi_motor_status</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>the last 8 bits of the birefringent filter motor status</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def bifi_motor_status(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    int
+        the last 8 bits of the birefringent filter motor status
+    &#34;&#34;&#34;
+    return int(self.query(&#39;MOTBI:STATUS?&#39;, numeric_result=True)) &amp; 0b000000011111111</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.birefringent_filter_scan"><code class="name flex">
+<span>def <span class="ident">birefringent_filter_scan</span></span>(<span>self, scan_range=None, repeat=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.</p>
+<p>A configurable Savitzky-Golay filter is used to smooth the data for analysis.</p>
+<p>The position is not changed if the difference between the current position and the "best" position is less than
+1/6 of the average separation between peaks in the power diode curve.</p>
+<p>Additionally, plot the power data and motor position selection if plotting is enabled for this scan.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>scan_range</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of motor positions to scan left and right</dd>
+<dt><strong><code>repeat</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to repeat the scan until the wavelength difference is less than cfg.MEDIUM_WAVELENGTH_DRIFT</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def birefringent_filter_scan(self, scan_range: int = None, repeat=False):
+    &#34;&#34;&#34;
+    Initiate a scan of the birefringent filter, selecting the power maximum closest to the target wavelength.
+
+    A configurable Savitzky-Golay filter is used to smooth the data for analysis.
+
+    The position is not changed if the difference between the current position and the &#34;best&#34; position is less than
+    1/6 of the average separation between peaks in the power diode curve.
+
+    Additionally, plot the power data and motor position selection if plotting is enabled for this scan.
+
+    Parameters
+    ----------
+    scan_range : int
+        number of motor positions to scan left and right
+    repeat : bool
+        whether to repeat the scan until the wavelength difference is less than cfg.MEDIUM_WAVELENGTH_DRIFT
+    &#34;&#34;&#34;
+    if self.exit_flag or self.scan_attempts &gt; cfg.get(cfg.SCAN_LIMIT) or self.restart_set_wavelength:
+        return
+    if self.target_wavelength is None:
+        self.target_wavelength = self.wavemeter_wavelength()
+    if scan_range is None:
+        scan_range = cfg.get(cfg.BIFI_SCAN_RANGE)
+
+    self.scan_attempts += 1
+    old_pos = int(self.query(&#39;MOTBI:POS?&#39;, numeric_result=True))
+    lower_end = old_pos - scan_range
+    upper_end = old_pos + scan_range
+    assert (0 &lt; lower_end &lt; Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
+            and 0 &lt; upper_end &lt; Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT
+            and lower_end &lt; upper_end), &#39;Conditions for BiFi scan invalid. Motor position must be between &#39; + \
+                                        f&#34;{scan_range} and {Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT - scan_range}&#34;
+    positions = np.array(range(lower_end, upper_end, cfg.get(cfg.BIFI_SCAN_STEP)))
+    voltages = np.array([])
+    print(&#39;Starting BiFi scan... &#39;)
+    for pos in positions:
+        self.set_bifi_motor_pos(pos)
+        voltages = np.append(voltages, self.query(&#39;DPOW:DC?&#39;, numeric_result=True))
+    self.set_bifi_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
+    print(&#39;Done.&#39;)
+
+    print(&#39;Analyzing scan data... &#39;)
+    # Smooth out the data and find extrema
+    smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.BIFI_SMOOTHING_FILTER_WINDOW),
+                                  polyorder=cfg.get(cfg.BIFI_SMOOTHING_FILTER_POLYORDER))
+    maxima = argrelextrema(smoothed_data, np.greater, order=5)
+
+    # Find the position of the extremum closest to the target wavelength
+    wavelength_differences = np.array([])
+    for pos in positions[maxima]:
+        self.set_bifi_motor_pos(pos)
+        time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+        wavelength_differences = np.append(wavelength_differences,
+                                           abs(self.wavemeter_wavelength() - self.target_wavelength))
+    best_pos = positions[maxima][np.argmin(wavelength_differences)]
+
+    # By default, let&#39;s assume we&#39;re using the new position.
+    using_new_pos = True
+
+    if len(positions[maxima]) &gt; 1:
+        difference_threshold = np.mean(np.diff(positions[maxima])) / 6
+        if abs(old_pos - best_pos) &gt; difference_threshold:
+            self.set_bifi_motor_pos(best_pos)
+        else:
+            print(&#39;Current BiFi motor position is close enough, leaving it alone.&#39;)
+            self.set_bifi_motor_pos(old_pos)
+            using_new_pos = False
+    else:
+        self.set_bifi_motor_pos(best_pos)
+    print(&#39;Done.&#39;)
+
+    if cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS):
+        # TODO: Label wavelength at each peak
+        plot_process = BirefringentFilterScanPlotProcess(positions, voltages, smoothed_data, maxima, old_pos,
+                                                         best_pos, using_new_pos, daemon=True)
+        self.plotting_processes.append(plot_process)
+        plot_process.start()
+
+    if repeat:
+        new_diff = np.min(wavelength_differences)
+        if abs(new_diff) &gt; cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
+            print(&#39;Wavelength still too far away from target value. Starting another scan.&#39;)
+            self.birefringent_filter_scan(scan_range, repeat=True)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.fast_piezo_locked"><code class="name flex">
+<span>def <span class="ident">fast_piezo_locked</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>whether the fast piezo is currently locked</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def fast_piezo_locked(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    bool
+        whether the fast piezo is currently locked
+    &#34;&#34;&#34;
+    return &#39;TRUE&#39; in self.query(&#39;FASTPIEZO:LOCK?&#39;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.get_reference_cell_transmission_spectrum"><code class="name flex">
+<span>def <span class="ident">get_reference_cell_transmission_spectrum</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Scan the reference cell from cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT to cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT,
+measuring the input to the fast piezo for each position. This creates a curve that represents the transmission
+spectrum of the reference cell.</p>
+<h2 id="returns">Returns</h2>
+<p>(ndarray, ndarray)
+the positions and input values measured during the scan</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_reference_cell_transmission_spectrum(self):
+    &#34;&#34;&#34;
+    Scan the reference cell from cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT to cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT,
+    measuring the input to the fast piezo for each position. This creates a curve that represents the transmission
+    spectrum of the reference cell.
+
+    Returns
+    -------
+    (ndarray, ndarray)
+        the positions and input values measured during the scan
+    &#34;&#34;&#34;
+    # TODO: Make a context manager for pausing stabilization/scanning
+    stabilize_when_done = False
+    if self.is_stabilizing():
+        self.stabilize_off()
+        stabilize_when_done = True
+    self.stop_scan()
+
+    positions = np.linspace(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT),
+                            cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT),
+                            cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
+    values = np.array([])
+    old_refcell_pos = self.query(f&#34;SCAN:NOW?&#34;, numeric_result=True)
+    for pos in positions:
+        self.query(f&#34;SCAN:NOW {pos}&#34;)
+        values = np.append(values, self.query(&#39;FASTPIEZO:INPUT?&#39;, numeric_result=True))
+    self.query(f&#34;SCAN:NOW {old_refcell_pos}&#34;)
+
+    if stabilize_when_done:
+        self.stabilize_on()
+
+    return positions, values</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.get_stabilizing_piezo_positions"><code class="name flex">
+<span>def <span class="ident">get_stabilizing_piezo_positions</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<p>(float, float, float)
+the current positions of the "stabilization piezos": RefCell, piezo etalon, and slow piezo</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_stabilizing_piezo_positions(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    (float, float, float)
+        the current positions of the &#34;stabilization piezos&#34;: RefCell, piezo etalon, and slow piezo
+    &#34;&#34;&#34;
+    current_refcell_pos = self.query(&#39;SCAN:NOW?&#39;, numeric_result=True)
+    current_slow_pz_pos = self.query(&#39;SLOWPIEZO:NOW?&#39;, numeric_result=True)
+    current_pz_eta_pos = self.query(&#39;PIEZOETALON:BASELINE?&#39;, numeric_result=True)
+    return current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.is_any_limit_reached"><code class="name flex">
+<span>def <span class="ident">is_any_limit_reached</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>whether any of the stabilization piezos are very close to their limits</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_any_limit_reached(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    bool
+        whether any of the stabilization piezos are very close to their limits
+    &#34;&#34;&#34;
+    refcell_pos, pz_eta_pos, slow_pz_pos = self.get_stabilizing_piezo_positions()
+    offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
+    return not (self.REFERENCE_CELL_LOWER_LIMIT + offset &lt; refcell_pos &lt; self.REFERENCE_CELL_UPPER_LIMIT - offset
+                and self.SLOW_PIEZO_LOWER_LIMIT + offset &lt; slow_pz_pos &lt; self.SLOW_PIEZO_UPPER_LIMIT - offset
+                and self.PIEZO_ETALON_LOWER_LIMIT + offset &lt; pz_eta_pos &lt; self.PIEZO_ETALON_UPPER_LIMIT - offset)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.is_lock_correction_on"><code class="name flex">
+<span>def <span class="ident">is_lock_correction_on</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>whether the lock correction thread is running</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_lock_correction_on(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    bool
+        whether the lock correction thread is running
+    &#34;&#34;&#34;
+    return self.lock_correction_thread is not None and self.lock_correction_thread.is_alive()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.is_scanning"><code class="name flex">
+<span>def <span class="ident">is_scanning</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>whether the device is currently scanning</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_scanning(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    bool
+        whether the device is currently scanning
+    &#34;&#34;&#34;
+    return &#39;RUN&#39; in self.query(&#39;SCAN:STATUS?&#39;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.is_stabilizing"><code class="name flex">
+<span>def <span class="ident">is_stabilizing</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>whether the stabilization thread is running</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def is_stabilizing(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    bool
+        whether the stabilization thread is running
+    &#34;&#34;&#34;
+    return self.stabilization_thread is not None and self.stabilization_thread.is_alive()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.laser_locked"><code class="name flex">
+<span>def <span class="ident">laser_locked</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>whether the laser is locked, which means all control loops are on and the fast piezo is locked</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def laser_locked(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    bool
+        whether the laser is locked, which means all control loops are on and the fast piezo is locked
+    &#34;&#34;&#34;
+    return self.all_control_loops_on() and self.fast_piezo_locked()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.limits_for_thin_etalon_scan"><code class="name flex">
+<span>def <span class="ident">limits_for_thin_etalon_scan</span></span>(<span>self, current_pos, scan_range)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculate appropriate lower and upper limits for a thin etalon scan.</p>
+<p>If the current wavelength difference is more than 1 thin etalon mode, change the limits of the scan to only go
+left or right, rather than scanning on both sides of the current position.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>current_pos</code></strong> :&ensp;<code>the</code> <code>current</code> <code>position</code> of <code>the</code> <code>thin</code> <code>etalon</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>scan_range</code></strong> :&ensp;<code>the</code> <code>desired</code> <code>range</code> of <code>the</code> <code>thin</code> <code>etalon</code> <code>scan</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code>, <code>int</code></dt>
+<dd>the appropriate lower and upper limits for the scan</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def limits_for_thin_etalon_scan(self, current_pos: int, scan_range: int) -&gt; (int, int):
+    &#34;&#34;&#34;
+    Calculate appropriate lower and upper limits for a thin etalon scan.
+
+    If the current wavelength difference is more than 1 thin etalon mode, change the limits of the scan to only go
+    left or right, rather than scanning on both sides of the current position.
+
+    Parameters
+    ----------
+    current_pos: the current position of the thin etalon
+    scan_range: the desired range of the thin etalon scan
+
+    Returns
+    -------
+    int, int
+        the appropriate lower and upper limits for the scan
+    &#34;&#34;&#34;
+    lower_limit = current_pos - scan_range
+    upper_limit = current_pos + scan_range
+    diff = self.target_wavelength - self.wavemeter_wavelength()
+    # Adjust scan limits if we&#39;re off by more than 1 mode
+    if abs(diff) &gt; Matisse.THIN_ETALON_NM_PER_MODE:
+        if diff &lt; 0:
+            lower_limit = current_pos - scan_range
+            upper_limit = current_pos
+        else:
+            lower_limit = current_pos
+            upper_limit = current_pos + scan_range
+
+    assert (0 &lt; lower_limit &lt; Matisse.THIN_ETALON_UPPER_LIMIT
+            and 0 &lt; upper_limit &lt; Matisse.THIN_ETALON_UPPER_LIMIT
+            and lower_limit &lt; upper_limit), \
+        &#39;Conditions for thin etalon scan invalid. Continuing would put the motor at its upper or lower limit.&#39;
+
+    return lower_limit, upper_limit</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.query"><code class="name flex">
+<span>def <span class="ident">query</span></span>(<span>self, command, numeric_result=False, raise_on_error=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Send a command to the Matisse and return the response.</p>
+<p>Note that some commands (like setting the position of a stepper motor) take additional time to execute, so do
+not assume the command has finished executing just because the query returns "OK".</p>
+<p>This doesn't raise errors if the error occurred in the controller for a specific component of the Matisse, like
+the birefringent filter motor, for example. That motor has a separate status register with error information
+that can be queried and cleared separately.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>command</code></strong> :&ensp;<code>str</code></dt>
+<dd>the command to send</dd>
+<dt><strong><code>numeric_result</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to convert the second portion of the result to a float</dd>
+<dt><strong><code>raise_on_error</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to raise a Python error if Matisse error occurs</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>The response from the Matisse to the given command</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def query(self, command: str, numeric_result=False, raise_on_error=True):
+    &#34;&#34;&#34;
+    Send a command to the Matisse and return the response.
+
+    Note that some commands (like setting the position of a stepper motor) take additional time to execute, so do
+    not assume the command has finished executing just because the query returns &#34;OK&#34;.
+
+    This doesn&#39;t raise errors if the error occurred in the controller for a specific component of the Matisse, like
+    the birefringent filter motor, for example. That motor has a separate status register with error information
+    that can be queried and cleared separately.
+
+    Parameters
+    ----------
+    command : str
+        the command to send
+    numeric_result : bool
+        whether to convert the second portion of the result to a float
+    raise_on_error : bool
+        whether to raise a Python error if Matisse error occurs
+
+    Returns
+    -------
+    str
+        The response from the Matisse to the given command
+    &#34;&#34;&#34;
+    try:
+        with Matisse.matisse_lock:
+            result: str = self.instrument.query(command).strip()
+    except VisaIOError as ioerr:
+        raise IOError(&#34;Couldn&#39;t execute command. Check Matisse is on and connected via USB.&#34;) from ioerr
+
+    if result.startswith(&#39;!ERROR&#39;):
+        if raise_on_error:
+            err_codes = self.query(&#39;ERROR:CODE?&#39;)
+            self.query(&#39;ERROR:CLEAR&#39;)
+            raise RuntimeError(&#34;Error executing Matisse command &#39;&#34; + command + &#34;&#39; &#34; + err_codes)
+    elif numeric_result:
+        result: float = float(result.split()[1])
+    return result</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.reset_motors"><code class="name flex">
+<span>def <span class="ident">reset_motors</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Move the birefringent filter and thin etalon motors to their configured reset positions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def reset_motors(self):
+    &#34;&#34;&#34;Move the birefringent filter and thin etalon motors to their configured reset positions.&#34;&#34;&#34;
+    self.query(f&#34;MOTBI:POS {cfg.get(cfg.BIFI_RESET_POS)}&#34;)
+    self.query(f&#34;MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.reset_stabilization_piezos"><code class="name flex">
+<span>def <span class="ident">reset_stabilization_piezos</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Reset the slow piezo to the center, and the RefCell and piezo etalon according to the following rules:</p>
+<ul>
+<li>If RefCell is at upper limit, piezo etalon is likely near lower limit</li>
+<li>If wavelength is still too low, move RefCell down lower than usual and piezo etalon higher than usual</li>
+<li>If RefCell is at lower limit, piezo etalon is likely near upper limit</li>
+<li>If wavelength is still too high, move RefCell up higher than usual and piezo etalon lower than usual</li>
+<li>Else, move RefCell and piezo etalon to their center positions.</li>
+</ul>
+<p>A target wavelength must already be set in order to run this method.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def reset_stabilization_piezos(self):
+    &#34;&#34;&#34;
+    Reset the slow piezo to the center, and the RefCell and piezo etalon according to the following rules:
+
+    - If RefCell is at upper limit, piezo etalon is likely near lower limit
+    - If wavelength is still too low, move RefCell down lower than usual and piezo etalon higher than usual
+    - If RefCell is at lower limit, piezo etalon is likely near upper limit
+    - If wavelength is still too high, move RefCell up higher than usual and piezo etalon lower than usual
+    - Else, move RefCell and piezo etalon to their center positions.
+
+    A target wavelength must already be set in order to run this method.
+    &#34;&#34;&#34;
+    current_refcell_pos, current_pz_eta_pos, current_slow_pz_pos = self.get_stabilizing_piezo_positions()
+    current_wavelength = self.wavemeter_wavelength()
+
+    offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
+    if (current_refcell_pos &gt; Matisse.REFERENCE_CELL_UPPER_LIMIT - offset
+            and current_wavelength &lt; self.target_wavelength):
+        self.query(f&#34;SCAN:NOW {cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS)}&#34;)
+        self.query(f&#34;PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS)}&#34;)
+    elif (current_refcell_pos &lt; Matisse.REFERENCE_CELL_LOWER_LIMIT + offset
+          and current_wavelength &gt; self.target_wavelength):
+        self.query(f&#34;SCAN:NOW {cfg.get(cfg.REFCELL_UPPER_CORRECTION_POS)}&#34;)
+        self.query(f&#34;PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_LOWER_CORRECTION_POS)}&#34;)
+    else:
+        self.query(f&#34;SCAN:NOW {cfg.get(cfg.REFCELL_MID_CORRECTION_POS)}&#34;)
+        self.query(f&#34;PIEZOETALON:BASELINE {cfg.get(cfg.PIEZO_ETA_MID_CORRECTION_POS)}&#34;)
+
+    self.query(f&#34;SLOWPIEZO:NOW {cfg.get(cfg.SLOW_PIEZO_MID_CORRECTION_POS)}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.set_bifi_motor_pos"><code class="name flex">
+<span>def <span class="ident">set_bifi_motor_pos</span></span>(<span>self, pos)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Set the birefringent filter motor to the selected position. This method will block the calling thread until the
+motor status is idle again.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>pos</code></strong> :&ensp;<code>int</code></dt>
+<dd>the desired motor position</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_bifi_motor_pos(self, pos: int):
+    &#34;&#34;&#34;
+    Set the birefringent filter motor to the selected position. This method will block the calling thread until the
+    motor status is idle again.
+
+    Parameters
+    ----------
+    pos : int
+        the desired motor position
+    &#34;&#34;&#34;
+    assert 0 &lt; pos &lt; Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT, &#39;Target motor position out of range.&#39;
+    # Wait for motor to be ready to accept commands
+    while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        pass
+    self.query(f&#34;MOTBI:POS {pos}&#34;)
+    # Wait for motor to finish movement
+    while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        pass</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.set_bifi_wavelength"><code class="name flex">
+<span>def <span class="ident">set_bifi_wavelength</span></span>(<span>self, value)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Set the birefringent filter motor to the approximate position corresponding to the given wavelength. This
+position is determined by the Matisse.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>value</code></strong> :&ensp;<code>float</code></dt>
+<dd>the desired wavelength</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_bifi_wavelength(self, value: float):
+    &#34;&#34;&#34;
+    Set the birefringent filter motor to the approximate position corresponding to the given wavelength. This
+    position is determined by the Matisse.
+
+    Parameters
+    ----------
+    value : float
+        the desired wavelength
+    &#34;&#34;&#34;
+    assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) &lt; value &lt; cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
+        &#39;Target wavelength out of range.&#39;
+    # Wait for motor to be ready to accept commands
+    while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        pass
+    self.query(f&#34;MOTBI:WAVELENGTH {value}&#34;)
+    # Wait for motor to finish movement
+    while not self.bifi_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        pass</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.set_fast_piezo_control"><code class="name flex">
+<span>def <span class="ident">set_fast_piezo_control</span></span>(<span>self, enable)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Set the status of the control loop for the fast piezo.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_fast_piezo_control(self, enable: bool):
+    &#34;&#34;&#34;Set the status of the control loop for the fast piezo.&#34;&#34;&#34;
+    self.query(f&#34;FASTPIEZO:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.set_piezo_etalon_control"><code class="name flex">
+<span>def <span class="ident">set_piezo_etalon_control</span></span>(<span>self, enable)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Set the status of the control loop for the piezo etalon.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_piezo_etalon_control(self, enable: bool):
+    &#34;&#34;&#34;Set the status of the control loop for the piezo etalon.&#34;&#34;&#34;
+    self.query(f&#34;PIEZOETALON:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.set_recommended_fast_piezo_setpoint"><code class="name flex">
+<span>def <span class="ident">set_recommended_fast_piezo_setpoint</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Analyze the data from the reference cell transmission spectrum, and set the fast piezo setpoint to a point
+about halfway between the min and max points on the spectrum. The recommended value is determined by averaging
+a number of scans given by cfg.FAST_PZ_SETPOINT_NUM_SCANS.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_recommended_fast_piezo_setpoint(self):
+    &#34;&#34;&#34;
+    Analyze the data from the reference cell transmission spectrum, and set the fast piezo setpoint to a point
+    about halfway between the min and max points on the spectrum. The recommended value is determined by averaging
+    a number of scans given by cfg.FAST_PZ_SETPOINT_NUM_SCANS.
+    &#34;&#34;&#34;
+    num_scans = cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS)
+    total = 0
+    for i in range(0, num_scans):
+        positions, values = self.get_reference_cell_transmission_spectrum()
+        setpoint = (np.max(values) + np.min(values)) / 2
+        total += setpoint
+    recommended_setpoint = total / num_scans
+    print(f&#34;Setting fast piezo setpoint to {recommended_setpoint}&#34;)
+    self.query(f&#34;FASTPIEZO:CONTROLSETPOINT {recommended_setpoint}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.set_slow_piezo_control"><code class="name flex">
+<span>def <span class="ident">set_slow_piezo_control</span></span>(<span>self, enable)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Set the status of the control loop for the slow piezo.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_slow_piezo_control(self, enable: bool):
+    &#34;&#34;&#34;Set the status of the control loop for the slow piezo.&#34;&#34;&#34;
+    self.query(f&#34;SLOWPIEZO:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.set_thin_etalon_control"><code class="name flex">
+<span>def <span class="ident">set_thin_etalon_control</span></span>(<span>self, enable)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Set the status of the control loop for the thin etalon.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_thin_etalon_control(self, enable: bool):
+    &#34;&#34;&#34;Set the status of the control loop for the thin etalon.&#34;&#34;&#34;
+    self.query(f&#34;THINETALON:CONTROLSTATUS {&#39;RUN&#39; if enable else &#39;STOP&#39;}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.set_thin_etalon_motor_pos"><code class="name flex">
+<span>def <span class="ident">set_thin_etalon_motor_pos</span></span>(<span>self, pos)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Set the thin etalon motor to the selected position. This method will block the calling thread until the motor
+status is idle again.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>pos</code></strong> :&ensp;<code>int</code></dt>
+<dd>the desired motor position</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_thin_etalon_motor_pos(self, pos: int):
+    &#34;&#34;&#34;
+    Set the thin etalon motor to the selected position. This method will block the calling thread until the motor
+    status is idle again.
+
+    Parameters
+    ----------
+    pos : int
+        the desired motor position
+    &#34;&#34;&#34;
+    assert (Matisse.THIN_ETALON_LOWER_LIMIT &lt; pos &lt; Matisse.THIN_ETALON_UPPER_LIMIT), \
+        f&#34;Can&#39;t set thin etalon motor position to {pos}, this is out of range.&#34;
+    # Wait for motor to be ready to accept commands
+    while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        pass
+    self.query(f&#34;MOTTE:POS {pos}&#34;)
+    # Wait for motor to finish movement
+    while not self.thin_etalon_motor_status() == Matisse.MOTOR_STATUS_IDLE:
+        pass</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.set_wavelength"><code class="name flex">
+<span>def <span class="ident">set_wavelength</span></span>(<span>self, wavelength)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Configure the Matisse to output a given wavelength.</p>
+<p>If the laser is locked and/or stabilizing, pause those operations for the duration of the method.</p>
+<p>First I'll check the difference between the current wavelength and the target wavelength.</p>
+<ul>
+<li>If this is the first time this is being run, do a large birefringent scan regardless of the difference.</li>
+<li>If it's greater than cfg.LARGE_WAVELENGTH_DRIFT, do a large birefringent scan to choose a better peak.</li>
+<li>If it's between about cfg.MEDIUM_WAVELENGTH_DRIFT and cfg.LARGE_WAVELENGTH_DRIFT, do a small birefringent scan
+to keep it on the peak.</li>
+<li>If it's between cfg.SMALL_WAVELENGTH_DRIFT nm and cfg.MEDIUM_WAVELENGTH_DRIFT, skip the first birefringent
+scan and go right to the thin etalon scan.</li>
+<li>If it's less than cfg.SMALL_WAVELENGTH_DRIFT, skip all BiFi and TE scans, and just do a RefCell scan.</li>
+</ul>
+<p>This is generally the process I'll follow:</p>
+<ol>
+<li>Decide whether to skip any scans, as described above.</li>
+<li>Set approx. wavelength using BiFi. This is supposed to be good to about +-1 nm but it's usually very far off.</li>
+<li>Scan the BiFi back and forth and measure the total laser power at each point.</li>
+<li>Find all local maxima, move the BiFi to the maximum that's closest to the desired wavelength.</li>
+<li>Move the thin etalon motor directly to a position close to the target wavelength.</li>
+<li>Scan the thin etalon back and forth and measure the thin etalon reflex at each point.</li>
+<li>Find all local minima. Move the TE to the minimum that's closest to the desired wavelength.</li>
+<li>Shift the thin etalon a over bit by cfg.THIN_ETA_NUDGE. We want to be on the "flank" of the chosen parabola.</li>
+<li>Do a small BiFi scan to make sure we're still on the location with maximum power. If the distance to the new
+motor location is very small, just leave the motor where it is.</li>
+<li>Do a small thin etalon scan to make sure we're still on the flank of the right parabola.</li>
+<li>Enable RefCell stabilization, which scans the device up or down until the desired wavelength is reached.</li>
+</ol>
+<p>If more than cfg.SCAN_LIMIT scan attempts pass before stabilizing, restart the whole process over again.
+If, during stabilization, more than cfg.CORRECTION_LIMIT corrections are made, start with a large birefringent
+scan the next time this method is run.
+A scan may decide it needs to start the process over again for some other reason, like the thin etalon moving to
+a location with just noise.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>wavelength</code></strong> :&ensp;<code>float</code></dt>
+<dd>the desired wavelength</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_wavelength(self, wavelength: float):
+    &#34;&#34;&#34;
+    Configure the Matisse to output a given wavelength.
+
+    If the laser is locked and/or stabilizing, pause those operations for the duration of the method.
+
+    First I&#39;ll check the difference between the current wavelength and the target wavelength.
+
+    - If this is the first time this is being run, do a large birefringent scan regardless of the difference.
+    - If it&#39;s greater than cfg.LARGE_WAVELENGTH_DRIFT, do a large birefringent scan to choose a better peak.
+    - If it&#39;s between about cfg.MEDIUM_WAVELENGTH_DRIFT and cfg.LARGE_WAVELENGTH_DRIFT, do a small birefringent scan
+      to keep it on the peak.
+    - If it&#39;s between cfg.SMALL_WAVELENGTH_DRIFT nm and cfg.MEDIUM_WAVELENGTH_DRIFT, skip the first birefringent
+      scan and go right to the thin etalon scan.
+    - If it&#39;s less than cfg.SMALL_WAVELENGTH_DRIFT, skip all BiFi and TE scans, and just do a RefCell scan.
+
+    This is generally the process I&#39;ll follow:
+
+    1. Decide whether to skip any scans, as described above.
+    2. Set approx. wavelength using BiFi. This is supposed to be good to about +-1 nm but it&#39;s usually very far off.
+    3. Scan the BiFi back and forth and measure the total laser power at each point.
+    4. Find all local maxima, move the BiFi to the maximum that&#39;s closest to the desired wavelength.
+    5. Move the thin etalon motor directly to a position close to the target wavelength.
+    6. Scan the thin etalon back and forth and measure the thin etalon reflex at each point.
+    7. Find all local minima. Move the TE to the minimum that&#39;s closest to the desired wavelength.
+    8. Shift the thin etalon a over bit by cfg.THIN_ETA_NUDGE. We want to be on the &#34;flank&#34; of the chosen parabola.
+    9. Do a small BiFi scan to make sure we&#39;re still on the location with maximum power. If the distance to the new
+       motor location is very small, just leave the motor where it is.
+    10. Do a small thin etalon scan to make sure we&#39;re still on the flank of the right parabola.
+    11. Enable RefCell stabilization, which scans the device up or down until the desired wavelength is reached.
+
+    If more than cfg.SCAN_LIMIT scan attempts pass before stabilizing, restart the whole process over again.
+    If, during stabilization, more than cfg.CORRECTION_LIMIT corrections are made, start with a large birefringent
+    scan the next time this method is run.
+    A scan may decide it needs to start the process over again for some other reason, like the thin etalon moving to
+    a location with just noise.
+
+    Parameters
+    ----------
+    wavelength : float
+        the desired wavelength
+    &#34;&#34;&#34;
+    assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) &lt; wavelength &lt; cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
+        &#39;Target wavelength out of range.&#39;
+
+    self.target_wavelength = wavelength
+
+    lock_when_done = self.is_lock_correction_on()
+    if self.is_lock_correction_on():
+        self.stop_laser_lock_correction()
+    if self.is_stabilizing():
+        self.stabilize_off()
+
+    while True:
+        self.scan_attempts = 0
+        diff = abs(wavelength - self.wavemeter_wavelength())
+
+        if diff &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self.force_large_scan:
+            self.query(f&#34;MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}&#34;)
+            self.reset_stabilization_piezos()
+            # Normal BiFi scan
+            print(f&#34;Setting BiFi to ~{wavelength} nm... &#34;)
+            self.set_bifi_wavelength(wavelength)
+            time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+            print(f&#34;Done. Wavelength is now {self.wavemeter_wavelength()} nm. &#34;
+                  &#34;(This is often very wrong, don&#39;t worry)&#34;)
+            self.birefringent_filter_scan(repeat=True)
+            self.thin_etalon_scan(repeat=True)
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+        elif cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT) &lt; diff &lt;= cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+            # Small BiFi scan
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+            self.thin_etalon_scan(repeat=True)
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+        elif cfg.get(cfg.SMALL_WAVELENGTH_DRIFT) &lt; diff &lt;= cfg.get(cfg.MEDIUM_WAVELENGTH_DRIFT):
+            # No BiFi scan, TE scan only
+            self.thin_etalon_scan(repeat=True)
+            self.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=True)
+            self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
+        else:
+            # No BiFi, no TE. Scan device only.
+            pass
+
+        # Restart/exit conditions
+        if self.exit_flag:
+            return
+        if self.restart_set_wavelength:
+            self.restart_set_wavelength = False
+            print(&#39;Restarting wavelength-setting process.&#39;)
+            continue
+        elif self.scan_attempts &gt; cfg.get(cfg.SCAN_LIMIT):
+            print(&#39;WARNING: Number of scan attempts exceeded. Starting wavelength-setting process over again.&#39;)
+            self.force_large_scan = True
+            continue
+        elif self.stabilization_auto_corrections &gt; cfg.get(cfg.CORRECTION_LIMIT):
+            print(&#39;WARNING: Number of stabilization auto-corrections exceeded. Starting wavelength-setting process &#39;
+                  &#39;over again.&#39;)
+            self.stabilization_auto_corrections = 0
+            self.force_large_scan = True
+            continue
+        else:
+            self.force_large_scan = False
+            break
+
+    if lock_when_done:
+        self.start_laser_lock_correction()
+    self.stabilize_on()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.stabilize_off"><code class="name flex">
+<span>def <span class="ident">stabilize_off</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Exit the stabilization loop, which stops the stabilization thread.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def stabilize_off(self):
+    &#34;&#34;&#34;Exit the stabilization loop, which stops the stabilization thread.&#34;&#34;&#34;
+    if self.is_stabilizing():
+        print(&#39;Stopping stabilization thread.&#39;)
+        self.stabilization_thread.messages.put(&#39;stop&#39;)
+        self.stabilization_thread.join()
+        print(&#39;Stabilization thread has been stopped.&#39;)
+    else:
+        print(&#39;WARNING: Stabilization thread is not running.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.stabilize_on"><code class="name flex">
+<span>def <span class="ident">stabilize_on</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Enable stabilization using the stabilization piezos and thin etalon to keep the wavelength constant.</p>
+<p>If there is no target wavelength set, stabilize at the current wavelength.</p>
+<p>Starts a <a title="matisse_controller.matisse.stabilization_thread.StabilizationThread" href="stabilization_thread.html#matisse_controller.matisse.stabilization_thread.StabilizationThread"><code>StabilizationThread</code></a> as a daemon for this purpose.
+To stop stabilizing the laser, call <a title="matisse_controller.matisse.matisse.Matisse.stabilize_off" href="#matisse_controller.matisse.matisse.Matisse.stabilize_off"><code>Matisse.stabilize_off()</code></a>.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def stabilize_on(self):
+    &#34;&#34;&#34;
+    Enable stabilization using the stabilization piezos and thin etalon to keep the wavelength constant.
+
+    If there is no target wavelength set, stabilize at the current wavelength.
+
+    Starts a `matisse_controller.matisse.stabilization_thread.StabilizationThread` as a daemon for this purpose.
+    To stop stabilizing the laser, call `Matisse.stabilize_off`.
+    &#34;&#34;&#34;
+    if self.is_stabilizing():
+        print(&#39;WARNING: Already stabilizing laser. Call stabilize_off before trying to stabilize again.&#39;)
+    else:
+        self.stabilization_thread = StabilizationThread(self, queue.Queue(), daemon=True)
+
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
+        print(f&#34;Stabilizing laser at {self.target_wavelength} nm...&#34;)
+        self.stabilization_thread.start()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.start_laser_lock_correction"><code class="name flex">
+<span>def <span class="ident">start_laser_lock_correction</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Try to lock the laser, and make automatic corrections to the stabilization piezos if needed.</p>
+<p>If there is no target wavelength set, lock at the current wavelength.</p>
+<p>Starts a <a title="matisse_controller.matisse.lock_correction_thread.LockCorrectionThread" href="lock_correction_thread.html#matisse_controller.matisse.lock_correction_thread.LockCorrectionThread"><code>LockCorrectionThread</code></a> as a daemon for this purpose.
+Call <a title="matisse_controller.matisse.matisse.Matisse.stop_laser_lock_correction" href="#matisse_controller.matisse.matisse.Matisse.stop_laser_lock_correction"><code>Matisse.stop_laser_lock_correction()</code></a> to disable lock.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def start_laser_lock_correction(self):
+    &#34;&#34;&#34;
+    Try to lock the laser, and make automatic corrections to the stabilization piezos if needed.
+
+    If there is no target wavelength set, lock at the current wavelength.
+
+    Starts a `matisse_controller.matisse.lock_correction_thread.LockCorrectionThread` as a daemon for this purpose.
+    Call `Matisse.stop_laser_lock_correction` to disable lock.
+    &#34;&#34;&#34;
+    if self.is_lock_correction_on():
+        print(&#39;WARNING: Lock correction is already running.&#39;)
+    else:
+        print(&#39;Starting laser lock.&#39;)
+        self.lock_correction_thread = LockCorrectionThread(self, cfg.get(cfg.LOCKING_TIMEOUT), queue.Queue(),
+                                                           daemon=True)
+        if self.target_wavelength is None:
+            self.target_wavelength = self.wavemeter_wavelength()
+        self.lock_correction_thread.start()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.start_scan"><code class="name flex">
+<span>def <span class="ident">start_scan</span></span>(<span>self, direction)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Start a device scan in the given direction. To configure the speed of the scan, use the queries
+SCAN:RISINGSPEED or SCAN:FALLINGSPEED.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>direction</code></strong> :&ensp;<code>int</code></dt>
+<dd><code>SCAN_MODE_UP</code> (0) or <code>SCAN_MODE_DOWN</code> (1)</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def start_scan(self, direction):
+    &#34;&#34;&#34;
+    Start a device scan in the given direction. To configure the speed of the scan, use the queries
+    SCAN:RISINGSPEED or SCAN:FALLINGSPEED.
+
+    Parameters
+    ----------
+    direction : int
+        `SCAN_MODE_UP` (0) or `SCAN_MODE_DOWN` (1)
+    &#34;&#34;&#34;
+    self.query(f&#34;SCAN:MODE {direction}&#34;)
+    self.query(f&#34;SCAN:STATUS RUN&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.stop_laser_lock_correction"><code class="name flex">
+<span>def <span class="ident">stop_laser_lock_correction</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Disable the lock correction loop, which stops the lock correction thread.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def stop_laser_lock_correction(self):
+    &#34;&#34;&#34;Disable the lock correction loop, which stops the lock correction thread.&#34;&#34;&#34;
+    if self.is_lock_correction_on():
+        self.lock_correction_thread.messages.put(&#39;stop&#39;)
+        self.lock_correction_thread.join()
+    else:
+        print(&#39;WARNING: laser is not locked.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.stop_scan"><code class="name flex">
+<span>def <span class="ident">stop_scan</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Terminate a device scan.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def stop_scan(self):
+    &#34;&#34;&#34;Terminate a device scan.&#34;&#34;&#34;
+    self.query(f&#34;SCAN:STATUS STOP&#34;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.thin_etalon_motor_status"><code class="name flex">
+<span>def <span class="ident">thin_etalon_motor_status</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>the last 8 bits of the thin etalon motor status</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def thin_etalon_motor_status(self):
+    &#34;&#34;&#34;
+    Returns
+    -------
+    int
+        the last 8 bits of the thin etalon motor status
+    &#34;&#34;&#34;
+    return int(self.query(&#39;MOTTE:STATUS?&#39;, numeric_result=True)) &amp; 0b000000011111111</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.thin_etalon_scan"><code class="name flex">
+<span>def <span class="ident">thin_etalon_scan</span></span>(<span>self, scan_range=None, repeat=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.</p>
+<p>A configurable Savitzky-Golay filter is used to smooth the data for analysis.</p>
+<p>The position is not changed if the difference between the current position and the "best" position is less than
+1/6 of the average separation between valleys in the reflex curve.</p>
+<p>If the thin etalon moves too far to one side and we end up in a valley of the power diode curve, the wavelength
+will make large jumps, so a small birefringent scan is performed to correct this.</p>
+<p>If the thin etalon moves into a region with too much noise (as determined by a normalized RMS deviation), quit
+early and perform a large scan next time set_wavelength is called.</p>
+<p>Nudges the motor position a little bit away from the minimum to ensure good locking later.
+Additionally, plot the reflex data and motor position selection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>scan_range</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of motor positions to scan left and right</dd>
+<dt><strong><code>repeat</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to repeat the scan until the wavelength difference is less than cfg.SMALL_WAVELENGTH_DRIFT</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def thin_etalon_scan(self, scan_range: int = None, repeat=False):
+    &#34;&#34;&#34;
+    Initiate a scan of the thin etalon, selecting the reflex minimum closest to the target wavelength.
+
+    A configurable Savitzky-Golay filter is used to smooth the data for analysis.
+
+    The position is not changed if the difference between the current position and the &#34;best&#34; position is less than
+    1/6 of the average separation between valleys in the reflex curve.
+
+    If the thin etalon moves too far to one side and we end up in a valley of the power diode curve, the wavelength
+    will make large jumps, so a small birefringent scan is performed to correct this.
+
+    If the thin etalon moves into a region with too much noise (as determined by a normalized RMS deviation), quit
+    early and perform a large scan next time set_wavelength is called.
+
+    Nudges the motor position a little bit away from the minimum to ensure good locking later.
+    Additionally, plot the reflex data and motor position selection.
+
+    Parameters
+    ----------
+    scan_range : int
+        number of motor positions to scan left and right
+    repeat : bool
+        whether to repeat the scan until the wavelength difference is less than cfg.SMALL_WAVELENGTH_DRIFT
+    &#34;&#34;&#34;
+    if self.exit_flag or self.scan_attempts &gt; cfg.get(cfg.SCAN_LIMIT) or self.restart_set_wavelength:
+        return
+    if self.target_wavelength is None:
+        self.target_wavelength = self.wavemeter_wavelength()
+    if scan_range is None:
+        scan_range = cfg.get(cfg.THIN_ETA_SCAN_RANGE)
+
+    self.scan_attempts += 1
+    old_pos = int(self.query(&#39;MOTTE:POS?&#39;, numeric_result=True))
+    lower_end, upper_end = self.limits_for_thin_etalon_scan(old_pos, scan_range)
+
+    positions = np.array(range(lower_end, upper_end, cfg.get(cfg.THIN_ETA_SCAN_STEP)))
+    voltages = np.array([])
+    print(&#39;Starting thin etalon scan... &#39;)
+    for pos in positions:
+        self.set_thin_etalon_motor_pos(pos)
+        voltages = np.append(voltages, self.query(&#39;TE:DC?&#39;, numeric_result=True))
+    self.set_thin_etalon_motor_pos(old_pos)  # return back to where we started, just in case something goes wrong
+    print(&#39;Done.&#39;)
+
+    print(&#39;Analyzing scan data... &#39;)
+    # Smooth out the data and find extrema
+    smoothed_data = savgol_filter(voltages, window_length=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_WINDOW),
+                                  polyorder=cfg.get(cfg.THIN_ETA_SMOOTHING_FILTER_POLYORDER))
+
+    normalized_std_dev = np.sqrt(np.sum(((smoothed_data - voltages) / smoothed_data) ** 2))
+    print(f&#34;Normalized standard deviation from smoothed data: {normalized_std_dev}&#34;)
+    # Example good value: 1.5, example bad value: 2.5
+    if normalized_std_dev &gt; cfg.get(cfg.THIN_ETA_MAX_ALLOWED_STDDEV):
+        print(&#39;Abnormal deviation from smoothed curve detected, the scan region might just contain noise.&#39;)
+        self.restart_set_wavelength = True
+        self.force_large_scan = True
+        return
+
+    minima = argrelextrema(smoothed_data, np.less, order=5)
+
+    # Find the position of the extremum closest to the target wavelength
+    wavelength_differences = np.array([])
+    for pos in positions[minima]:
+        self.set_thin_etalon_motor_pos(pos)
+        time.sleep(cfg.get(cfg.WAVEMETER_MEASUREMENT_DELAY))
+        wavelength_differences = np.append(wavelength_differences,
+                                           abs(self.wavemeter_wavelength() - self.target_wavelength))
+    best_minimum_index = np.argmin(wavelength_differences)
+    best_pos = positions[minima][best_minimum_index] + cfg.get(cfg.THIN_ETA_NUDGE)
+
+    # By default, let&#39;s assume we&#39;re using the new position.
+    using_new_pos = True
+
+    if len(positions[minima]) &gt; 1:
+        difference_threshold = np.mean(np.diff(positions[minima])) / 6
+        if abs(old_pos - best_pos) &gt; difference_threshold:
+            self.set_thin_etalon_motor_pos(best_pos)
+        else:
+            print(&#39;Current thin etalon motor position is close enough, leaving it alone.&#39;)
+            self.set_thin_etalon_motor_pos(old_pos)
+            using_new_pos = False
+    else:
+        self.set_thin_etalon_motor_pos(best_pos)
+    print(&#39;Done.&#39;)
+
+    adjacent_differences = np.diff(wavelength_differences)
+    left_too_large = (best_minimum_index &gt;= 1 and
+                      adjacent_differences[best_minimum_index - 1] &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+    right_too_large = (best_minimum_index &lt; len(wavelength_differences) - 1 and
+                       adjacent_differences[best_minimum_index] &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT))
+    if left_too_large or right_too_large:
+        print(&#39;Large jump in wavelength detected, correcting birefringent filter position.&#39;)
+        self.birefringent_filter_scan(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL), repeat=False)
+        print(&#39;Returning to thin etalon scan.&#39;)
+
+    if cfg.get(cfg.THIN_ETA_SHOW_PLOTS):
+        plot_process = ThinEtalonScanPlotProcess(positions, voltages, smoothed_data, minima, old_pos, best_pos,
+                                                 using_new_pos, daemon=True)
+        self.plotting_processes.append(plot_process)
+        plot_process.start()
+
+    if repeat:
+        new_diff = np.min(wavelength_differences)
+        if new_diff &gt; cfg.get(cfg.SMALL_WAVELENGTH_DRIFT):
+            print(&#39;Wavelength still too far away from target value. Starting another scan.&#39;)
+            self.thin_etalon_scan(scan_range, repeat=True)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.matisse.matisse.Matisse.wavemeter_wavelength"><code class="name flex">
+<span>def <span class="ident">wavemeter_wavelength</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>the wavelength (in nanometers) as measured by the wavemeter</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def wavemeter_wavelength(self) -&gt; float:
+    &#34;&#34;&#34;
+    Returns
+    -------
+    float
+        the wavelength (in nanometers) as measured by the wavemeter
+    &#34;&#34;&#34;
+    return self.wavemeter.get_wavelength()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="matisse_controller.matisse" href="index.html">matisse_controller.matisse</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="matisse_controller.matisse.matisse.Matisse" href="#matisse_controller.matisse.matisse.Matisse">Matisse</a></code></h4>
+<ul class="">
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.all_control_loops_on" href="#matisse_controller.matisse.matisse.Matisse.all_control_loops_on">all_control_loops_on</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.bifi_motor_status" href="#matisse_controller.matisse.matisse.Matisse.bifi_motor_status">bifi_motor_status</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.birefringent_filter_scan" href="#matisse_controller.matisse.matisse.Matisse.birefringent_filter_scan">birefringent_filter_scan</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.fast_piezo_locked" href="#matisse_controller.matisse.matisse.Matisse.fast_piezo_locked">fast_piezo_locked</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.get_reference_cell_transmission_spectrum" href="#matisse_controller.matisse.matisse.Matisse.get_reference_cell_transmission_spectrum">get_reference_cell_transmission_spectrum</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.get_stabilizing_piezo_positions" href="#matisse_controller.matisse.matisse.Matisse.get_stabilizing_piezo_positions">get_stabilizing_piezo_positions</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.is_any_limit_reached" href="#matisse_controller.matisse.matisse.Matisse.is_any_limit_reached">is_any_limit_reached</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.is_lock_correction_on" href="#matisse_controller.matisse.matisse.Matisse.is_lock_correction_on">is_lock_correction_on</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.is_scanning" href="#matisse_controller.matisse.matisse.Matisse.is_scanning">is_scanning</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.is_stabilizing" href="#matisse_controller.matisse.matisse.Matisse.is_stabilizing">is_stabilizing</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.laser_locked" href="#matisse_controller.matisse.matisse.Matisse.laser_locked">laser_locked</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.limits_for_thin_etalon_scan" href="#matisse_controller.matisse.matisse.Matisse.limits_for_thin_etalon_scan">limits_for_thin_etalon_scan</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.matisse_lock" href="#matisse_controller.matisse.matisse.Matisse.matisse_lock">matisse_lock</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.query" href="#matisse_controller.matisse.matisse.Matisse.query">query</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.reset_motors" href="#matisse_controller.matisse.matisse.Matisse.reset_motors">reset_motors</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.reset_stabilization_piezos" href="#matisse_controller.matisse.matisse.Matisse.reset_stabilization_piezos">reset_stabilization_piezos</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.set_bifi_motor_pos" href="#matisse_controller.matisse.matisse.Matisse.set_bifi_motor_pos">set_bifi_motor_pos</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.set_bifi_wavelength" href="#matisse_controller.matisse.matisse.Matisse.set_bifi_wavelength">set_bifi_wavelength</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.set_fast_piezo_control" href="#matisse_controller.matisse.matisse.Matisse.set_fast_piezo_control">set_fast_piezo_control</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.set_piezo_etalon_control" href="#matisse_controller.matisse.matisse.Matisse.set_piezo_etalon_control">set_piezo_etalon_control</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.set_recommended_fast_piezo_setpoint" href="#matisse_controller.matisse.matisse.Matisse.set_recommended_fast_piezo_setpoint">set_recommended_fast_piezo_setpoint</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.set_slow_piezo_control" href="#matisse_controller.matisse.matisse.Matisse.set_slow_piezo_control">set_slow_piezo_control</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.set_thin_etalon_control" href="#matisse_controller.matisse.matisse.Matisse.set_thin_etalon_control">set_thin_etalon_control</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.set_thin_etalon_motor_pos" href="#matisse_controller.matisse.matisse.Matisse.set_thin_etalon_motor_pos">set_thin_etalon_motor_pos</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.set_wavelength" href="#matisse_controller.matisse.matisse.Matisse.set_wavelength">set_wavelength</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.stabilize_off" href="#matisse_controller.matisse.matisse.Matisse.stabilize_off">stabilize_off</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.stabilize_on" href="#matisse_controller.matisse.matisse.Matisse.stabilize_on">stabilize_on</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.start_laser_lock_correction" href="#matisse_controller.matisse.matisse.Matisse.start_laser_lock_correction">start_laser_lock_correction</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.start_scan" href="#matisse_controller.matisse.matisse.Matisse.start_scan">start_scan</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.stop_laser_lock_correction" href="#matisse_controller.matisse.matisse.Matisse.stop_laser_lock_correction">stop_laser_lock_correction</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.stop_scan" href="#matisse_controller.matisse.matisse.Matisse.stop_scan">stop_scan</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.thin_etalon_motor_status" href="#matisse_controller.matisse.matisse.Matisse.thin_etalon_motor_status">thin_etalon_motor_status</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.thin_etalon_scan" href="#matisse_controller.matisse.matisse.Matisse.thin_etalon_scan">thin_etalon_scan</a></code></li>
+<li><code><a title="matisse_controller.matisse.matisse.Matisse.wavemeter_wavelength" href="#matisse_controller.matisse.matisse.Matisse.wavemeter_wavelength">wavemeter_wavelength</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
