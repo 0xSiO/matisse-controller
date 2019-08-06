@@ -10,9 +10,9 @@ class Shamrock:
     def __init__(self):
         try:
             self.lib = load_lib(Shamrock.LIBRARY_NAME)
+            self.lib.ShamrockInitialize()
         except OSError as err:
-            raise RuntimeError('Unable to load Andor Shamrock API.') from err
-        self.lib.ShamrockInitialize()
+            raise RuntimeError('Unable to initialize Andor Shamrock API.') from err
 
     def __del__(self):
         self.shutdown()
