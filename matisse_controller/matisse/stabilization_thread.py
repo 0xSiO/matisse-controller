@@ -3,6 +3,7 @@ import time
 from queue import Queue
 
 import matisse_controller.config as cfg
+import matisse_controller.matisse as matisse
 from matisse_controller.matisse.event_report import log_event, EventType
 
 
@@ -46,7 +47,7 @@ class StabilizationThread(threading.Thread):
                             if cfg.get(cfg.REPORT_EVENTS):
                                 log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,
                                           f"wavelength drifted by {drift} nm")
-                            self._matisse.start_scan(self._matisse.SCAN_MODE_DOWN)
+                            self._matisse.start_scan(matisse.SCAN_MODE_DOWN)
                         else:
                             self.do_stabilization_correction(current_wavelength, drift)
                     else:
@@ -56,7 +57,7 @@ class StabilizationThread(threading.Thread):
                             if cfg.get(cfg.REPORT_EVENTS):
                                 log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,
                                           f"wavelength drifted by {drift} nm")
-                            self._matisse.start_scan(self._matisse.SCAN_MODE_UP)
+                            self._matisse.start_scan(matisse.SCAN_MODE_UP)
                         else:
                             self.do_stabilization_correction(current_wavelength, drift)
                 else:

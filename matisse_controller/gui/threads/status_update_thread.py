@@ -4,6 +4,7 @@ from queue import Queue
 from PyQt5.QtCore import QThread, pyqtSignal
 
 import matisse_controller.config as cfg
+import matisse_controller.matisse as matisse
 from matisse_controller.gui.threads import ExitFlag
 from matisse_controller.gui.utils import red_text, orange_text, green_text
 
@@ -58,13 +59,13 @@ class StatusUpdateThread(QThread):
                     wavemeter_text = f"Wavemeter:{wavemeter_value}"
 
                     limit_offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
-                    refcell_at_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset < refcell_pos < self.matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
-                    slow_pz_at_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset < slow_pz_pos < self.matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
-                    pz_eta_at_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + limit_offset < pz_eta_pos < self.matisse.PIEZO_ETALON_UPPER_LIMIT - limit_offset
+                    refcell_at_limit = not matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset < refcell_pos < matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
+                    slow_pz_at_limit = not matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset < slow_pz_pos < matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
+                    pz_eta_at_limit = not matisse.PIEZO_ETALON_LOWER_LIMIT + limit_offset < pz_eta_pos < matisse.PIEZO_ETALON_UPPER_LIMIT - limit_offset
                     warn_offset = limit_offset * 2
-                    refcell_near_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + warn_offset < refcell_pos < self.matisse.REFERENCE_CELL_UPPER_LIMIT - warn_offset
-                    slow_pz_near_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + warn_offset < slow_pz_pos < self.matisse.SLOW_PIEZO_UPPER_LIMIT - warn_offset
-                    pz_eta_near_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + warn_offset < pz_eta_pos < self.matisse.PIEZO_ETALON_UPPER_LIMIT - warn_offset
+                    refcell_near_limit = not matisse.REFERENCE_CELL_LOWER_LIMIT + warn_offset < refcell_pos < matisse.REFERENCE_CELL_UPPER_LIMIT - warn_offset
+                    slow_pz_near_limit = not matisse.SLOW_PIEZO_LOWER_LIMIT + warn_offset < slow_pz_pos < matisse.SLOW_PIEZO_UPPER_LIMIT - warn_offset
+                    pz_eta_near_limit = not matisse.PIEZO_ETALON_LOWER_LIMIT + warn_offset < pz_eta_pos < matisse.PIEZO_ETALON_UPPER_LIMIT - warn_offset
 
                     if refcell_at_limit:
                         refcell_pos_text = red_text(refcell_pos_text)
