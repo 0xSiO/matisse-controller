@@ -33,6 +33,7 @@ DEFAULTS = {
             'thin_etalon': {
                 'range': 2000,
                 'range_small': 1000,
+                'randomization_range': 500,
                 'step': 20,
                 'nudge': 50,  # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
                 'show_plots': True,

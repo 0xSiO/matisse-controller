@@ -118,6 +118,10 @@ class ConfigurationDialog(QDialog):
         self.thin_eta_small_scan_range_field = QSpinBox()
         self.thin_eta_small_scan_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 4)
         scan_layout.addRow('Thin etalon small scan range:', self.thin_eta_small_scan_range_field)
+        self.thin_eta_rand_range_field = QSpinBox()
+        self.thin_eta_rand_range_field.setMinimum(0)
+        self.thin_eta_rand_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 2)
+        scan_layout.addRow('Thin etalon randomization range: ', self.thin_eta_rand_range_field)
         self.thin_eta_scan_step_field = QSpinBox()
         scan_layout.addRow('Thin etalon scan step:', self.thin_eta_scan_step_field)
         self.thin_eta_nudge_field = QSpinBox()
@@ -277,6 +281,7 @@ class ConfigurationDialog(QDialog):
 
         self.thin_eta_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE)
         self.thin_eta_small_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE_SMALL)
+        self.thin_eta_rand_range_field.setToolTip(tooltips.THIN_ETA_RAND_RANGE)
         self.thin_eta_scan_step_field.setToolTip(tooltips.THIN_ETA_SCAN_STEP)
         self.thin_eta_nudge_field.setToolTip(tooltips.THIN_ETA_NUDGE)
         self.thin_eta_scan_show_plots_field.setToolTip(tooltips.THIN_ETA_SHOW_PLOTS)
@@ -331,6 +336,7 @@ class ConfigurationDialog(QDialog):
 
         self.thin_eta_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE))
         self.thin_eta_small_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+        self.thin_eta_rand_range_field.setValue(cfg.get(cfg.THIN_ETA_RAND_RANGE))
         self.thin_eta_scan_step_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_STEP))
         self.thin_eta_nudge_field.setValue(cfg.get(cfg.THIN_ETA_NUDGE))
         self.thin_eta_scan_show_plots_field.setChecked(cfg.get(cfg.THIN_ETA_SHOW_PLOTS))
@@ -410,6 +416,7 @@ class ConfigurationDialog(QDialog):
 
         cfg.set(cfg.THIN_ETA_SCAN_RANGE, self.thin_eta_scan_range_field.value())
         cfg.set(cfg.THIN_ETA_SCAN_RANGE_SMALL, self.thin_eta_small_scan_range_field.value())
+        cfg.set(cfg.THIN_ETA_RAND_RANGE, self.thin_eta_rand_range_field.value())
         cfg.set(cfg.THIN_ETA_SCAN_STEP, self.thin_eta_scan_step_field.value())
         cfg.set(cfg.THIN_ETA_NUDGE, self.thin_eta_nudge_field.value())
         cfg.set(cfg.THIN_ETA_SHOW_PLOTS, self.thin_eta_scan_show_plots_field.isChecked())

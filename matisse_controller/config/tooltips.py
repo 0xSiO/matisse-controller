@@ -27,6 +27,7 @@ BIFI_SMOOTHING_FILTER_POLYORDER = 'Savitzky-Golay filter parameter for BiFi scan
 
 THIN_ETA_SCAN_RANGE = 'Total amount of motor steps to move (left and right) when doing a thin etalon scan.'
 THIN_ETA_SCAN_RANGE_SMALL = 'Total amount of motor steps to move (left and right) when doing a small thin etalon scan.'
+THIN_ETA_RAND_RANGE = 'Limit for range of thin etalon randomization away from the reset position when starting the wavelength-setting process.'
 THIN_ETA_SCAN_STEP = 'Amount of motor steps to increment when doing a thin etalon scan.'
 THIN_ETA_NUDGE = 'Amount of motor steps to move after a thin etalon scan has finished.'
 THIN_ETA_SHOW_PLOTS = 'Should we open matplotlib windows after a thin etalon scan?'
