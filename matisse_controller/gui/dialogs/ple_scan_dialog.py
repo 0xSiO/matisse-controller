@@ -1,4 +1,3 @@
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
 
 import matisse_controller.config as cfg

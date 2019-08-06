@@ -62,7 +62,7 @@ class Matisse:
 
         Returns
         -------
-        str
+        str or float
             The response from the Matisse to the given command
         """
         try:
