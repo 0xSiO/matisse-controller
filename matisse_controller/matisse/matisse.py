@@ -156,7 +156,10 @@ class Matisse:
             diff = abs(wavelength - self.wavemeter_wavelength())
 
             if diff > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT) or self._force_large_scan:
-                self.query(f"MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS)}")
+                # Notice we randomize the position of the thin etalon a little bit to avoid returning to exactly the
+                # same state each time. This is to further avoid the possibility of getting stuck in an endless loop.
+                random_offset = np.random.randint(-cfg.get(cfg.THIN_ETA_RAND_RANGE), cfg.get(cfg.THIN_ETA_RAND_RANGE))
+                self.query(f"MOTTE:POS {cfg.get(cfg.THIN_ETA_RESET_POS) + random_offset}")
                 self.reset_stabilization_piezos()
                 # Normal BiFi scan
                 print(f"Setting BiFi to ~{wavelength} nm... ")
