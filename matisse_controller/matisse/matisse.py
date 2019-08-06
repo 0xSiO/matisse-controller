@@ -8,6 +8,7 @@ from scipy.signal import savgol_filter, argrelextrema
 
 import matisse_controller.config as cfg
 from matisse_controller.matisse.constants import *
+from matisse_controller.matisse.event_report import log_event, EventType
 from matisse_controller.matisse.lock_correction_thread import LockCorrectionThread
 from matisse_controller.matisse.plotting import BirefringentFilterScanPlotProcess, ThinEtalonScanPlotProcess
 from matisse_controller.matisse.stabilization_thread import StabilizationThread
@@ -191,11 +192,16 @@ class Matisse:
                 continue
             elif self._scan_attempts > cfg.get(cfg.SCAN_LIMIT):
                 print('WARNING: Number of scan attempts exceeded. Starting wavelength-setting process over again.')
+                log_event(EventType.SCAN_LIMIT_EXCEEDED, self, self.wavemeter_wavelength(),
+                          f"too many scans, exceeded limit of {cfg.get(cfg.SCAN_LIMIT)}, restarting set_wavelength")
                 self._force_large_scan = True
                 continue
             elif self.stabilization_auto_corrections > cfg.get(cfg.CORRECTION_LIMIT):
                 print('WARNING: Number of stabilization auto-corrections exceeded. Starting wavelength-setting process '
                       'over again.')
+                log_event(EventType.STABILIZATION_LIMIT_EXCEEDED, self, self.wavemeter_wavelength(),
+                          f"too many stabilization corrections, exceeded limit of {cfg.get(cfg.CORRECTION_LIMIT)}, "
+                          'restarting set_wavelength')
                 self.stabilization_auto_corrections = 0
                 self._force_large_scan = True
                 continue

@@ -4,7 +4,7 @@ from queue import Queue
 
 import matisse_controller.config as cfg
 from matisse_controller.matisse.control_loops_on import ControlLoopsOn
-from matisse_controller.matisse.event_report import log_event
+from matisse_controller.matisse.event_report import log_event, EventType
 
 
 class LockCorrectionThread(threading.Thread):
@@ -49,7 +49,7 @@ class LockCorrectionThread(threading.Thread):
                                   'Attempting automatic corrections.')
                             if cfg.get(cfg.REPORT_EVENTS):
                                 current_wavelength = self.matisse.wavemeter_wavelength()
-                                log_event('lock_correction', self.matisse, current_wavelength,
+                                log_event(EventType.LOCK_CORRECTION, self.matisse, current_wavelength,
                                           'component hit a limit while laser was locked')
                             self.matisse.reset_stabilization_piezos()
                     else:
