@@ -64,12 +64,14 @@ class ShamrockPLE:
             counter += 1
         with open(f"{name}_full_pickled.dat") as full_data_file:
             pickle.dump(scans, full_data_file)
+        self.shutdown_ccd()
 
     def stop_ple_scan(self):
         print('Stopping PLE scan.')
         self.exit_flag = True
 
     def setup_spectrometer(self):
+        # Shamrock device number is 0
         shamrock.ShamrockInitialize()
         num_devices = c_int()
         shamrock.ShamrockGetNumberDevices(pointer(num_devices))
@@ -86,11 +88,13 @@ class ShamrockPLE:
         andor.SetTemperature(c_int(temperature))
         andor.CoolerON()
         current_temp = c_float()
-        while current_temp.value > temperature:
+        # Cooler stops when temp is within 3 degrees of target, so wait until it's close
+        # CCD normally takes a few minutes to fully cool down
+        while current_temp.value > temperature + 3.25:
             andor.GetTemperatureF(pointer(current_temp))
             current_temp = current_temp.value
-            print(f"Cooling CCD. Current temperature is {current_temp} C")
-            time.sleep(3)
+            print(f"Cooling CCD. Current temperature is {current_temp} °C")
+            time.sleep(5)
 
         if acquisition_mode == ACQ_MODE_ACCUMULATE:
             self.use_accumulate_mode()
@@ -98,10 +102,16 @@ class ShamrockPLE:
             andor.SetAcquisitionMode(c_int(acquisition_mode))
 
         andor.SetReadMode(c_int(readout_mode))
+        # Screen size is 1024x256
         size_x, size_y = c_int(), c_int()
         andor.GetDetector(pointer(size_x), pointer(size_y))
         andor.SetExposureTime(c_float(exposure_time))
+        # TODO: Maybe set the vertical/horizontal speeds
         return size_x.value, size_y.value
+
+    def shutdown_ccd(self):
+        andor.CoolerOFF()
+        # TODO: Before shutting it down, we MUST wait for temp to hit -20 °C, otherwise it rises too fast for the sensor
 
     def use_accumulate_mode(self, num_cycles=2, cycle_time=1.025):
         andor.SetAcquisitionMode(ACQ_MODE_ACCUMULATE)
