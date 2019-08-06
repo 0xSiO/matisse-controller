@@ -13,7 +13,7 @@ ccd = CCD()
 shamrock = Shamrock()
 
 
-class ShamrockPLE:
+class PLE:
     """PLE scanning functionality with the Andor Shamrock and Newton CCD."""
 
     # TODO: Currently untested
