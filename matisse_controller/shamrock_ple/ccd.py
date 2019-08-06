@@ -39,7 +39,7 @@ class CCD:
         temperature
             the desired temperature in degrees centigrade at which to configure the CCD (default is -70)
         """
-        assert self.lib.Initialize() == CCDErrorCode.DRV_SUCCESS
+        assert self.lib.Initialize() == CCDErrorCode.DRV_SUCCESS.value
         num_cameras = c_long()
         self.lib.GetAvailableCameras(pointer(num_cameras))
         print(num_cameras.value, 'CCD cameras found.')
@@ -76,11 +76,11 @@ class CCD:
         self.lib.SetFilterMode(c_int(COSMIC_RAY_FILTER_ON))
 
     def take_acquisition(self, num_points) -> np.ndarray:
-        self.lib.StartAcquisition()
+        assert self.lib.StartAcquisition() == CCDErrorCode.DRV_SUCCESS.value
         acquisition_array_type = c_int32 * num_points
         data = acquisition_array_type()
         self.lib.WaitForAcquisition()
-        self.lib.GetAcquiredData(data, c_int(num_points))
+        assert self.lib.GetAcquiredData(data, c_int(num_points)) == CCDErrorCode.DRV_SUCCESS.value
         data = np.array(data, dtype=np.int32)
         plt.plot(range(0, num_points), data)
         return data
