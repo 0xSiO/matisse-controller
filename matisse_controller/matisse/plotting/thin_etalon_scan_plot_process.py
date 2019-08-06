@@ -24,7 +24,7 @@ class ThinEtalonScanPlotProcess(multiprocessing.Process):
         plt.show()
 
     def plot_thin_etalon_scan(self, positions, voltages, smoothed_voltages):
-        plt.figure()
+        plt.figure(f"Thin Etalon Scan: {positions[0]} to {positions[-1]}")
         plt.cla()
         plt.title('Thin Etalon Reflex Voltage vs. Thin Etalon Motor Position')
         plt.xlim(positions[0], positions[-1])
