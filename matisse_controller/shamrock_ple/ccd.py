@@ -16,9 +16,9 @@ class CCD:
     def __init__(self):
         try:
             self.lib = load_lib(CCD.LIBRARY_NAME)
+            self.lib.Initialize()
         except OSError as err:
-            raise RuntimeError('Unable to load Andor Shamrock API.') from err
-        self.lib.Initialize()
+            raise RuntimeError('Unable to initialize Andor CCD API.') from err
 
     def __del__(self):
         self.shutdown()
