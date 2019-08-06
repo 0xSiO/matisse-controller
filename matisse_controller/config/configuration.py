@@ -98,7 +98,10 @@ DEFAULTS = {
 def get(name: str):
     """Fetch the global configuration value represented by the specified name."""
     keys = name.split('.')
-    return reduce(operator.getitem, keys, CONFIGURATION)
+    try:
+        return reduce(operator.getitem, keys, CONFIGURATION)
+    except KeyError:
+        return reduce(operator.getitem, keys, DEFAULTS)
 
 
 def set(name: str, value):
