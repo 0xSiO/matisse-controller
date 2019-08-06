@@ -24,7 +24,7 @@ class BirefringentFilterScanPlotProcess(multiprocessing.Process):
         plt.show()
 
     def plot_birefringent_scan(self, positions, voltages, smoothed_voltages):
-        plt.figure()
+        plt.figure(f"Birefringent Filter Scan: {positions[0]} to {positions[-1]}")
         plt.cla()
         plt.title('Power Diode Voltage vs. BiFi Motor Position')
         plt.xlim(positions[0], positions[-1])
