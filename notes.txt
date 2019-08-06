@@ -255,3 +255,8 @@ MemoryError
 Would be nice to measure the drift of the laser over time as it's being stabilized. Every time the wavelength drifts by
 more than 0.001 nm, log the time, the wavelength, positions of stabilization piezos, and also every time you reset the
 stabilization piezos with the same information logged.
+
+Having issues reading from CCD. Doing all the initialization doesn't seem to give us any counts when doing a scan.
+One possibility is that the GetAcquiredData function is returning an error code and not modifying the data array (check
+this by setting data array to some non-physical value). Another possibility is that there are more configuration calls
+needed before a scan will work. I'll try some of the SDK examples to make sure it's not an issue with my machine.
