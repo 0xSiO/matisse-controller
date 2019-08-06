@@ -1,4 +1,3 @@
-import os
 import pickle
 import time
 from ctypes import *
@@ -7,26 +6,19 @@ from os import path
 import matplotlib.pyplot as plt
 import numpy as np
 
+from matisse_controller.shamrock_ple.ccd import CCD
 from matisse_controller.shamrock_ple.constants import *
+from matisse_controller.shamrock_ple.shamrock import Shamrock
 
-old_dir = os.getcwd()
-lib_dir = path.join(path.abspath(path.dirname(__file__)), 'lib')
-os.chdir(lib_dir)
-try:
-    andor: WinDLL = windll.LoadLibrary('atmcd64d.dll')
-except OSError:
-    andor = None
-    print('Unable to load Andor CCD API.')
-try:
-    shamrock: WinDLL = windll.LoadLibrary('ShamrockCIF.dll')
-except OSError:
-    shamrock = None
-    print('Unable to load Andor Shamrock API.')
-os.chdir(old_dir)
+ccd = CCD()
+shamrock = Shamrock()
 
 
 class ShamrockPLE:
     """PLE scanning functionality with the Andor Shamrock and Newton CCD."""
+
+    SHAMROCK_ID = c_int(0)
+    """Device ID of Shamrock, assuming it is the only spectrometer connected."""
 
     # TODO: Currently untested
 
@@ -41,8 +33,7 @@ class ShamrockPLE:
             raise FileExistsError(
                 f"A PLE scan has already been run for '{name}'. Please choose a different name and try again.")
 
-        self.setup_spectrometer()
-        width, height = self.setup_ccd(exposure_time, acquisition_mode, readout_mode, temperature)
+        ccd.setup(exposure_time, acquisition_mode, readout_mode, temperature)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         counter = 1
         scans = {}
@@ -56,7 +47,7 @@ class ShamrockPLE:
             self.matisse.start_laser_lock_correction()
             while abs(wavelength - self.matisse.wavemeter_wavelength()) >= tolerance:
                 time.sleep(3)
-            data = self.take_spectrum(width)
+            data = ccd.take_acquisition(CCD.WIDTH)  # FVB mode bins counts into each column, so grab points along width
             self.matisse.stop_laser_lock_correction()
             file_name = f"{str(counter).zfill(3)}_{name}_{wavelength}nm_StepSize_{step}nm_Range_{abs(round(final_wavelength - initial_wavelength, 8))}nm.txt"
             np.savetxt(file_name, data)
@@ -64,71 +55,11 @@ class ShamrockPLE:
             counter += 1
         with open(f"{name}_full_pickled.dat") as full_data_file:
             pickle.dump(scans, full_data_file)
-        self.shutdown_ccd()
+        ccd.shutdown()
 
     def stop_ple_scan(self):
         print('Stopping PLE scan.')
         self.exit_flag = True
-
-    def setup_spectrometer(self):
-        # Shamrock device number is 0
-        shamrock.ShamrockInitialize()
-        num_devices = c_int()
-        shamrock.ShamrockGetNumberDevices(pointer(num_devices))
-        print(num_devices.value, 'Shamrock devices found')
-        shamrock.ShamrockClose()
-
-    def setup_ccd(self, exposure_time, acquisition_mode, readout_mode, temperature):
-        num_cameras = c_long()
-        andor.GetAvailableCameras(pointer(num_cameras))
-        print(num_cameras.value, 'CCD cameras found.')
-        andor.Initialize()
-        min_temp, max_temp = c_int(), c_int()
-        andor.GetTemperatureRange(pointer(min_temp), pointer(max_temp))
-        andor.SetTemperature(c_int(temperature))
-        andor.CoolerON()
-        current_temp = c_float()
-        # Cooler stops when temp is within 3 degrees of target, so wait until it's close
-        # CCD normally takes a few minutes to fully cool down
-        while current_temp.value > temperature + 3.25:
-            andor.GetTemperatureF(pointer(current_temp))
-            current_temp = current_temp.value
-            print(f"Cooling CCD. Current temperature is {current_temp} °C")
-            time.sleep(5)
-
-        if acquisition_mode == ACQ_MODE_ACCUMULATE:
-            self.use_accumulate_mode()
-        else:
-            andor.SetAcquisitionMode(c_int(acquisition_mode))
-
-        andor.SetReadMode(c_int(readout_mode))
-        # Screen size is 1024x256
-        size_x, size_y = c_int(), c_int()
-        andor.GetDetector(pointer(size_x), pointer(size_y))
-        andor.SetExposureTime(c_float(exposure_time))
-        # TODO: Maybe set the vertical/horizontal speeds
-        return size_x.value, size_y.value
-
-    def shutdown_ccd(self):
-        andor.CoolerOFF()
-        # TODO: Before shutting it down, we MUST wait for temp to hit -20 °C, otherwise it rises too fast for the sensor
-
-    def use_accumulate_mode(self, num_cycles=2, cycle_time=1.025):
-        andor.SetAcquisitionMode(ACQ_MODE_ACCUMULATE)
-        andor.SetNumberAccumulations(c_int(num_cycles))
-        andor.SetAccumulationCycleTime(c_float(cycle_time))
-        andor.SetTriggerMode(c_int(TRIGGER_MODE_INTERNAL))
-        andor.SetFilterMode(c_int(COSMIC_RAY_FILTER_ON))
-
-    def take_spectrum(self, num_points):
-        andor.StartAcquisition()
-        acquisition_array_type = c_int32 * num_points
-        data = acquisition_array_type()
-        andor.WaitForAcquisition()
-        andor.GetAcquiredData(data, c_int(num_points))
-        data = np.array(data, dtype=np.int32)
-        plt.plot(range(0, num_points), data)
-        return data
 
     def analyze_ple_data(self, name):
         """Analyze the data from a PLE scan."""
