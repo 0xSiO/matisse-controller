@@ -23,7 +23,22 @@ class CCD:
     def __del__(self):
         self.shutdown()
 
-    def setup(self, exposure_time: float, acquisition_mode: int, readout_mode: int, temperature: int):
+    def setup(self, exposure_time: float, acquisition_mode=ACQ_MODE_ACCUMULATE, readout_mode=READ_MODE_FVB,
+              temperature=-70):
+        """
+        Perform setup procedures on CCD, like cooling down to a given temperature and setting acquisition parameters.
+
+        Parameters
+        ----------
+        exposure_time
+            the desired exposure time at which to configure the CCD
+        acquisition_mode
+            the desired acquisition mode at which to configure the CCD (default is accumulate)
+        readout_mode
+            the desired readout mode at which to configure the CCD (default is FVB)
+        temperature
+            the desired temperature in degrees centigrade at which to configure the CCD (default is -70)
+        """
         assert self.lib.Initialize() == CCDErrorCode.DRV_SUCCESS
         num_cameras = c_long()
         self.lib.GetAvailableCameras(pointer(num_cameras))

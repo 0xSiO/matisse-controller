@@ -22,9 +22,8 @@ class PLE:
         self.matisse = matisse
         self.exit_flag = False
 
-    def start_ple_scan(self, name: str, initial_wavelength: float, final_wavelength: float, step: float,
-                       exposure_time: float, acquisition_mode=ACQ_MODE_ACCUMULATE, readout_mode=READ_MODE_FVB,
-                       temperature=-70):
+    def start_ple_scan(self, name: str, initial_wavelength: float, final_wavelength: float, step: float, *ccd_args,
+                       **ccd_kwargs):
         """
         Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
 
@@ -38,20 +37,16 @@ class PLE:
             ending wavelength for the PLE scan
         step
             the desired change in wavelength between each individual scan
-        exposure_time
-            the desired exposure time at which to configure the CCD
-        acquisition_mode
-            the desired acquisition mode at which to configure the CCD (default is accumulate)
-        readout_mode
-            the desired readout mode at which to configure the CCD (default is FVB)
-        temperature
-            the desired temperature in degrees centigrade at which to configure the CCD (default is -70)
+        *ccd_args
+            args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        **ccd_kwargs
+            kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         """
         if os.path.exists(f"{name}_full_pickled.dat"):
             raise FileExistsError(
                 f"A PLE scan has already been run for '{name}'. Please choose a different name and try again.")
 
-        ccd.setup(exposure_time, acquisition_mode, readout_mode, temperature)
+        ccd.setup(*ccd_args, **ccd_kwargs)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         counter = 1
         scans = {}
