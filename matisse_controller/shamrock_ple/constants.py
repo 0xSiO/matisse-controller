@@ -1,5 +1,5 @@
 """Useful constants to configure CCD and spectrometer, and error codes for these devices."""
-from enum import Enum
+import enum
 
 # Miscellaneous constants used to set up the CCD and spectrometer, using values from Andor documentation.
 ACQ_MODE_SINGLE = 1
@@ -17,7 +17,7 @@ COSMIC_RAY_FILTER_ON = 2
 TRIGGER_MODE_INTERNAL = 0
 
 
-class ShamrockErrorCode(Enum):
+class ShamrockErrorCode(enum.Enum):
     """
     Error codes pulled straight from the Shamrock SDK manual. Note that not all of these codes indicate errors, for
     example DRV_SUCCESS indicates a successful command.
@@ -30,7 +30,7 @@ class ShamrockErrorCode(Enum):
     SHAMROCK_NOT_INITIALIZED = 20275
 
 
-class CCDErrorCode(Enum):
+class CCDErrorCode(enum.Enum):
     """
     Error codes pulled straight from the Andor SDK manual. Note that not all of these codes indicate errors, for
     example DRV_SUCCESS indicates a successful command, and DRV_TEMPERATURE_STABILIZED indicates successful temperature

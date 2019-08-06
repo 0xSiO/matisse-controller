@@ -1,5 +1,5 @@
 import os
-from ctypes import *
+from ctypes import WinDLL, windll
 from os import path
 
 
