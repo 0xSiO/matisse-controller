@@ -66,13 +66,13 @@ class ControlApplication(QApplication):
         self.log_redirector = redirect_stdout(LoggingStream(self.log_queue))
         self.log_redirector.__enter__()
 
-    # TODO: Add menu item to close plot windows
     def setup_menus(self):
         """Initialization of items in the menu bar go here."""
         menu_bar = self.window.menuBar()
 
         console_menu = menu_bar.addMenu('Console')
         self.clear_log_area_action = console_menu.addAction('Clear Log')
+        self.close_plots_action = console_menu.addAction('Close All Plots')
         self.configuration_action = console_menu.addAction('Configuration')
         self.reset_action = console_menu.addAction('Reset')
         self.restart_action = console_menu.addAction('Restart')
@@ -121,6 +121,7 @@ class ControlApplication(QApplication):
         """
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
+        self.close_plots_action.triggered.connect(self.close_plots)
         self.configuration_action.triggered.connect(self.open_configuration)
         self.reset_action.triggered.connect(self.reset_matisse)
         self.restart_action.triggered.connect(self.restart)
@@ -204,6 +205,10 @@ class ControlApplication(QApplication):
     @handled_slot(bool)
     def clear_log_area(self, checked):
         self.log_area.clear()
+
+    @handled_slot(bool)
+    def close_plots(self, checked):
+        self.matisse.close_all_plots()
 
     @handled_slot(bool)
     def open_configuration(self, checked):
