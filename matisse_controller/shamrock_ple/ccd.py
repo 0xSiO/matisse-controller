@@ -15,7 +15,7 @@ class CCD:
     MIN_TEMP = -120
     MAX_TEMP = -10
 
-    TARGET_TEMP = -70
+    TARGET_TEMP = -70  # TODO: Make this configurable
 
     def __init__(self):
         try:
@@ -59,7 +59,7 @@ class CCD:
         current_temp = c_float()
         # Cooler stops when temp is within 3 degrees of target, so wait until it's close
         # CCD normally takes a few minutes to fully cool down
-        while current_temp.value > temperature + 3.25:
+        while current_temp.value > temperature + 3.25:  # TODO: Make this configurable
             self.lib.GetTemperatureF(pointer(current_temp))
             print(f"Cooling CCD. Current temperature is {round(current_temp.value, 2)} °C")
             time.sleep(10)
@@ -91,4 +91,5 @@ class CCD:
 
     def shutdown(self):
         self.lib.CoolerOFF()
-        # TODO: Before shutting it down, we MUST wait for temp to hit -20 °C, otherwise it rises too fast for the sensor
+        # TODO: Before shutting it down, we should wait for temp to hit -20 °C, otherwise it rises too fast
+        # In practice, of course, we don't do this :)
