@@ -62,14 +62,12 @@ class PLE:
                 break
             self.lock_at_wavelength(wavelength)
             data = ccd.take_acquisition(CCD.WIDTH)  # FVB mode bins counts into each column, so grab points along width
-            self.matisse.stop_laser_lock_correction()
             file_name = f"{str(counter).zfill(3)}_{name}_{wavelength}nm_StepSize_{step}nm_Range_{abs(round(final_wavelength - initial_wavelength, 8))}nm.txt"
             np.savetxt(file_name, data)
             scans[wavelength] = data
             counter += 1
         with open(f"{name}_full_pickled.dat") as full_data_file:
             pickle.dump(scans, full_data_file)
-        ccd.shutdown()
 
     def lock_at_wavelength(self, wavelength: float):
         """Try to lock the Matisse at a given wavelength, waiting to return until we're within a small tolerance."""
