@@ -54,3 +54,6 @@ STABILIZATION_DELAY = 'How long to wait, in seconds, between each auto-stabiliza
 STABILIZATION_TOLERANCE = 'How much drift is tolerated, in nanometers, when auto-stabilizing.'
 
 CORRECTION_LIMIT = 'Number of auto-corrections allowed during stabilization before restarting the wavelength-setting process.'
+
+PLE_TARGET_TEMPERATURE = 'Default target temperature at which to cool down the CCD camera.'
+PLE_TEMPERATURE_TOLERANCE = 'When cooling down the CCD, the temperature still fluctuates several degrees. How many degrees should we allow the CCD to drift before waiting to cool again?'

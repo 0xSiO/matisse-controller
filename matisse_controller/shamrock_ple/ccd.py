@@ -4,6 +4,7 @@ from ctypes import *
 import matplotlib.pyplot as plt
 import numpy as np
 
+import matisse_controller.config as cfg
 from matisse_controller.shamrock_ple.constants import *
 from matisse_controller.shamrock_ple.utils import load_lib
 
@@ -15,13 +16,11 @@ class CCD:
     MIN_TEMP = -120
     MAX_TEMP = -10
 
-    TARGET_TEMP = -70  # TODO: Make this configurable
-
     def __init__(self):
         try:
             self.lib = load_lib(CCD.LIBRARY_NAME)
             self.lib.Initialize()
-            self.lib.SetTemperature(c_int(CCD.TARGET_TEMP))
+            self.lib.SetTemperature(c_int(cfg.get(cfg.PLE_TARGET_TEMPERATURE)))
             self.lib.CoolerON()
 
             num_cameras = c_long()
@@ -59,7 +58,7 @@ class CCD:
         current_temp = c_float()
         # Cooler stops when temp is within 3 degrees of target, so wait until it's close
         # CCD normally takes a few minutes to fully cool down
-        while current_temp.value > temperature + 3.25:  # TODO: Make this configurable
+        while current_temp.value > temperature + cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE):
             self.lib.GetTemperatureF(pointer(current_temp))
             print(f"Cooling CCD. Current temperature is {round(current_temp.value, 2)} °C")
             time.sleep(10)

@@ -87,6 +87,10 @@ DEFAULTS = {
         'precision': 3,
         'measurement_delay': 0.5
     },
+    'ple': {
+        'target_temperature': -70,
+        'temperature_tolerance': 3.25
+    },
     'gui': {
         'status_monitor': {
             'delay': 1,

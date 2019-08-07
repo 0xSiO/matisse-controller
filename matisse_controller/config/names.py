@@ -67,3 +67,6 @@ REFCELL_MID_CORRECTION_POS = 'matisse.correction.refcell_pos_mid'
 PIEZO_ETA_LOWER_CORRECTION_POS = 'matisse.correction.piezo_etalon_pos_lower'
 SLOW_PIEZO_LOWER_CORRECTION_POS = 'matisse.correction.slow_piezo_pos_lower'
 REFCELL_LOWER_CORRECTION_POS = 'matisse.correction.refcell_pos_lower'
+
+PLE_TARGET_TEMPERATURE = 'ple.target_temperature'
+PLE_TEMPERATURE_TOLERANCE = 'ple.temperature_tolerance'
