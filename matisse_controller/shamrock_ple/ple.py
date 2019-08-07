@@ -9,8 +9,8 @@ from matisse_controller.shamrock_ple.ccd import CCD
 from matisse_controller.shamrock_ple.constants import *
 from matisse_controller.shamrock_ple.shamrock import Shamrock
 
-ccd = CCD()
-shamrock = Shamrock()
+ccd: CCD = None
+shamrock: Shamrock = None
 
 
 class PLE:
@@ -21,6 +21,12 @@ class PLE:
     def __init__(self, matisse):
         self.matisse = matisse
         self.exit_flag = False
+        global ccd
+        global shamrock
+        if ccd is None:
+            ccd = CCD()
+        if shamrock is None:
+            shamrock = Shamrock()
 
     def start_ple_scan(self, name: str, initial_wavelength: float, final_wavelength: float, step: float, *ccd_args,
                        **ccd_kwargs):
