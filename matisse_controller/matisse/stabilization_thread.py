@@ -42,7 +42,7 @@ class StabilizationThread(threading.Thread):
                 if abs(drift) > cfg.get(cfg.STABILIZATION_TOLERANCE):
                     if drift < 0:
                         # measured wavelength is too high
-                        print(f"Wavelength too high, decreasing. Drift is {drift} nm.")
+                        print(f"Wavelength too high, decreasing. Drift is {drift} nm. Refcell is at {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
                             if cfg.get(cfg.REPORT_EVENTS):
                                 log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,
@@ -52,7 +52,7 @@ class StabilizationThread(threading.Thread):
                             self.do_stabilization_correction(current_wavelength, drift)
                     else:
                         # measured wavelength is too low
-                        print(f"Wavelength too low, increasing.  Drift is {drift} nm.")
+                        print(f"Wavelength too low, increasing.  Drift is {drift} nm. Refcell is at {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
                             if cfg.get(cfg.REPORT_EVENTS):
                                 log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,

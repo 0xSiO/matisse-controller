@@ -12,6 +12,7 @@ import matisse_controller.config as cfg
 import matisse_controller.matisse as matisse
 from matisse_controller.gui import utils
 from matisse_controller.gui.dialogs import ConfigurationDialog
+from matisse_controller.gui.dialogs.ple_analysis_dialog import PLEAnalysisDialog
 from matisse_controller.gui.dialogs.ple_scan_dialog import PLEScanDialog
 from matisse_controller.gui.logging_stream import LoggingStream
 from matisse_controller.gui.utils import handled_function, handled_slot
@@ -44,7 +45,7 @@ class ControlApplication(QApplication):
         self.aboutToQuit.connect(self.clean_up)
         self.work_executor = ThreadPoolExecutor()
         self.matisse_worker: Future = None
-        self.ple_scanner = None
+        self.ple_scanner: PLE = None
 
         container = QWidget()
         container.setLayout(self.layout)
@@ -112,6 +113,7 @@ class ControlApplication(QApplication):
         ple_menu = menu_bar.addMenu('Shamrock')
         self.start_ple_scan_action = ple_menu.addAction('Start PLE Scan')
         self.stop_ple_scan_action = ple_menu.addAction('Stop PLE Scan')
+        self.analyze_ple_action = ple_menu.addAction('Analyze PLE Data')
 
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
                                      self.piezo_eta_control_action, self.fast_pz_control_action]
@@ -159,6 +161,7 @@ class ControlApplication(QApplication):
         # Shamrock
         self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
         self.stop_ple_scan_action.triggered.connect(self.stop_ple_scan)
+        self.analyze_ple_action.triggered.connect(self.analyze_ple_data)
 
     @handled_function
     def setup_widgets(self):
@@ -416,6 +419,16 @@ class ControlApplication(QApplication):
             self.ple_scanner.stop_ple_scan()
         else:
             print('WARNING: Andor libraries have not been initialized.')
+
+    @handled_slot(bool)
+    def analyze_ple_data(self, checked):
+        dialog = PLEAnalysisDialog(parent=self.window)
+        if dialog.exec() == QDialog.Accepted:
+            analysis_options = dialog.get_form_data()
+            print(f"Starting PLE analysis with options {analysis_options}")
+            # TODO: Validate options inside the dialog class first
+            self.ple_scanner.analyze_ple_data(**analysis_options)
+            # TODO: Run in threadpool (not run_matisse_task)
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """

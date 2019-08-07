@@ -22,6 +22,7 @@ class CCD:
             self.lib.Initialize()
             self.lib.SetTemperature(c_int(cfg.get(cfg.PLE_TARGET_TEMPERATURE)))
             self.lib.CoolerON()
+            self.temperature_ok = False
 
             num_cameras = c_long()
             self.lib.GetAvailableCameras(pointer(num_cameras))
@@ -58,9 +59,10 @@ class CCD:
         current_temp = c_float()
         # Cooler stops when temp is within 3 degrees of target, so wait until it's close
         # CCD normally takes a few minutes to fully cool down
-        while current_temp.value > temperature + cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE):
+        while not self.temperature_ok:
             self.lib.GetTemperatureF(pointer(current_temp))
             print(f"Cooling CCD. Current temperature is {round(current_temp.value, 2)} °C")
+            self.temperature_ok = current_temp.value < temperature + cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE)
             time.sleep(10)
 
         print('Configuring acquisition parameters.')
