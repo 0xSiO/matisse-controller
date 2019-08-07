@@ -22,7 +22,7 @@ DEFAULTS = {
             'limit': 15,
             'birefringent_filter': {
                 'range': 400,
-                'range_small': 200,  # TODO: Check the 'small' scan ranges
+                'range_small': 200,
                 'step': 4,
                 'show_plots': True,
                 'smoothing_filter': {
@@ -35,7 +35,7 @@ DEFAULTS = {
                 'range_small': 1000,
                 'randomization_range': 500,
                 'step': 20,
-                'nudge': 50,  # TODO: Confirm this parameter is ok to use, flank seems to default to 'left'?
+                'nudge': 50,
                 'show_plots': True,
                 'smoothing_filter': {
                     'window': 21,
@@ -48,7 +48,6 @@ DEFAULTS = {
                 'falling_speed': 0.005
             },
             'wavelength_drift': {
-                # TODO: Tweak these defaults
                 'large': 0.4,
                 'medium': 0.2,
                 'small': 0.02
@@ -72,13 +71,13 @@ DEFAULTS = {
         'correction': {
             'limit': 10,
             'piezo_etalon_pos_upper': 0.8,
-            'slow_piezo_pos_upper': 0.5,  # TODO: Not used yet
+            'slow_piezo_pos_upper': 0.5,  # Not used yet
             'refcell_pos_upper': 0.5,
             'piezo_etalon_pos_mid': 0.0,
             'slow_piezo_pos_mid': 0.35,
             'refcell_pos_mid': 0.35,
             'piezo_etalon_pos_lower': -0.8,
-            'slow_piezo_pos_lower': 0.2,  # TODO: Not used yet
+            'slow_piezo_pos_lower': 0.2,  # Not used yet
             'refcell_pos_lower': 0.2
         }
     },
