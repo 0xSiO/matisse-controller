@@ -23,14 +23,17 @@ class CCD:
             self.lib.Initialize()
             self.lib.SetTemperature(c_int(CCD.TARGET_TEMP))
             self.lib.CoolerON()
-            # TODO: Monitor cooling progress from GUI
+
+            num_cameras = c_long()
+            self.lib.GetAvailableCameras(pointer(num_cameras))
+            assert num_cameras.value > 0, 'No CCD camera found.'
         except OSError as err:
             raise RuntimeError('Unable to initialize Andor CCD API.') from err
 
     def __del__(self):
         self.shutdown()
 
-    def setup(self, exposure_time: float, acquisition_mode=ACQ_MODE_ACCUMULATE, readout_mode=READ_MODE_FVB,
+    def setup(self, exposure_time: float, acquisition_mode=ACQ_MODE_SINGLE, readout_mode=READ_MODE_FVB,
               temperature=-70):
         """
         Perform setup procedures on CCD, like cooling down to a given temperature and setting acquisition parameters.
@@ -46,10 +49,6 @@ class CCD:
         temperature
             the desired temperature in degrees centigrade at which to configure the CCD (default is -70)
         """
-        num_cameras = c_long()
-        self.lib.GetAvailableCameras(pointer(num_cameras))
-        print(num_cameras.value, 'CCD cameras found.')
-
         min_temp, max_temp = c_int(), c_int()
         self.lib.GetTemperatureRange(pointer(min_temp), pointer(max_temp))
         min_temp, max_temp = min_temp.value, max_temp.value
@@ -66,26 +65,18 @@ class CCD:
             time.sleep(10)
 
         print('Configuring acquisition parameters.')
-        if acquisition_mode == ACQ_MODE_ACCUMULATE:
-            self.use_accumulate_mode()
-        else:
-            self.lib.SetAcquisitionMode(c_int(acquisition_mode))
-
+        self.lib.SetAcquisitionMode(c_int(acquisition_mode))
         self.lib.SetReadMode(c_int(readout_mode))
-        self.lib.SetExposureTime(c_float(exposure_time))
-        print('CCD ready for acquisition.')
-
-    def use_accumulate_mode(self, num_cycles=2, cycle_time=1.025):
-        self.lib.SetAcquisitionMode(ACQ_MODE_ACCUMULATE)
-        self.lib.SetNumberAccumulations(c_int(num_cycles))
-        self.lib.SetAccumulationCycleTime(c_float(cycle_time))
         self.lib.SetTriggerMode(c_int(TRIGGER_MODE_INTERNAL))
         self.lib.SetFilterMode(c_int(COSMIC_RAY_FILTER_ON))
+        self.lib.SetExposureTime(c_float(exposure_time))
+        print('CCD ready for acquisition.')
 
     def take_acquisition(self, num_points=1024) -> np.ndarray:
         self.lib.StartAcquisition()
         acquisition_array_type = c_int32 * num_points
         data = acquisition_array_type()
+        # self.lib.WaitForAcquisition() does not work, so use a loop instead and check the status.
         while True:
             status = c_int()
             self.lib.GetStatus(pointer(status))

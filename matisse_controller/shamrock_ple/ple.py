@@ -20,7 +20,6 @@ class PLE:
 
     def __init__(self, matisse):
         self.matisse = matisse
-        self.exit_flag = False
         global ccd
         global shamrock
         if ccd is None:
@@ -57,11 +56,11 @@ class PLE:
         counter = 1
         scans = {}
         for wavelength in wavelengths:
-            if self.exit_flag:
+            if self.matisse.exit_flag:
                 print('Received exit signal, saving scan data.')
                 break
             self.lock_at_wavelength(wavelength)
-            data = ccd.take_acquisition(CCD.WIDTH)  # FVB mode bins counts into each column, so grab points along width
+            data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
             file_name = f"{str(counter).zfill(3)}_{name}_{wavelength}nm_StepSize_{step}nm_Range_{abs(round(final_wavelength - initial_wavelength, 8))}nm.txt"
             np.savetxt(file_name, data)
             scans[wavelength] = data
@@ -80,10 +79,9 @@ class PLE:
             time.sleep(3)
 
     def stop_ple_scan(self):
-        """Trigger the Matisse exit_flag and the exit_flag for this class to stop running scans and PLE measurements."""
+        """Trigger the Matisse exit_flag to stop running scans and PLE measurements."""
         print('Stopping PLE scan.')
         self.matisse.exit_flag = True
-        self.exit_flag = True
 
     def analyze_ple_data(self, name):
         """Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength."""
