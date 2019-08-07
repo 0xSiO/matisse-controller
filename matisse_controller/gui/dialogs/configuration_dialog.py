@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 import matisse_controller.config as cfg
 import matisse_controller.config.tooltips as tooltips
 import matisse_controller.matisse as matisse
+from matisse_controller.shamrock_ple.ccd import CCD
 
 
 class ConfigurationDialog(QDialog):
@@ -22,6 +23,7 @@ class ConfigurationDialog(QDialog):
     def add_options(self):
         general_options = self.create_general_options()
         gui_options = self.create_gui_options()
+        ple_options = self.create_ple_options()
         scan_options = self.create_scan_options()
         locking_options = self.create_locking_options()
         self.set_tooltips()
@@ -32,6 +34,7 @@ class ConfigurationDialog(QDialog):
         column_1 = QVBoxLayout()
         column_1.addWidget(general_options)
         column_1.addWidget(gui_options)
+        column_1.addWidget(ple_options)
         form_layout.addLayout(column_1)
         form_layout.addWidget(scan_options)
         form_layout.addWidget(locking_options)
@@ -86,6 +89,19 @@ class ConfigurationDialog(QDialog):
         self.status_monitor_font_size_field.setMinimum(0)
         gui_layout.addRow('Status monitor font size: ', self.status_monitor_font_size_field)
         return gui_options
+
+    def create_ple_options(self):
+        ple_options = QGroupBox('PLE')
+        ple_layout = QFormLayout()
+        ple_options.setLayout(ple_layout)
+        self.target_temperature_field = QSpinBox()
+        self.target_temperature_field.setMinimum(CCD.MIN_TEMP)
+        self.target_temperature_field.setMaximum(CCD.MAX_TEMP)
+        ple_layout.addRow('Default target CCD temperature: ', self.target_temperature_field)
+        self.temperature_tolerance_field = QDoubleSpinBox()
+        self.temperature_tolerance_field.setMinimum(3)
+        ple_layout.addRow('CCD temperature tolerance: ', self.temperature_tolerance_field)
+        return ple_options
 
     def create_scan_options(self):
         scan_options = QGroupBox('Scanning')
@@ -309,6 +325,9 @@ class ConfigurationDialog(QDialog):
 
         self.auto_correction_limit_field.setToolTip(tooltips.CORRECTION_LIMIT)
 
+        self.target_temperature_field.setToolTip(tooltips.PLE_TARGET_TEMPERATURE)
+        self.temperature_tolerance_field.setToolTip(tooltips.PLE_TEMPERATURE_TOLERANCE)
+
     def set_current_values_from_config(self):
         self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
         self.wavemeter_port_field.setText(cfg.get(cfg.WAVEMETER_PORT))
@@ -357,6 +376,11 @@ class ConfigurationDialog(QDialog):
         self.fast_pz_setpoint_num_points_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
         self.fast_pz_setpoint_num_scans_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS))
 
+        self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
+        self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
+        self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
+        self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
+
         self.auto_correction_limit_field.setValue(cfg.get(cfg.CORRECTION_LIMIT))
 
         self.pz_eta_upper_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS))
@@ -369,10 +393,8 @@ class ConfigurationDialog(QDialog):
         self.slow_pz_lower_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS))
         self.refcell_lower_correction_pos_field.setValue(cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS))
 
-        self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
-        self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
-        self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
-        self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
+        self.target_temperature_field.setValue(cfg.get(cfg.PLE_TARGET_TEMPERATURE))
+        self.temperature_tolerance_field.setValue(cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE))
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.RestoreDefaults | QDialogButtonBox.Save |
@@ -437,6 +459,11 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.FAST_PZ_SETPOINT_NUM_POINTS, self.fast_pz_setpoint_num_points_field.value())
         cfg.set(cfg.FAST_PZ_SETPOINT_NUM_SCANS, self.fast_pz_setpoint_num_scans_field.value())
 
+        cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
+        cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
+        cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
+        cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+
         cfg.set(cfg.CORRECTION_LIMIT, self.auto_correction_limit_field.value())
 
         cfg.set(cfg.PIEZO_ETA_UPPER_CORRECTION_POS, self.pz_eta_upper_correction_pos_field.value())
@@ -449,10 +476,8 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS, self.slow_pz_lower_correction_pos_field.value())
         cfg.set(cfg.REFCELL_LOWER_CORRECTION_POS, self.refcell_lower_correction_pos_field.value())
 
-        cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
-        cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
-        cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
-        cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+        cfg.set(cfg.PLE_TARGET_TEMPERATURE, self.target_temperature_field.value())
+        cfg.set(cfg.PLE_TEMPERATURE_TOLERANCE, self.temperature_tolerance_field.value())
 
         cfg.save()
         self.close()
