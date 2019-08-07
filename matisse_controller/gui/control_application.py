@@ -111,6 +111,7 @@ class ControlApplication(QApplication):
 
         ple_menu = menu_bar.addMenu('Shamrock')
         self.start_ple_scan_action = ple_menu.addAction('Start PLE Scan')
+        self.stop_ple_scan_action = ple_menu.addAction('Stop PLE Scan')
 
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
                                      self.piezo_eta_control_action, self.fast_pz_control_action]
@@ -157,6 +158,7 @@ class ControlApplication(QApplication):
 
         # Shamrock
         self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
+        self.stop_ple_scan_action.triggered.connect(self.stop_ple_scan)
 
     @handled_function
     def setup_widgets(self):
@@ -398,7 +400,7 @@ class ControlApplication(QApplication):
     def start_ple_scan(self, checked):
         if self.ple_scanner is None:
             self.ple_scanner = PLE(self.matisse)
-            print('Initialized PLE libraries.')
+            print('Initialized Andor libraries.')
 
         dialog = PLEScanDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
@@ -413,7 +415,7 @@ class ControlApplication(QApplication):
         if self.ple_scanner is not None:
             self.ple_scanner.stop_ple_scan()
         else:
-            print('WARNING: PLE libraries have not been initialized.')
+            print('WARNING: Andor libraries have not been initialized.')
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
