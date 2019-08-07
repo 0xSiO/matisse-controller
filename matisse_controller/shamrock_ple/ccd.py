@@ -1,7 +1,6 @@
 import time
 from ctypes import *
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 import matisse_controller.config as cfg
@@ -62,10 +61,12 @@ class CCD:
         while not self.temperature_ok:
             self.lib.GetTemperatureF(pointer(current_temp))
             print(f"Cooling CCD. Current temperature is {round(current_temp.value, 2)} °C")
+            # TODO: Use GetTemperature and check if it's DRV_TEMP_STABILIZED
             self.temperature_ok = current_temp.value < temperature + cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE)
             time.sleep(10)
 
         print('Configuring acquisition parameters.')
+        # TODO: Set vertical shift speed to 12.9 to avoid dip at edge of screen
         self.lib.SetAcquisitionMode(c_int(acquisition_mode))
         self.lib.SetReadMode(c_int(readout_mode))
         self.lib.SetTriggerMode(c_int(TRIGGER_MODE_INTERNAL))
@@ -73,6 +74,7 @@ class CCD:
         self.lib.SetExposureTime(c_float(exposure_time))
         print('CCD ready for acquisition.')
 
+    # TODO: Running this the first time after setup still gives all zeros.
     def take_acquisition(self, num_points=1024) -> np.ndarray:
         self.lib.StartAcquisition()
         acquisition_array_type = c_int32 * num_points
@@ -87,7 +89,6 @@ class CCD:
                 time.sleep(1)
         self.lib.GetAcquiredData(data, c_int(num_points))
         data = np.array(data, dtype=np.int32)
-        plt.plot(range(0, num_points), data)
         return data
 
     def shutdown(self):
