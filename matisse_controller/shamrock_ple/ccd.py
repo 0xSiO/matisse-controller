@@ -12,11 +12,18 @@ class CCD:
     LIBRARY_NAME = 'atmcd64d.dll'
     WIDTH = 1024
     HEIGHT = 256
+    MIN_TEMP = -120
+    MAX_TEMP = -10
+
+    TARGET_TEMP = -70
 
     def __init__(self):
         try:
             self.lib = load_lib(CCD.LIBRARY_NAME)
             self.lib.Initialize()
+            self.lib.SetTemperature(c_int(CCD.TARGET_TEMP))
+            self.lib.CoolerON()
+            # TODO: Monitor cooling progress from GUI
         except OSError as err:
             raise RuntimeError('Unable to initialize Andor CCD API.') from err
 
@@ -39,14 +46,14 @@ class CCD:
         temperature
             the desired temperature in degrees centigrade at which to configure the CCD (default is -70)
         """
-        assert self.lib.Initialize() == CCDErrorCode.DRV_SUCCESS.value
         num_cameras = c_long()
         self.lib.GetAvailableCameras(pointer(num_cameras))
         print(num_cameras.value, 'CCD cameras found.')
 
         min_temp, max_temp = c_int(), c_int()
         self.lib.GetTemperatureRange(pointer(min_temp), pointer(max_temp))
-        print(f"Min temp: {min_temp}, max temp: {max_temp}")
+        min_temp, max_temp = min_temp.value, max_temp.value
+        assert min_temp < temperature < max_temp, f"Temperature must be set between {min_temp} and {max_temp}"
 
         self.lib.SetTemperature(c_int(temperature))
         self.lib.CoolerON()
@@ -55,10 +62,10 @@ class CCD:
         # CCD normally takes a few minutes to fully cool down
         while current_temp.value > temperature + 3.25:
             self.lib.GetTemperatureF(pointer(current_temp))
-            current_temp = current_temp.value
-            print(f"Cooling CCD. Current temperature is {current_temp} °C")
-            time.sleep(5)
+            print(f"Cooling CCD. Current temperature is {round(current_temp.value, 2)} °C")
+            time.sleep(10)
 
+        print('Configuring acquisition parameters.')
         if acquisition_mode == ACQ_MODE_ACCUMULATE:
             self.use_accumulate_mode()
         else:
@@ -66,7 +73,7 @@ class CCD:
 
         self.lib.SetReadMode(c_int(readout_mode))
         self.lib.SetExposureTime(c_float(exposure_time))
-        # TODO: Maybe set the vertical/horizontal speeds
+        print('CCD ready for acquisition.')
 
     def use_accumulate_mode(self, num_cycles=2, cycle_time=1.025):
         self.lib.SetAcquisitionMode(ACQ_MODE_ACCUMULATE)
@@ -75,12 +82,18 @@ class CCD:
         self.lib.SetTriggerMode(c_int(TRIGGER_MODE_INTERNAL))
         self.lib.SetFilterMode(c_int(COSMIC_RAY_FILTER_ON))
 
-    def take_acquisition(self, num_points) -> np.ndarray:
-        assert self.lib.StartAcquisition() == CCDErrorCode.DRV_SUCCESS.value
+    def take_acquisition(self, num_points=1024) -> np.ndarray:
+        self.lib.StartAcquisition()
         acquisition_array_type = c_int32 * num_points
         data = acquisition_array_type()
-        self.lib.WaitForAcquisition()
-        assert self.lib.GetAcquiredData(data, c_int(num_points)) == CCDErrorCode.DRV_SUCCESS.value
+        while True:
+            status = c_int()
+            self.lib.GetStatus(pointer(status))
+            if status.value == CCDErrorCode.DRV_IDLE.value:
+                break
+            else:
+                time.sleep(1)
+        self.lib.GetAcquiredData(data, c_int(num_points))
         data = np.array(data, dtype=np.int32)
         plt.plot(range(0, num_points), data)
         return data

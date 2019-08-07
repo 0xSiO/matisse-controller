@@ -7,6 +7,11 @@ class Shamrock:
     LIBRARY_NAME = 'ShamrockCIF.dll'
     DEVICE_ID = c_int(0)
 
+    # Below constants are calculated using a calibrated wavelength axis on SOLIS (end - start) / 1024
+    GRATING_300_GRV_NM_PER_PIXEL = 0.116523437
+    GRATING_1200_GRV_NM_PER_PIXEL = 0.0273535156
+    GRATING_1800_GRV_NM_PER_PIXEL = 0.01578125
+
     def __init__(self):
         try:
             self.lib = load_lib(Shamrock.LIBRARY_NAME)
