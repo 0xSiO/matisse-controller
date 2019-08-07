@@ -17,6 +17,7 @@ from matisse_controller.gui.logging_stream import LoggingStream
 from matisse_controller.gui.utils import handled_function, handled_slot
 from matisse_controller.gui.widgets import LoggingArea, StatusMonitor
 from matisse_controller.matisse import Matisse
+from matisse_controller.shamrock_ple import PLE
 
 
 class ControlApplication(QApplication):
@@ -43,6 +44,7 @@ class ControlApplication(QApplication):
         self.aboutToQuit.connect(self.clean_up)
         self.work_executor = ThreadPoolExecutor()
         self.matisse_worker: Future = None
+        self.ple_scanner = None
 
         container = QWidget()
         container.setLayout(self.layout)
@@ -394,15 +396,24 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_ple_scan(self, checked):
+        if self.ple_scanner is None:
+            self.ple_scanner = PLE(self.matisse)
+            print('Initialized PLE libraries.')
+
         dialog = PLEScanDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
             ple_options = dialog.get_form_data()
             print(f"Starting PLE scan with options {ple_options}")
             # TODO: Validate options inside the dialog class first
+            self.ple_scanner.start_ple_scan(**ple_options)
+            # TODO: self.run_matisse_task(self.ple_scanner.start_ple_scan, **ple_options)
 
     @handled_slot(bool)
     def stop_ple_scan(self, checked):
-        self.matisse.ple_scanner.stop_ple_scan()
+        if self.ple_scanner is not None:
+            self.ple_scanner.stop_ple_scan()
+        else:
+            print('WARNING: PLE libraries have not been initialized.')
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
