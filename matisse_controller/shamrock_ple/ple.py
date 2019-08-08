@@ -49,11 +49,14 @@ class PLE:
         **ccd_kwargs
             kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         """
+        if not name:
+            print('WARNING: Name of PLE scan is required.')
+            return
+
         data_file_name = f"{name}.pickle"
 
         if os.path.exists(data_file_name):
-            raise FileExistsError(
-                f"A PLE scan has already been run for '{name}'. Please choose a different name and try again.")
+            raise FileExistsError(f"A PLE scan has already been run for '{name}'. Choose a new name and try again.")
 
         ccd.setup(*ccd_args, **ccd_kwargs)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
@@ -108,6 +111,10 @@ class PLE:
         background_file_path
             the name of a file to use for subtracting background, should be loadable with numpy.loadtxt
         """
+        if not data_file_path:
+            print('WARNING: No data file provided to analyze.')
+            return
+
         data_dir = os.path.abspath(os.path.dirname(data_file_path))
         data_file_name = os.path.basename(data_file_path).split('.')[0]
         analysis_file_path = os.path.join(data_dir, f"{data_file_name}_analysis.pickle")
