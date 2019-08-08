@@ -46,6 +46,7 @@ class ControlApplication(QApplication):
         self.work_executor = ThreadPoolExecutor()
         self.matisse_worker: Future = None
         self.ple_scanner: PLE = None
+        self.ple_analysis_worker: Future = None
 
         container = QWidget()
         container.setLayout(self.layout)
@@ -408,27 +409,28 @@ class ControlApplication(QApplication):
         dialog = PLEScanDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
             ple_options = dialog.get_form_data()
-            print(f"Starting PLE scan with options {ple_options}")
-            # TODO: Validate options inside the dialog class first
-            self.ple_scanner.start_ple_scan(**ple_options)
-            # TODO: self.run_matisse_task(self.ple_scanner.start_ple_scan, **ple_options)
+            print('Starting PLE scan.')
+            self.run_matisse_task(self.ple_scanner.start_ple_scan, **ple_options)
 
     @handled_slot(bool)
     def stop_ple_scan(self, checked):
         if self.ple_scanner is not None:
+            print('Stopping PLE scan.')
             self.ple_scanner.stop_ple_scan()
         else:
             print('WARNING: Andor libraries have not been initialized.')
 
     @handled_slot(bool)
     def analyze_ple_data(self, checked):
+        if self.ple_analysis_worker and self.ple_analysis_worker.running():
+            print('WARNING: A PLE analysis is currently in progress.')
+            return
+
         dialog = PLEAnalysisDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
             analysis_options = dialog.get_form_data()
-            print(f"Starting PLE analysis with options {analysis_options}")
-            # TODO: Validate options inside the dialog class first
-            self.ple_scanner.analyze_ple_data(**analysis_options)
-            # TODO: Run in threadpool (not run_matisse_task)
+            print('Starting PLE analysis.')
+            self.ple_analysis_worker = self.work_executor.submit(self.ple_scanner.analyze_ple_data, **analysis_options)
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
@@ -449,7 +451,7 @@ class ControlApplication(QApplication):
         bool
             whether the task was successfully started
         """
-        if self.matisse_worker is not None and self.matisse_worker.running():
+        if self.matisse_worker and self.matisse_worker.running():
             print("WARNING: Cannot perform requested action. A Matisse-related task is currently running.")
             return False
         else:

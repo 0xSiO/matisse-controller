@@ -87,7 +87,6 @@ class PLE:
 
     def stop_ple_scan(self):
         """Trigger the Matisse exit_flag to stop running scans and PLE measurements."""
-        print('Stopping PLE scan.')
         self.matisse.exit_flag = True
 
     def analyze_ple_data(self, data_file_path: str, integration_start: float, integration_end: float,
@@ -138,6 +137,7 @@ class PLE:
                     scans[wavelength] -= background_data
                 total_counts[wavelength] = sum(scans[wavelength])
 
+        # TODO: Make sure this actually opens a plot
         plt.plot(total_counts.keys(), total_counts.values())
 
         with open(analysis_file_path, 'wb') as analysis_file:
