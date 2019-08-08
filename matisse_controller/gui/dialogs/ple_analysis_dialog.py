@@ -1,3 +1,6 @@
+import os
+
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
 
 import matisse_controller.config as cfg
@@ -12,7 +15,9 @@ class PLEAnalysisDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.setup_form()
+        self.setup_slots()
         self.add_buttons()
+        self.background_data_file_path = None
 
     def setup_form(self):
         form_layout = QFormLayout()
@@ -30,7 +35,18 @@ class PLEAnalysisDialog(QDialog):
         self.integration_end_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
         self.integration_end_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
         form_layout.addRow('Integration end (nm): ', self.integration_end_field)
+
+        file_selection_layout = QHBoxLayout()
+        self.file_button = QPushButton('Select File')
+        self.file_label = QLabel()
+        file_selection_layout.addWidget(self.file_button)
+        file_selection_layout.addWidget(self.file_label)
+        form_layout.addRow('Subtract Background: ', file_selection_layout)
+
         self.layout.addLayout(form_layout)
+
+    def setup_slots(self):
+        self.file_button.clicked.connect(self.select_background_file)
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -44,7 +60,13 @@ class PLEAnalysisDialog(QDialog):
             'name': self.scan_name_field.text(),
             'integration_start': self.integration_start_field.value(),
             'integration_end': self.integration_end_field.value(),
+            'background_file_path': self.background_data_file_path
         }
+
+    @pyqtSlot(bool)
+    def select_background_file(self, checked):
+        self.background_data_file_path = QFileDialog.getOpenFileName(caption='Select Background File')[0]
+        self.file_label.setText(os.path.basename(self.background_data_file_path))
 
 
 def main():

@@ -83,13 +83,24 @@ class PLE:
         print('Stopping PLE scan.')
         self.matisse.exit_flag = True
 
-    def analyze_ple_data(self, name: str, integration_start: float, integration_end: float):
-        """Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength."""
+    def analyze_ple_data(self, name: str, integration_start: float, integration_end: float, background_file_path=''):
+        """
+        Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength.
+
+        Optionally subtract background using a given file name.
+        """
         with open(f"{name}_full_pickled.dat") as full_data_file:
             scans = pickle.load(full_data_file)
-        # TODO: Subtract noise
+
+        if background_file_path:
+            background_data = np.loadtxt(background_file_path)
+        else:
+            background_data = None
+
         # TODO: Figure out index for integration endpoints, then slice scan data
         total_counts = {}
         for wavelength in scans.keys():
+            if background_data:
+                scans[wavelength] -= background_data
             total_counts[wavelength] = sum(scans[wavelength])
         plt.plot(total_counts.keys(), total_counts.values())
