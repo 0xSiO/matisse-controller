@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matisse_controller.shamrock_ple.ccd import CCD
-from matisse_controller.shamrock_ple.constants import *
 from matisse_controller.shamrock_ple.shamrock import Shamrock
 
 ccd: CCD = None
@@ -32,6 +31,9 @@ class PLE:
         """
         Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
 
+        Generates text files with data from each spectrum taken during the scan, and pickles the Python dictionary of
+        all data into {name}.pickle.
+
         Parameters
         ----------
         name
@@ -47,26 +49,28 @@ class PLE:
         **ccd_kwargs
             kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         """
-        if os.path.exists(f"{name}_full_pickled.dat"):
+        data_file_name = f"{name}.pickle"
+
+        if os.path.exists(data_file_name):
             raise FileExistsError(
                 f"A PLE scan has already been run for '{name}'. Please choose a different name and try again.")
 
         ccd.setup(*ccd_args, **ccd_kwargs)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         counter = 1
-        scans = {}
+        spectra = {}
         for wavelength in wavelengths:
             if self.matisse.exit_flag:
-                print('Received exit signal, saving scan data.')
+                print('Received exit signal, saving PLE data.')
                 break
             self.lock_at_wavelength(wavelength)
             data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
             file_name = f"{str(counter).zfill(3)}_{name}_{wavelength}nm_StepSize_{step}nm_Range_{abs(round(final_wavelength - initial_wavelength, 8))}nm.txt"
             np.savetxt(file_name, data)
-            scans[wavelength] = data
+            spectra[wavelength] = data
             counter += 1
-        with open(f"{name}_full_pickled.dat") as full_data_file:
-            pickle.dump(scans, full_data_file)
+        with open(data_file_name, 'wb') as data_file:
+            pickle.dump(spectra, data_file, pickle.HIGHEST_PROTOCOL)
 
     def lock_at_wavelength(self, wavelength: float):
         """Try to lock the Matisse at a given wavelength, waiting to return until we're within a small tolerance."""
@@ -83,24 +87,51 @@ class PLE:
         print('Stopping PLE scan.')
         self.matisse.exit_flag = True
 
-    def analyze_ple_data(self, name: str, integration_start: float, integration_end: float, background_file_path=''):
+    def analyze_ple_data(self, data_file_path: str, integration_start: float, integration_end: float,
+                         background_file_path=''):
         """
         Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength.
 
-        Optionally subtract background using a given file name.
+        Loads PLE data from {name}.pickle and pickles integrated counts for each wavelength into {name}_analysis.pickle.
+        If an analysis file already exists, it will plot that instead.
+
+        Optionally subtract background from given file name. The background file should be loadable with numpy.loadtxt.
+
+        Parameters
+        ----------
+        data_file_path
+            the path to the .pickle file containing the PLE measurement data
+        integration_start
+            start of integration region (nm) for tallying the counts
+        integration_end
+            end of integration region (nm) for tallying the counts
+        background_file_path
+            the name of a file to use for subtracting background, should be loadable with numpy.loadtxt
         """
-        with open(f"{name}_full_pickled.dat") as full_data_file:
-            scans = pickle.load(full_data_file)
+        data_dir = os.path.abspath(os.path.dirname(data_file_path))
+        data_file_name = os.path.basename(data_file_path).split('.')[0]
+        analysis_file_path = os.path.join(data_dir, f"{data_file_name}_analysis.pickle")
 
-        if background_file_path:
-            background_data = np.loadtxt(background_file_path)
+        if os.path.exists(analysis_file_path):
+            with open(analysis_file_path, 'rb') as analysis_file:
+                total_counts = pickle.load(analysis_file)
         else:
-            background_data = None
+            with open(data_file_path, 'rb') as full_data_file:
+                scans = pickle.load(full_data_file)
 
-        # TODO: Figure out index for integration endpoints, then slice scan data
-        total_counts = {}
-        for wavelength in scans.keys():
-            if background_data:
-                scans[wavelength] -= background_data
-            total_counts[wavelength] = sum(scans[wavelength])
+            if background_file_path:
+                background_data = np.loadtxt(background_file_path)
+            else:
+                background_data = None
+
+            # TODO: Figure out index for integration endpoints, then slice scan data
+            total_counts = {}
+            for wavelength in scans.keys():
+                if background_data:
+                    scans[wavelength] -= background_data
+                total_counts[wavelength] = sum(scans[wavelength])
+
         plt.plot(total_counts.keys(), total_counts.values())
+
+        with open(analysis_file_path, 'wb') as analysis_file:
+            pickle.dump(total_counts, analysis_file, pickle.HIGHEST_PROTOCOL)

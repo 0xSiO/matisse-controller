@@ -17,12 +17,20 @@ class PLEAnalysisDialog(QDialog):
         self.setup_form()
         self.setup_slots()
         self.add_buttons()
-        self.background_data_file_path = None
+        self.setMinimumWidth(300)
+        self.data_file_path = None
+        self.background_file_path = None
 
     def setup_form(self):
         form_layout = QFormLayout()
-        self.scan_name_field = QLineEdit()
-        form_layout.addRow('Scan name: ', self.scan_name_field)
+
+        data_file_selection_layout = QHBoxLayout()
+        self.data_file_button = QPushButton('Select File')
+        self.data_file_label = QLabel()
+        data_file_selection_layout.addWidget(self.data_file_button)
+        data_file_selection_layout.addWidget(self.data_file_label)
+        form_layout.addRow('PLE Data: ', data_file_selection_layout)
+
         self.integration_start_field = QDoubleSpinBox()
         self.integration_start_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
         self.integration_start_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
@@ -36,17 +44,18 @@ class PLEAnalysisDialog(QDialog):
         self.integration_end_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
         form_layout.addRow('Integration end (nm): ', self.integration_end_field)
 
-        file_selection_layout = QHBoxLayout()
-        self.file_button = QPushButton('Select File')
-        self.file_label = QLabel()
-        file_selection_layout.addWidget(self.file_button)
-        file_selection_layout.addWidget(self.file_label)
-        form_layout.addRow('Subtract Background: ', file_selection_layout)
+        bkgd_file_selection_layout = QHBoxLayout()
+        self.bkgd_file_button = QPushButton('Select File')
+        self.bkgd_file_label = QLabel()
+        bkgd_file_selection_layout.addWidget(self.bkgd_file_button)
+        bkgd_file_selection_layout.addWidget(self.bkgd_file_label)
+        form_layout.addRow('Subtract Background: ', bkgd_file_selection_layout)
 
         self.layout.addLayout(form_layout)
 
     def setup_slots(self):
-        self.file_button.clicked.connect(self.select_background_file)
+        self.data_file_button.clicked.connect(self.select_data_file)
+        self.bkgd_file_button.clicked.connect(self.select_background_file)
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -57,16 +66,22 @@ class PLEAnalysisDialog(QDialog):
     def get_form_data(self):
         return {
             # The keys here MUST match parameter names in the PLE class
-            'name': self.scan_name_field.text(),
+            'data_file_path': self.data_file_path,
             'integration_start': self.integration_start_field.value(),
             'integration_end': self.integration_end_field.value(),
-            'background_file_path': self.background_data_file_path
+            'background_file_path': self.background_file_path
         }
 
     @pyqtSlot(bool)
+    def select_data_file(self, checked):
+        self.data_file_path = QFileDialog.getOpenFileName(caption='Select Data File',
+                                                          filter='Pickled Data (*.pickle)')[0]
+        self.data_file_label.setText(os.path.basename(self.data_file_path))
+
+    @pyqtSlot(bool)
     def select_background_file(self, checked):
-        self.background_data_file_path = QFileDialog.getOpenFileName(caption='Select Background File')[0]
-        self.file_label.setText(os.path.basename(self.background_data_file_path))
+        self.background_file_path = QFileDialog.getOpenFileName(caption='Select Background File')[0]
+        self.bkgd_file_label.setText(os.path.basename(self.background_file_path))
 
 
 def main():
