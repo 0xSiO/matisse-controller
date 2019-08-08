@@ -55,26 +55,27 @@ class CCD:
 
         self.lib.SetTemperature(c_int(temperature))
         self.lib.CoolerON()
-        current_temp = c_float()
         # Cooler stops when temp is within 3 degrees of target, so wait until it's close
         # CCD normally takes a few minutes to fully cool down
         while not self.temperature_ok:
-            self.lib.GetTemperatureF(pointer(current_temp))
-            print(f"Cooling CCD. Current temperature is {round(current_temp.value, 2)} °C")
-            # TODO: Use GetTemperature and check if it's DRV_TEMP_STABILIZED
-            self.temperature_ok = current_temp.value < temperature + cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE)
+            current_temp = self.get_temperature()
+            print(f"Cooling CCD. Current temperature is {round(current_temp, 2)} °C")
+            self.temperature_ok = current_temp < temperature + cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE)
             time.sleep(10)
 
         print('Configuring acquisition parameters.')
-        # TODO: Set vertical shift speed to 12.9 to avoid dip at edge of screen
         self.lib.SetAcquisitionMode(c_int(acquisition_mode))
         self.lib.SetReadMode(c_int(readout_mode))
+        self.lib.SetVSSpeed(c_int(1))
         self.lib.SetTriggerMode(c_int(TRIGGER_MODE_INTERNAL))
-        self.lib.SetFilterMode(c_int(COSMIC_RAY_FILTER_ON))
         self.lib.SetExposureTime(c_float(exposure_time))
         print('CCD ready for acquisition.')
 
-    # TODO: Running this the first time after setup still gives all zeros.
+    def get_temperature(self) -> float:
+        temperature = c_float()
+        self.lib.GetTemperatureF(pointer(temperature))
+        return temperature.value
+
     def take_acquisition(self, num_points=1024) -> np.ndarray:
         self.lib.StartAcquisition()
         acquisition_array_type = c_int32 * num_points

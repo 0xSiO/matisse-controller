@@ -3,6 +3,7 @@ from ctypes import *
 from matisse_controller.shamrock_ple.utils import load_lib
 
 
+# TODO: Note that for some reason the Shamrock will not be found unless SOLIS is installed. Probably a driver issue :(
 class Shamrock:
     LIBRARY_NAME = 'ShamrockCIF.dll'
     DEVICE_ID = c_int(0)
