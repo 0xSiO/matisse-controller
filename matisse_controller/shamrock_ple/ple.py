@@ -125,9 +125,11 @@ class PLE:
         analysis_file_path = os.path.join(data_dir, f"{data_file_name}_analysis.pickle")
 
         if os.path.exists(analysis_file_path):
+            print(f"Using existing analysis file.")
             with open(analysis_file_path, 'rb') as analysis_file:
                 total_counts = pickle.load(analysis_file)
         else:
+            print(f"Generating new analysis file.")
             with open(data_file_path, 'rb') as full_data_file:
                 scans = pickle.load(full_data_file)
 
