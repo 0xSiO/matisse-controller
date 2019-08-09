@@ -66,15 +66,17 @@ class PLE:
 
         PLE.load_andor_libs()
         print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}.")
-        shamrock.set_grating_grooves(grating_grooves)
-        shamrock.set_center_wavelength(center_wavelength)
+        # TODO: Uncomment after testing
+        # shamrock.set_grating_grooves(grating_grooves)
+        # shamrock.set_center_wavelength(center_wavelength)
         ccd.setup(*ccd_args, **ccd_kwargs)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
         counter = 1
-        data = {}
-        data['grating_grooves'] = grating_grooves
-        data['center_wavelength'] = center_wavelength
+        data = {
+            'grating_grooves': grating_grooves,
+            'center_wavelength': center_wavelength
+        }
         for wavelength in wavelengths:
             wavelength = round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))
             if self.matisse.exit_flag:
@@ -92,11 +94,12 @@ class PLE:
 
     def lock_at_wavelength(self, wavelength: float):
         """Try to lock the Matisse at a given wavelength, waiting to return until we're within a small tolerance."""
-        tolerance = 0.001
+        tolerance = 10 ** -cfg.get(cfg.WAVEMETER_PRECISION)
         self.matisse.set_wavelength(wavelength)
-        self.matisse.set_recommended_fast_piezo_setpoint()
-        if not self.matisse.laser_locked():
-            self.matisse.start_laser_lock_correction()
+        # TODO: Decide whether to keep this, now that we always lock after setting wavelength
+        # if not self.matisse.laser_locked():
+        #     self.matisse.set_recommended_fast_piezo_setpoint()
+        #     self.matisse.start_laser_lock_correction()
         while abs(wavelength - self.matisse.wavemeter_wavelength()) >= tolerance:
             time.sleep(3)
 

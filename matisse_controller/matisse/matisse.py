@@ -143,7 +143,6 @@ class Matisse:
 
         self.target_wavelength = wavelength
 
-        lock_when_done = self.is_lock_correction_on()
         if self.is_lock_correction_on():
             self.stop_laser_lock_correction()
         if self.is_stabilizing():
@@ -210,8 +209,16 @@ class Matisse:
                 self._force_large_scan = False
                 break
 
-        if lock_when_done:
-            self.start_laser_lock_correction()
+        # TODO: Document this update to behavior
+        self.set_recommended_fast_piezo_setpoint()
+        self.start_laser_lock_correction()
+        print('Waiting for laser lock...')
+        while not self.laser_locked():
+            if not self.is_lock_correction_on():
+                print('Lock failed, trying again.')
+                self.set_recommended_fast_piezo_setpoint()
+                self.start_laser_lock_correction()
+            time.sleep(1)
         self.stabilize_on()
 
     def reset_motors(self):
