@@ -45,7 +45,7 @@ class ControlApplication(QApplication):
         self.aboutToQuit.connect(self.clean_up)
         self.work_executor = ThreadPoolExecutor()
         self.matisse_worker: Future = None
-        self.ple_scanner: PLE = None
+        self.ple_scanner: PLE = PLE(self.matisse)
         self.ple_analysis_worker: Future = None
 
         container = QWidget()
@@ -423,10 +423,6 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_ple_scan(self, checked):
-        if self.ple_scanner is None:
-            self.ple_scanner = PLE(self.matisse)
-            print('Initialized Andor libraries.')
-
         dialog = PLEScanDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
             ple_options = dialog.get_form_data()
@@ -435,21 +431,14 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def stop_ple_scan(self, checked):
-        if self.ple_scanner is not None:
-            print('Stopping PLE scan.')
-            self.ple_scanner.stop_ple_scan()
-        else:
-            print('WARNING: Andor libraries have not been initialized.')
+        print('Stopping any running PLE scans.')
+        self.ple_scanner.stop_ple_scan()
 
     @handled_slot(bool)
     def analyze_ple_data(self, checked):
         if self.ple_analysis_worker and self.ple_analysis_worker.running():
             print('WARNING: A PLE analysis is currently in progress.')
             return
-
-        if self.ple_scanner is None:
-            self.ple_scanner = PLE(self.matisse)
-            print('Initialized Andor libraries.')
 
         dialog = PLEAnalysisDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:

@@ -16,23 +16,23 @@ shamrock: Shamrock = None
 class PLE:
     """PLE scanning functionality with the Andor Shamrock and Newton CCD."""
 
-    # TODO: Currently untested
-
     def __init__(self, matisse):
         self.matisse = matisse
         self.plotting_processes = []
 
     @staticmethod
-    def setup_spectrometer():
+    def load_andor_libs():
         global ccd
         global shamrock
         if ccd is None:
             ccd = CCD()
+            print('CCD initialized.')
         if shamrock is None:
             shamrock = Shamrock()
+            print('Shamrock initialized.')
 
-    def start_ple_scan(self, name: str, initial_wavelength: float, final_wavelength: float, step: float, *ccd_args,
-                       **ccd_kwargs):
+    def start_ple_scan(self, name: str, initial_wavelength: float, final_wavelength: float, step: float,
+                       center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
         """
         Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
 
@@ -64,12 +64,15 @@ class PLE:
             print(f"WARNING: A PLE scan has already been run for '{name}'. Choose a new name and try again.")
             return
 
-        PLE.setup_spectrometer()
+        PLE.load_andor_libs()
+        print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}.")
+        shamrock.set_grating_grooves(grating_grooves)
+        shamrock.set_center_wavelength(center_wavelength)
         ccd.setup(*ccd_args, **ccd_kwargs)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
         counter = 1
-        spectra = {}
+        data = {}
         for wavelength in wavelengths:
             wavelength = round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))
             if self.matisse.exit_flag:
@@ -80,10 +83,10 @@ class PLE:
             file_name = f"{str(counter).zfill(3)}_{name}_{round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))}nm" \
                         f"_StepSize_{step}nm_Range_{wavelength_range}nm.txt"
             np.savetxt(file_name, data)
-            spectra[wavelength] = data
+            data[wavelength] = data
             counter += 1
         with open(data_file_name, 'wb') as data_file:
-            pickle.dump(spectra, data_file, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(data, data_file, pickle.HIGHEST_PROTOCOL)
 
     def lock_at_wavelength(self, wavelength: float):
         """Try to lock the Matisse at a given wavelength, waiting to return until we're within a small tolerance."""
@@ -143,6 +146,10 @@ class PLE:
                 background_data = None
 
             # TODO: Figure out index for integration endpoints, then slice scan data
+            # TODO: Store/load actual spectrometer center and grating in pickle file
+            # center = 740.0
+            # start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end, center, 1)
+
             total_counts = {}
             for wavelength in scans.keys():
                 if background_data:
@@ -155,3 +162,7 @@ class PLE:
         plot_process = PLEAnalysisPlotProcess(total_counts, daemon=True)
         self.plotting_processes.append(plot_process)
         plot_process.start()
+
+    # TODO: Finish this
+    def find_integration_endpoints(self, start, end, center, grating):
+        return 0, 1023

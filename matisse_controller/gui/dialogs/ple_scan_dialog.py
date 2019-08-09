@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 
 import matisse_controller.config as cfg
+import matisse_controller.shamrock_ple.ple as ple
 
 
 class PLEScanDialog(QDialog):
@@ -40,6 +41,17 @@ class PLEScanDialog(QDialog):
         self.exposure_time_field.setDecimals(4)
         form_layout.addRow('Exposure time (s): ', self.exposure_time_field)
         self.layout.addLayout(form_layout)
+        self.center_wavelength_field = QDoubleSpinBox()
+        self.center_wavelength_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.center_wavelength_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        form_layout.addRow('Center wavelength (nm): ', self.center_wavelength_field)
+
+        # We need to make sure the Andor libraries are loaded to access the spectrometer
+        ple.PLE.load_andor_libs()
+        self.grating_grooves_field = QComboBox()
+        for groove_num in ple.shamrock.gratings.keys():
+            self.grating_grooves_field.addItem(f"{groove_num}", ple.shamrock.gratings[groove_num])
+        form_layout.addRow('Grating grooves: ', self.grating_grooves_field)
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -54,7 +66,9 @@ class PLEScanDialog(QDialog):
             'initial_wavelength': self.wavelength_start_field.value(),
             'final_wavelength': self.wavelength_end_field.value(),
             'step': self.wavelength_step_field.value(),
-            'exposure_time': self.exposure_time_field.value()
+            'exposure_time': self.exposure_time_field.value(),
+            'center_wavelength': self.center_wavelength_field.value(),
+            'grating_grooves': int(self.grating_grooves_field.currentText())
         }
 
 
