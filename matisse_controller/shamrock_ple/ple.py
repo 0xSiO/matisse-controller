@@ -2,9 +2,9 @@ import os
 import pickle
 import time
 
-import matplotlib.pyplot as plt
 import numpy as np
 
+import matisse_controller.config as cfg
 from matisse_controller.shamrock_ple.ccd import CCD
 from matisse_controller.shamrock_ple.shamrock import Shamrock
 
@@ -56,19 +56,23 @@ class PLE:
         data_file_name = f"{name}.pickle"
 
         if os.path.exists(data_file_name):
-            raise FileExistsError(f"A PLE scan has already been run for '{name}'. Choose a new name and try again.")
+            print(f"WARNING: A PLE scan has already been run for '{name}'. Choose a new name and try again.")
+            return
 
         ccd.setup(*ccd_args, **ccd_kwargs)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
+        wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
         counter = 1
         spectra = {}
         for wavelength in wavelengths:
+            wavelength = round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))
             if self.matisse.exit_flag:
                 print('Received exit signal, saving PLE data.')
                 break
             self.lock_at_wavelength(wavelength)
             data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
-            file_name = f"{str(counter).zfill(3)}_{name}_{wavelength}nm_StepSize_{step}nm_Range_{abs(round(final_wavelength - initial_wavelength, 8))}nm.txt"
+            file_name = f"{str(counter).zfill(3)}_{name}_{round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))}nm" \
+                        f"_StepSize_{step}nm_Range_{wavelength_range}nm.txt"
             np.savetxt(file_name, data)
             spectra[wavelength] = data
             counter += 1
@@ -137,8 +141,7 @@ class PLE:
                     scans[wavelength] -= background_data
                 total_counts[wavelength] = sum(scans[wavelength])
 
-        # TODO: Make sure this actually opens a plot
-        plt.plot(total_counts.keys(), total_counts.values())
+        # TODO: Open a plot in another process
 
         with open(analysis_file_path, 'wb') as analysis_file:
             pickle.dump(total_counts, analysis_file, pickle.HIGHEST_PROTOCOL)
