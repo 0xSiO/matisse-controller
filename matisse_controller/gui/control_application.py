@@ -426,6 +426,10 @@ class ControlApplication(QApplication):
             print('WARNING: A PLE analysis is currently in progress.')
             return
 
+        if self.ple_scanner is None:
+            self.ple_scanner = PLE(self.matisse)
+            print('Initialized Andor libraries.')
+
         dialog = PLEAnalysisDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
             analysis_options = dialog.get_form_data()

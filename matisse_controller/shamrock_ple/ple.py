@@ -7,6 +7,7 @@ import numpy as np
 import matisse_controller.config as cfg
 from matisse_controller.shamrock_ple.ccd import CCD
 from matisse_controller.shamrock_ple.shamrock import Shamrock
+from matisse_controller.shamrock_ple.plotting import PLEAnalysisPlotProcess
 
 ccd: CCD = None
 shamrock: Shamrock = None
@@ -25,6 +26,7 @@ class PLE:
             ccd = CCD()
         if shamrock is None:
             shamrock = Shamrock()
+        self.plotting_processes = []
 
     def start_ple_scan(self, name: str, initial_wavelength: float, final_wavelength: float, step: float, *ccd_args,
                        **ccd_kwargs):
@@ -141,7 +143,9 @@ class PLE:
                     scans[wavelength] -= background_data
                 total_counts[wavelength] = sum(scans[wavelength])
 
-        # TODO: Open a plot in another process
-
         with open(analysis_file_path, 'wb') as analysis_file:
             pickle.dump(total_counts, analysis_file, pickle.HIGHEST_PROTOCOL)
+
+        plot_process = PLEAnalysisPlotProcess(total_counts, daemon=True)
+        self.plotting_processes.append(plot_process)
+        plot_process.start()
