@@ -1,6 +1,8 @@
 """Utility functions and decorators for use in the GUI."""
 
+import traceback
 import types
+from concurrent.futures import Future
 from functools import wraps
 
 from PyQt5.QtCore import pyqtSlot
@@ -58,6 +60,19 @@ def handled_slot(*args):
         return handled_function(func)
 
     return slot_wrapper
+
+
+def raise_error_from_future(future: Future):
+    """
+    If you'd lke to log errors that occur in thread pools, call `add_done_callback` on the future returned from
+    `ThreadPoolExecutor.submit` and pass in this function.
+    """
+    async_task_error: Exception = future.exception()
+    if async_task_error:
+        # Using the error_dialog method here seems to just hang the application forever.
+        # Workaround: log error, make a noise, alert the user, and hope for the best
+        message = f"An error occurred while running an asynchronous task: <pre>{traceback.format_exc()}</pre>"
+        print(red_text(message))
 
 
 # Text formatting utilities

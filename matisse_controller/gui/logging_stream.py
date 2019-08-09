@@ -9,3 +9,6 @@ class LoggingStream:
 
     def write(self, message):
         self.queue.put(message)
+
+    def flush(self):
+        pass

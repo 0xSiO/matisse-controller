@@ -20,13 +20,16 @@ class PLE:
 
     def __init__(self, matisse):
         self.matisse = matisse
+        self.plotting_processes = []
+
+    @staticmethod
+    def setup_spectrometer():
         global ccd
         global shamrock
         if ccd is None:
             ccd = CCD()
         if shamrock is None:
             shamrock = Shamrock()
-        self.plotting_processes = []
 
     def start_ple_scan(self, name: str, initial_wavelength: float, final_wavelength: float, step: float, *ccd_args,
                        **ccd_kwargs):
@@ -61,6 +64,7 @@ class PLE:
             print(f"WARNING: A PLE scan has already been run for '{name}'. Choose a new name and try again.")
             return
 
+        PLE.setup_spectrometer()
         ccd.setup(*ccd_args, **ccd_kwargs)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
