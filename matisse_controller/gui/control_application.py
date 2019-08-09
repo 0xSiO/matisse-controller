@@ -429,8 +429,8 @@ class ControlApplication(QApplication):
         dialog = PLEAnalysisDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
             analysis_options = dialog.get_form_data()
-            print('Starting PLE analysis.')
             self.ple_analysis_worker = self.work_executor.submit(self.ple_scanner.analyze_ple_data, **analysis_options)
+            self.ple_analysis_worker.add_done_callback(self.raise_error_from_future)
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
