@@ -73,6 +73,8 @@ class PLE:
         wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
         counter = 1
         data = {}
+        data['grating_grooves'] = grating_grooves
+        data['center_wavelength'] = center_wavelength
         for wavelength in wavelengths:
             wavelength = round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))
             if self.matisse.exit_flag:
@@ -145,16 +147,15 @@ class PLE:
             else:
                 background_data = None
 
-            # TODO: Figure out index for integration endpoints, then slice scan data
-            # TODO: Store/load actual spectrometer center and grating in pickle file
-            # center = 740.0
-            # start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end, center, 1)
-
+            center_wavelength = scans.pop('center_wavelength')
+            grating_grooves = scans.pop('grating_grooves')
+            start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
+                                                                     center_wavelength, grating_grooves)
             total_counts = {}
             for wavelength in scans.keys():
                 if background_data:
                     scans[wavelength] -= background_data
-                total_counts[wavelength] = sum(scans[wavelength])
+                total_counts[wavelength] = sum(scans[wavelength][start_pixel:end_pixel])
 
         with open(analysis_file_path, 'wb') as analysis_file:
             pickle.dump(total_counts, analysis_file, pickle.HIGHEST_PROTOCOL)
@@ -163,6 +164,9 @@ class PLE:
         self.plotting_processes.append(plot_process)
         plot_process.start()
 
-    # TODO: Finish this
-    def find_integration_endpoints(self, start, end, center, grating):
-        return 0, 1023
+    def find_integration_endpoints(self, start_wavelength, end_wavelength, center_wavelength, grating_grooves):
+        """Convert a starting and ending wavelength to CCD pixels."""
+        nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
+        start_pixel = int(CCD.WIDTH / 2 + (start_wavelength - center_wavelength) / nm_per_pixel)
+        end_pixel = int(CCD.WIDTH / 2 + (end_wavelength - center_wavelength) / nm_per_pixel)
+        return start_pixel, end_pixel
