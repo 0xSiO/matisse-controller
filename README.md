@@ -123,8 +123,8 @@ thread later.
 slot (see LoggingThread, StatusUpdateThread for examples).
 - For long-running tasks that do not need access to the UI, submit a runnable object to the ControlApplication's
 instance of ThreadPoolExecutor. Hold a reference to the Future it gives you and call `add_done_callback` on it, passing
-in `ControlApplication.raise_error_from_future` if you want to log errors from that thread. For an example of a method 
-that runs tasks one-by-one on the Matisse, see `ControlApplication.run_matisse_task`.
+in `matisse_controller.gui.utils.raise_error_from_future` if you want to log errors from that thread. For an example of 
+a method that runs tasks one-by-one on the Matisse, see `ControlApplication.run_matisse_task`.
 
 ### Adding another PLE procedure
 Currently I've only implemented a PLE scan for the Andor Shamrock 750. If you'd like to implement your own PLE procedure,

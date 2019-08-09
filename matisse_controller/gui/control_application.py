@@ -129,7 +129,7 @@ class ControlApplication(QApplication):
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
         self.close_plots_action.triggered.connect(self.close_plots)
         self.configuration_action.triggered.connect(self.open_configuration)
-        self.reset_action.triggered.connect(self.reset_matisse)
+        self.reset_action.triggered.connect(self.reset)
         self.restart_action.triggered.connect(self.restart)
 
         # Set
@@ -186,7 +186,7 @@ class ControlApplication(QApplication):
 
         Don't call this elsewhere unless you know what you're doing.
         """
-        self.reset_matisse(reset_motors=False, reset_piezos=False)
+        self.reset(reset_motors=False, reset_piezos=False)
 
         # Clean up widgets with running threads.
         self.status_monitor.clean_up()
@@ -224,13 +224,26 @@ class ControlApplication(QApplication):
         dialog.exec()
 
     @handled_slot(bool)
-    def reset_matisse(self, checked=False, reset_motors=True, reset_piezos=True):
-        """Reset Matisse to a 'good' default state: not locked or stabilizing, motors reset, all tasks finished, etc."""
-        print('Starting reset.')
-        if self.matisse is not None:
+    def reset(self, checked=False, reset_motors=True, reset_piezos=True):
+        """
+        Reset Matisse to a 'good' default state: not locked or stabilizing, motors reset, all tasks finished, etc.
+
+        Also stops any PLE analysis tasks.
+
+        Parameters
+        ----------
+        checked : bool
+            not used
+        reset_motors : bool
+            whether to reset the Matisse birefringent filter and thin etalon motors to their configured reset positions
+        reset_piezos : bool
+            whether to reset the Matisse stabilization piezos
+        """
+        print('Resetting Matisse and stopping any running tasks.')
+        if self.matisse:
             self.matisse.exit_flag = True
             if self.matisse_worker is not None and self.matisse_worker.running():
-                print('Waiting for running tasks to complete.')
+                print('Waiting for Matisse tasks to complete.')
                 self.matisse_worker.result()
             self.matisse_worker = None
             self.matisse.stabilize_off()
@@ -239,8 +252,16 @@ class ControlApplication(QApplication):
                 self.matisse.reset_motors()
             if reset_piezos:
                 self.matisse.reset_stabilization_piezos()
+
+        if self.ple_analysis_worker and self.ple_analysis_worker.running():
+            print('Waiting for PLE analysis to complete.')
+            self.ple_analysis_worker.result()
+            self.ple_analysis_worker = None
+
+        if self.matisse:
             self.matisse.exit_flag = False
-        print('Reset complete.')
+
+        print('Done.')
 
     @handled_slot(bool)
     def restart(self, checked):
@@ -434,7 +455,7 @@ class ControlApplication(QApplication):
         if dialog.exec() == QDialog.Accepted:
             analysis_options = dialog.get_form_data()
             self.ple_analysis_worker = self.work_executor.submit(self.ple_scanner.analyze_ple_data, **analysis_options)
-            self.ple_analysis_worker.add_done_callback(self.raise_error_from_future)
+            self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """
@@ -460,22 +481,8 @@ class ControlApplication(QApplication):
             return False
         else:
             self.matisse_worker = self.work_executor.submit(function, *args, **kwargs)
-            self.matisse_worker.add_done_callback(self.raise_error_from_future)
+            self.matisse_worker.add_done_callback(utils.raise_error_from_future)
             return True
-
-    def raise_error_from_future(self, future: Future):
-        """
-        If you'd lke to log errors that occur in worker threads, call `add_done_callback` on the future returned from
-        the work executor and pass in this function.
-        """
-        async_task_error: Exception = future.exception()
-        if async_task_error is not None:
-            # Using the error_dialog method here seems to just hang the application forever.
-            # Workaround: log error, make a noise, alert the user, and hope for the best
-            message = f"An error occurred while running an asynchronous task: <pre>{traceback.format_exc()}</pre>"
-            self.alert(self.window)
-            self.beep()
-            print(utils.red_text(message))
 
 
 def main():
