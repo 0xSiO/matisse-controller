@@ -18,7 +18,7 @@ from matisse_controller.gui.logging_stream import LoggingStream
 from matisse_controller.gui.utils import handled_function, handled_slot
 from matisse_controller.gui.widgets import LoggingArea, StatusMonitor
 from matisse_controller.matisse import Matisse
-from matisse_controller.shamrock_ple import PLE
+from matisse_controller.shamrock_ple import PLE, ple
 
 
 class ControlApplication(QApplication):
@@ -191,6 +191,10 @@ class ControlApplication(QApplication):
         # Clean up widgets with running threads.
         self.status_monitor.clean_up()
         self.log_area.clean_up()
+
+        # PLE cleanup
+        ple.ccd = None
+        ple.shamrock = None
 
         self.log_redirector.__exit__(None, None, None)
 
