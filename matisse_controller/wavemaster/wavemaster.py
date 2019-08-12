@@ -14,10 +14,7 @@ class WaveMaster:
         except SerialException as err:
             raise IOError("Couldn't open connection to wavemeter.") from err
 
-    def open(self):
-        self.serial.open()
-
-    def close(self):
+    def __del__(self):
         self.serial.close()
 
     def query(self, command: str) -> str:
@@ -37,7 +34,7 @@ class WaveMaster:
         with WaveMaster.wavemeter_lock:
             try:
                 if not self.serial.is_open:
-                    self.open()
+                    self.serial.open()
                 # Ensure a newline is at the end
                 command = command.strip() + '\n\n'
                 self.serial.write(command.encode())

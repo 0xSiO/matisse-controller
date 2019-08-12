@@ -38,6 +38,9 @@ class Matisse:
         except VisaIOError as ioerr:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
+    def __del__(self):
+        self._instrument.close()
+
     def query(self, command: str, numeric_result=False, raise_on_error=True):
         """
         Send a command to the Matisse and return the response.
@@ -212,8 +215,10 @@ class Matisse:
         # TODO: Document this update to behavior
         self.set_recommended_fast_piezo_setpoint()
         self.start_laser_lock_correction()
-        print('Waiting for laser lock...')
+        print('Attempting to lock laser...')
         while not self.laser_locked():
+            if self.exit_flag:
+                return
             if not self.is_lock_correction_on():
                 print('Lock failed, trying again.')
                 self.set_recommended_fast_piezo_setpoint()

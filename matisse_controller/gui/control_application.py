@@ -21,6 +21,8 @@ from matisse_controller.matisse import Matisse
 from matisse_controller.shamrock_ple import PLE, ple
 
 
+# TODO: Add action to reset only stabilization piezos
+# TODO: Add action to just stop running tasks
 class ControlApplication(QApplication):
     """
     A comprehensive control center to make use of the APIs provided in this package.
@@ -187,6 +189,7 @@ class ControlApplication(QApplication):
         Don't call this elsewhere unless you know what you're doing.
         """
         self.reset(reset_motors=False, reset_piezos=False)
+        del self.matisse
 
         # Clean up widgets with running threads.
         self.status_monitor.clean_up()
@@ -250,8 +253,10 @@ class ControlApplication(QApplication):
                 print('Waiting for Matisse tasks to complete.')
                 self.matisse_worker.result()
             self.matisse_worker = None
-            self.matisse.stabilize_off()
-            self.matisse.stop_laser_lock_correction()
+            if self.matisse.is_stabilizing():
+                self.matisse.stabilize_off()
+            if self.matisse.is_lock_correction_on():
+                self.matisse.stop_laser_lock_correction()
             if reset_motors:
                 self.matisse.reset_motors()
             if reset_piezos:
@@ -379,12 +384,8 @@ class ControlApplication(QApplication):
     def toggle_lock_laser(self, checked):
         if self.matisse.is_lock_correction_on():
             self.matisse.stop_laser_lock_correction()
-            [action.setEnabled(True) for action in self.control_loop_actions]
-            [action.setChecked(False) for action in self.control_loop_actions]
         else:
             self.matisse.start_laser_lock_correction()
-            [action.setEnabled(False) for action in self.control_loop_actions]
-            [action.setChecked(True) for action in self.control_loop_actions]
 
     @handled_slot(bool)
     def set_recommended_fast_pz_setpoint(self, checked):
