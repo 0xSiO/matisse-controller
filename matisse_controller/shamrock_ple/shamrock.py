@@ -1,4 +1,5 @@
 from ctypes import *
+from bidict import bidict
 
 from matisse_controller.shamrock_ple.utils import load_lib
 
@@ -25,7 +26,7 @@ class Shamrock:
             self.lib.ShamrockGetNumberDevices(pointer(num_devices))
             assert num_devices.value > 0, 'No spectrometer found.'
 
-            self.gratings = {}
+            self.gratings = bidict()
             self.setup_grating_info()
         except OSError as err:
             raise RuntimeError('Unable to initialize Andor Shamrock API.') from err
@@ -43,11 +44,23 @@ class Shamrock:
                                             pointer(offset))
             self.gratings[round(lines.value)] = index
 
+    def get_grating_grooves(self) -> int:
+        index = c_int()
+        self.lib.ShamrockGetGrating(Shamrock.DEVICE_ID, pointer(index))
+        return self.gratings.inverse[index.value]
+
     def set_grating_grooves(self, num_grooves: int):
-        self.lib.ShamrockSetGrating(Shamrock.DEVICE_ID, c_int(self.gratings[num_grooves]))
+        if num_grooves != self.get_grating_grooves():
+            self.lib.ShamrockSetGrating(Shamrock.DEVICE_ID, c_int(self.gratings[num_grooves]))
+
+    def get_center_wavelength(self) -> float:
+        wavelength = c_float()
+        self.lib.ShamrockGetWavelength(Shamrock.DEVICE_ID, pointer(wavelength))
+        return wavelength.value
 
     def set_center_wavelength(self, wavelength: float):
-        self.lib.ShamrockSetWavelength(Shamrock.DEVICE_ID, c_float(wavelength))
+        if wavelength != self.get_center_wavelength():
+            self.lib.ShamrockSetWavelength(Shamrock.DEVICE_ID, c_float(wavelength))
 
     def shutdown(self):
         self.lib.ShamrockClose()

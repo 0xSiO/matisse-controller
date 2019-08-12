@@ -14,6 +14,7 @@ from matisse_controller.gui import utils
 from matisse_controller.gui.dialogs import ConfigurationDialog
 from matisse_controller.gui.dialogs.ple_analysis_dialog import PLEAnalysisDialog
 from matisse_controller.gui.dialogs.ple_scan_dialog import PLEScanDialog
+from matisse_controller.gui.dialogs.single_acquisition_dialog import SingleAcquisitionDialog
 from matisse_controller.gui.logging_stream import LoggingStream
 from matisse_controller.gui.utils import handled_function, handled_slot
 from matisse_controller.gui.widgets import LoggingArea, StatusMonitor
@@ -49,6 +50,7 @@ class ControlApplication(QApplication):
         self.matisse_worker: Future = None
         self.ple_scanner: PLE = PLE(self.matisse)
         self.ple_analysis_worker: Future = None
+        self.single_acquisition_worker: Future = None
 
         container = QWidget()
         container.setLayout(self.layout)
@@ -117,6 +119,7 @@ class ControlApplication(QApplication):
         self.start_ple_scan_action = ple_menu.addAction('Start PLE Scan')
         self.stop_ple_scan_action = ple_menu.addAction('Stop PLE Scan')
         self.analyze_ple_action = ple_menu.addAction('Analyze PLE Data')
+        self.single_acquisition_action = ple_menu.addAction('Take Single Acquisition')
 
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
                                      self.piezo_eta_control_action, self.fast_pz_control_action]
@@ -165,6 +168,7 @@ class ControlApplication(QApplication):
         self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
         self.stop_ple_scan_action.triggered.connect(self.stop_ple_scan)
         self.analyze_ple_action.triggered.connect(self.analyze_ple_data)
+        self.single_acquisition_action.triggered.connect(self.take_single_acquisition)
 
     @handled_function
     def setup_widgets(self):
@@ -266,6 +270,10 @@ class ControlApplication(QApplication):
             print('Waiting for PLE analysis to complete.')
             self.ple_analysis_worker.result()
             self.ple_analysis_worker = None
+        if self.single_acquisition_worker and self.single_acquisition_worker.running():
+            print('Waiting for acquisition to complete.')
+            self.single_acquisition_worker.result()
+            self.single_acquisition_worker = None
 
         if self.matisse:
             self.matisse.exit_flag = False
@@ -450,6 +458,19 @@ class ControlApplication(QApplication):
             analysis_options = dialog.get_form_data()
             self.ple_analysis_worker = self.work_executor.submit(self.ple_scanner.analyze_ple_data, **analysis_options)
             self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)
+
+    @handled_slot(bool)
+    def take_single_acquisition(self, checked):
+        if self.single_acquisition_worker and self.single_acquisition_worker.running():
+            print('WARNING: An acquisition is currently in progress.')
+            return
+
+        dialog = SingleAcquisitionDialog(parent=self.window)
+        if dialog.exec() == QDialog.Accepted:
+            acquisition_options = dialog.get_form_data()
+            self.single_acquisition_worker = self.work_executor.submit(self.ple_scanner.plot_single_acquisition,
+                                                                       **acquisition_options)
+            self.single_acquisition_worker.add_done_callback(utils.raise_error_from_future)
 
     def run_matisse_task(self, function, *args, **kwargs) -> bool:
         """

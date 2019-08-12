@@ -6,6 +6,7 @@ import numpy as np
 
 import matisse_controller.config as cfg
 from matisse_controller.shamrock_ple.ccd import CCD
+from matisse_controller.shamrock_ple.plotting.single_acquisition_plot_process import SingleAcquisitionPlotProcess
 from matisse_controller.shamrock_ple.shamrock import Shamrock
 from matisse_controller.shamrock_ple.plotting import PLEAnalysisPlotProcess
 
@@ -168,6 +169,20 @@ class PLE:
             pickle.dump(total_counts, analysis_file, pickle.HIGHEST_PROTOCOL)
 
         plot_process = PLEAnalysisPlotProcess(total_counts, daemon=True)
+        self.plotting_processes.append(plot_process)
+        plot_process.start()
+
+    def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
+        PLE.load_andor_libs()
+        print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...")
+        shamrock.set_grating_grooves(grating_grooves)
+        shamrock.set_center_wavelength(center_wavelength)
+        ccd.setup(*ccd_args, **ccd_kwargs)
+        data = ccd.take_acquisition()
+        pixels = range(len(data))
+        # Point-slope formula for calculating wavelengths from pixels
+        wavelengths = [Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves] * (pixel + 1 - len(pixels) / 2) + center_wavelength for pixel in pixels]
+        plot_process = SingleAcquisitionPlotProcess(wavelengths, data)
         self.plotting_processes.append(plot_process)
         plot_process.start()
 

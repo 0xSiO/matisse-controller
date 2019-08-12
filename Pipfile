@@ -13,6 +13,7 @@ pyserial = ">=3, <4"
 scipy = ">=1, <2"
 matplotlib = ">=3, <4"
 pyqt5 = ">=5"
+bidict = ">=0.18"
 
 [requires]
 python_version = "3.7"
