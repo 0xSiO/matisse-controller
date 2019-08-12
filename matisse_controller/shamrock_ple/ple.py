@@ -31,7 +31,7 @@ class PLE:
             shamrock = Shamrock()
             print('Shamrock initialized.')
 
-    def start_ple_scan(self, name: str, initial_wavelength: float, final_wavelength: float, step: float,
+    def start_ple_scan(self, scan_name: str, initial_wavelength: float, final_wavelength: float, step: float,
                        center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
         """
         Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
@@ -41,7 +41,7 @@ class PLE:
 
         Parameters
         ----------
-        name
+        scan_name
             A unique name to give the PLE measurement. This will be included in the name of all the data files.
         initial_wavelength
             starting wavelength for the PLE scan
@@ -54,15 +54,17 @@ class PLE:
         **ccd_kwargs
             kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         """
-        if not name:
+        if not scan_name:
             print('WARNING: Name of PLE scan is required.')
             return
 
-        data_file_name = f"{name}.pickle"
+        data_file_name = os.path.join(scan_name, f"{scan_name}.pickle")
 
         if os.path.exists(data_file_name):
-            print(f"WARNING: A PLE scan has already been run for '{name}'. Choose a new name and try again.")
+            print(f"WARNING: A PLE scan has already been run for '{scan_name}'. Choose a new name and try again.")
             return
+        else:
+            os.makedirs(scan_name, exist_ok=True)
 
         PLE.load_andor_libs()
         print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...")
@@ -83,9 +85,9 @@ class PLE:
                 break
             self.lock_at_wavelength(wavelength)
             data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
-            file_name = f"{str(counter).zfill(3)}_{name}_{round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))}nm" \
+            file_name = f"{str(counter).zfill(3)}_{scan_name}_{round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))}nm" \
                         f"_StepSize_{step}nm_Range_{wavelength_range}nm.txt"
-            np.savetxt(file_name, data)
+            np.savetxt(os.path.join(scan_name, file_name), data)
             data[wavelength] = data
             counter += 1
         with open(data_file_name, 'wb') as data_file:
