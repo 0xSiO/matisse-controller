@@ -40,7 +40,11 @@ class Matisse:
             raise IOError("Can't reach Matisse. Make sure it's on and connected via USB.") from ioerr
 
     def __del__(self):
-        self._instrument.close()
+        try:
+            self._instrument.close()
+        except AttributeError:
+            # No instrument to close
+            pass
 
     def query(self, command: str, numeric_result=False, raise_on_error=True):
         """
