@@ -8,8 +8,8 @@ from matisse_controller.shamrock_ple.constants import *
 from matisse_controller.shamrock_ple.utils import load_lib
 
 
-# TODO: Add action to take single acquisition from CCD
 # TODO: Add action to give live feed from CCD
+# TODO: Exit flag for long-running processes
 class CCD:
     LIBRARY_NAME = 'atmcd64d.dll'
     WIDTH = 1024
@@ -35,7 +35,7 @@ class CCD:
         self.shutdown()
 
     def setup(self, exposure_time: float, acquisition_mode=ACQ_MODE_SINGLE, readout_mode=READ_MODE_FVB,
-              temperature=-70):
+              temperature=-70, cool_down=True):
         """
         Perform setup procedures on CCD, like cooling down to a given temperature and setting acquisition parameters.
 
@@ -49,21 +49,24 @@ class CCD:
             the desired readout mode at which to configure the CCD (default is FVB)
         temperature
             the desired temperature in degrees centigrade at which to configure the CCD (default is -70)
+        cool_down
+            whether to cool down the CCD at all (sometimes we don't care, like when taking a single acquisition)
         """
-        min_temp, max_temp = c_int(), c_int()
-        self.lib.GetTemperatureRange(pointer(min_temp), pointer(max_temp))
-        min_temp, max_temp = min_temp.value, max_temp.value
-        assert min_temp < temperature < max_temp, f"Temperature must be set between {min_temp} and {max_temp}"
+        if cool_down:
+            min_temp, max_temp = c_int(), c_int()
+            self.lib.GetTemperatureRange(pointer(min_temp), pointer(max_temp))
+            min_temp, max_temp = min_temp.value, max_temp.value
+            assert min_temp < temperature < max_temp, f"Temperature must be set between {min_temp} and {max_temp}"
 
-        self.lib.SetTemperature(c_int(temperature))
-        self.lib.CoolerON()
-        # Cooler stops when temp is within 3 degrees of target, so wait until it's close
-        # CCD normally takes a few minutes to fully cool down
-        while not self.temperature_ok:
-            current_temp = self.get_temperature()
-            print(f"Cooling CCD. Current temperature is {round(current_temp, 2)} °C")
-            self.temperature_ok = current_temp < temperature + cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE)
-            time.sleep(10)
+            self.lib.SetTemperature(c_int(temperature))
+            self.lib.CoolerON()
+            # Cooler stops when temp is within 3 degrees of target, so wait until it's close
+            # CCD normally takes a few minutes to fully cool down
+            while not self.temperature_ok:
+                current_temp = self.get_temperature()
+                print(f"Cooling CCD. Current temperature is {round(current_temp, 2)} °C")
+                self.temperature_ok = current_temp < temperature + cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE)
+                time.sleep(10)
 
         print('Configuring acquisition parameters.')
         self.lib.SetAcquisitionMode(c_int(acquisition_mode))
