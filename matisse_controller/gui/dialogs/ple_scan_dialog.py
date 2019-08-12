@@ -62,7 +62,7 @@ class PLEScanDialog(QDialog):
     def get_form_data(self):
         return {
             # The keys here MUST match parameter names in the PLE class
-            'name': self.scan_name_field.text(),
+            'scan_name': self.scan_name_field.text(),
             'initial_wavelength': self.wavelength_start_field.value(),
             'final_wavelength': self.wavelength_end_field.value(),
             'step': self.wavelength_step_field.value(),
