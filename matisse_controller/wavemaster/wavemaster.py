@@ -3,6 +3,7 @@ import threading
 from serial import Serial, SerialException
 
 
+# TODO: Give up on reading wavemeter display if it takes too long
 class WaveMaster:
     """An interface to serial port communication with the Coherent WaveMaster wavemeter."""
 
