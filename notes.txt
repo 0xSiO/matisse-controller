@@ -260,3 +260,9 @@ Having issues reading from CCD. Doing all the initialization doesn't seem to giv
 One possibility is that the GetAcquiredData function is returning an error code and not modifying the data array (check
 this by setting data array to some non-physical value). Another possibility is that there are more configuration calls
 needed before a scan will work. I'll try some of the SDK examples to make sure it's not an issue with my machine.
+
+Getting issues again when doing a thin etalon scan, motor gives an error and refuses to run :( temporary solution is to
+just add a delay, another solution is to look at the status again.
+
+Wavelength axis on single acquisition measurement from CCD is wrong, looks like the data coming out of the screen is
+different from the data shown in SOLIS!? In SOLIS, to correct the offset, perform a small -28.9 pixel shift of the axis.
