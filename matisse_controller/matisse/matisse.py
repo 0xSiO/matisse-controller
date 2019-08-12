@@ -214,7 +214,6 @@ class Matisse:
                 break
 
         # TODO: Document this update to behavior
-        self.set_recommended_fast_piezo_setpoint()
         self.start_laser_lock_correction()
         print('Attempting to lock laser...')
         while not self.laser_locked():

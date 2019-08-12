@@ -13,6 +13,7 @@ ccd: CCD = None
 shamrock: Shamrock = None
 
 
+# TODO: Add note to README on loading pickled data
 class PLE:
     """PLE scanning functionality with the Andor Shamrock and Newton CCD."""
 
@@ -79,16 +80,16 @@ class PLE:
             'center_wavelength': center_wavelength
         }
         for wavelength in wavelengths:
-            wavelength = round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))
+            wavelength = round(float(wavelength), cfg.get(cfg.WAVEMETER_PRECISION))
             if self.matisse.exit_flag:
                 print('Received exit signal, saving PLE data.')
                 break
             self.lock_at_wavelength(wavelength)
-            data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
-            file_name = f"{str(counter).zfill(3)}_{scan_name}_{round(wavelength, cfg.get(cfg.WAVEMETER_PRECISION))}nm" \
+            acquisition_data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
+            file_name = f"{str(counter).zfill(3)}_{scan_name}_{wavelength}nm" \
                         f"_StepSize_{step}nm_Range_{wavelength_range}nm.txt"
-            np.savetxt(os.path.join(scan_name, file_name), data)
-            data[wavelength] = data
+            np.savetxt(os.path.join(scan_name, file_name), acquisition_data)
+            data[wavelength] = acquisition_data
             counter += 1
         with open(data_file_name, 'wb') as data_file:
             pickle.dump(data, data_file, pickle.HIGHEST_PROTOCOL)
@@ -102,6 +103,8 @@ class PLE:
         #     self.matisse.set_recommended_fast_piezo_setpoint()
         #     self.matisse.start_laser_lock_correction()
         while abs(wavelength - self.matisse.wavemeter_wavelength()) >= tolerance:
+            if self.matisse.exit_flag:
+                break
             time.sleep(3)
 
     def stop_ple_scan(self):

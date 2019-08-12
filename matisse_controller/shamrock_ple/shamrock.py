@@ -12,7 +12,7 @@ class Shamrock:
     GRATINGS_NM_PER_PIXEL = {
         300: 0.116523437,
         1200: 0.0273535156,
-        1800: 0.01578125
+        1799: 0.01578125
     }
 
     def __init__(self):
