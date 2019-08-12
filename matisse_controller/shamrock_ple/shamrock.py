@@ -16,23 +16,16 @@ class Shamrock:
     }
 
     def __init__(self):
-        self.gratings = {
-            # TODO: Temporary grating definitions for testing
-            300: 1,
-            1200: 2,
-            1800: 3
-        }
         try:
             self.lib = load_lib(Shamrock.LIBRARY_NAME)
             self.lib.ShamrockInitialize()
 
             num_devices = c_int()
             self.lib.ShamrockGetNumberDevices(pointer(num_devices))
-            # TODO: Uncomment after testing
-            # assert num_devices.value > 0, 'No spectrometer found.'
+            assert num_devices.value > 0, 'No spectrometer found.'
 
-            # TODO: Uncomment this once you figure out the potential c_char_p issue
-            # self.setup_grating_info()
+            self.gratings = {}
+            self.setup_grating_info()
         except OSError as err:
             raise RuntimeError('Unable to initialize Andor Shamrock API.') from err
 
@@ -42,13 +35,12 @@ class Shamrock:
     def setup_grating_info(self):
         number = c_int()
         self.lib.ShamrockGetNumberGratings(Shamrock.DEVICE_ID, pointer(number))
-        for i in range(1, number.value + 1):
-            # TODO: Check possible issues using c_char_p with no initialization
-            lines, blaze, home, offset = c_float(), c_char_p(), c_int(), c_int()
-            self.lib.ShamrockGetGratingInfo(Shamrock.DEVICE_ID, c_int(i), pointer(lines), blaze, pointer(home),
+        blaze = create_string_buffer(8)
+        for index in range(1, number.value + 1):
+            lines, home, offset = c_float(), c_int(), c_int()
+            self.lib.ShamrockGetGratingInfo(Shamrock.DEVICE_ID, c_int(index), pointer(lines), blaze, pointer(home),
                                             pointer(offset))
-            print(f"Blaze is {blaze.value}")  # TODO: For debug purposes. Remove later
-            self.gratings[lines] = i
+            self.gratings[round(lines.value)] = index
 
     def set_grating_grooves(self, num_grooves: int):
         self.lib.ShamrockSetGrating(Shamrock.DEVICE_ID, c_int(self.gratings[num_grooves]))

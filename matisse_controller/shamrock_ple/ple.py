@@ -65,10 +65,9 @@ class PLE:
             return
 
         PLE.load_andor_libs()
-        print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}.")
-        # TODO: Uncomment after testing
-        # shamrock.set_grating_grooves(grating_grooves)
-        # shamrock.set_center_wavelength(center_wavelength)
+        print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...")
+        shamrock.set_grating_grooves(grating_grooves)
+        shamrock.set_center_wavelength(center_wavelength)
         ccd.setup(*ccd_args, **ccd_kwargs)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
