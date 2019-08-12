@@ -8,6 +8,8 @@ from matisse_controller.shamrock_ple.constants import *
 from matisse_controller.shamrock_ple.utils import load_lib
 
 
+# TODO: Add action to take single acquisition from CCD
+# TODO: Add action to give live feed from CCD
 class CCD:
     LIBRARY_NAME = 'atmcd64d.dll'
     WIDTH = 1024
