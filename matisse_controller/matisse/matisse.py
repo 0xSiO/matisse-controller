@@ -8,6 +8,7 @@ from scipy.signal import savgol_filter, argrelextrema
 
 import matisse_controller.config as cfg
 from matisse_controller.matisse.constants import *
+from matisse_controller.matisse.control_loops_on import ControlLoopsOn
 from matisse_controller.matisse.event_report import log_event, EventType
 from matisse_controller.matisse.lock_correction_thread import LockCorrectionThread
 from matisse_controller.matisse.plotting import BirefringentFilterScanPlotProcess, ThinEtalonScanPlotProcess
@@ -735,6 +736,7 @@ class Matisse:
             values = np.append(values, self.query('FASTPIEZO:INPUT?', numeric_result=True))
         self.query(f"SCAN:NOW {old_refcell_pos}")
 
+        # TODO: Double check whether to start stabilizing again or to enable lock correction
         if stabilize_when_done:
             self.stabilize_on()
 
@@ -746,15 +748,16 @@ class Matisse:
         about halfway between the min and max points on the spectrum. The recommended value is determined by averaging
         a number of scans given by cfg.FAST_PZ_SETPOINT_NUM_SCANS.
         """
-        num_scans = cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS)
-        total = 0
-        for i in range(0, num_scans):
-            positions, values = self.get_reference_cell_transmission_spectrum()
-            setpoint = (np.max(values) + np.min(values)) / 2
-            total += setpoint
-        recommended_setpoint = total / num_scans
-        print(f"Setting fast piezo setpoint to {recommended_setpoint}")
-        self.query(f"FASTPIEZO:CONTROLSETPOINT {recommended_setpoint}")
+        with ControlLoopsOn(self):
+            num_scans = cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS)
+            total = 0
+            for i in range(0, num_scans):
+                positions, values = self.get_reference_cell_transmission_spectrum()
+                setpoint = (np.max(values) + np.min(values)) / 2
+                total += setpoint
+            recommended_setpoint = total / num_scans
+            print(f"Setting fast piezo setpoint to {recommended_setpoint}")
+            self.query(f"FASTPIEZO:CONTROLSETPOINT {recommended_setpoint}")
 
     def start_laser_lock_correction(self):
         """
