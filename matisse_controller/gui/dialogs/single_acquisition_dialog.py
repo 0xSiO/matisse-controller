@@ -22,16 +22,20 @@ class SingleAcquisitionDialog(QDialog):
         self.exposure_time_field.setDecimals(4)
         form_layout.addRow('Exposure time (s): ', self.exposure_time_field)
         self.layout.addLayout(form_layout)
-        self.center_wavelength_field = QDoubleSpinBox()
-        self.center_wavelength_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
-        self.center_wavelength_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
-        form_layout.addRow('Center wavelength (nm): ', self.center_wavelength_field)
 
         # We need to make sure the Andor libraries are loaded to access the spectrometer
         ple.PLE.load_andor_libs()
+
+        self.center_wavelength_field = QDoubleSpinBox()
+        self.center_wavelength_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.center_wavelength_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.center_wavelength_field.setValue(ple.shamrock.get_center_wavelength())
+        form_layout.addRow('Center wavelength (nm): ', self.center_wavelength_field)
+
         self.grating_grooves_field = QComboBox()
         for groove_num in ple.shamrock.gratings.keys():
             self.grating_grooves_field.addItem(f"{groove_num}", ple.shamrock.gratings[groove_num])
+        self.grating_grooves_field.setCurrentText(str(ple.shamrock.get_grating_grooves()))
         form_layout.addRow('Grating grooves: ', self.grating_grooves_field)
 
     def add_buttons(self):
