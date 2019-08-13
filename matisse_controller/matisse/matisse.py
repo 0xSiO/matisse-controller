@@ -29,6 +29,7 @@ class Matisse:
             self._plotting_processes = []
             self.exit_flag = False
             self._scan_attempts = 0
+            self._scan_device_attempts = 0
             self._force_large_scan = True
             self._restart_set_wavelength = False
             self.is_setting_wavelength = False
@@ -193,7 +194,7 @@ class Matisse:
                 self.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL), repeat=True)
             else:
                 # No BiFi, no TE. Scan device only.
-                pass
+                self._scan_device_attempts += 1
 
             # Restart/exit conditions
             if self.exit_flag:
@@ -218,6 +219,14 @@ class Matisse:
                 self.stabilization_auto_corrections = 0
                 self._force_large_scan = True
                 continue
+            elif self._scan_device_attempts > cfg.get(cfg.SCAN_DEVICE_LIMIT):
+                print('WARNING: Limit for number of times scanning device exceeded. Starting wavelength-setting '
+                      'process over again.')
+                log_event(EventType.SCAN_DEVICE_LIMIT_EXCEEDED, self, self.wavemeter_wavelength(),
+                          f"too many times scanning device, exceeded limit of {cfg.get(cfg.SCAN_DEVICE_LIMIT)}, "
+                          'restarting set_wavelength')
+                self._scan_device_attempts = 0
+                self._force_large_scan = True
             else:
                 self._force_large_scan = False
                 break
