@@ -22,8 +22,6 @@ from matisse_controller.matisse import Matisse
 from matisse_controller.shamrock_ple import PLE, ple
 
 
-# TODO: Add action to reset only stabilization piezos
-# TODO: Add action to just stop running tasks
 class ControlApplication(QApplication):
     """
     A comprehensive control center to make use of the APIs provided in this package.
@@ -49,6 +47,7 @@ class ControlApplication(QApplication):
         self.work_executor = ThreadPoolExecutor()
         self.matisse_worker: Future = None
         self.ple_scanner: PLE = PLE(self.matisse)
+        self.ple_scan_worker: Future = None
         self.ple_analysis_worker: Future = None
         self.single_acquisition_worker: Future = None
 
@@ -235,6 +234,7 @@ class ControlApplication(QApplication):
         dialog.exec()
 
     @handled_slot(bool)
+    # TODO: Expand this into a menu to choose different reset options (motors only, running tasks only, etc.)
     def reset(self, checked=False, reset_motors=True, reset_piezos=True):
         """
         Reset Matisse to a 'good' default state: not locked or stabilizing, motors reset, all tasks finished, etc.
@@ -436,11 +436,16 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_ple_scan(self, checked):
+        if self.ple_scan_worker and self.ple_scan_worker.running():
+            print('WARNING: A PLE scan is currently in progress.')
+            return
+
         dialog = PLEScanDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
             ple_options = dialog.get_form_data()
             print('Starting PLE scan.')
-            self.run_matisse_task(self.ple_scanner.start_ple_scan, **ple_options)
+            self.ple_scan_worker = self.work_executor.submit(self.ple_scanner.start_ple_scan, **ple_options)
+            self.ple_scan_worker.add_done_callback(utils.raise_error_from_future)
 
     @handled_slot(bool)
     def stop_ple_scan(self, checked):
