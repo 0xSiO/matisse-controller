@@ -24,6 +24,7 @@ class CCD:
             self.lib.SetTemperature(c_int(cfg.get(cfg.PLE_TARGET_TEMPERATURE)))
             self.lib.CoolerON()
             self.temperature_ok = False
+            self.exit_flag = False
 
             num_cameras = c_long()
             self.lib.GetAvailableCameras(pointer(num_cameras))
@@ -52,6 +53,7 @@ class CCD:
         cool_down
             whether to cool down the CCD at all (sometimes we don't care, like when taking a single acquisition)
         """
+        self.exit_flag = False
         if cool_down:
             min_temp, max_temp = c_int(), c_int()
             self.lib.GetTemperatureRange(pointer(min_temp), pointer(max_temp))
@@ -63,6 +65,8 @@ class CCD:
             # Cooler stops when temp is within 3 degrees of target, so wait until it's close
             # CCD normally takes a few minutes to fully cool down
             while not self.temperature_ok:
+                if self.exit_flag:
+                    return
                 current_temp = self.get_temperature()
                 print(f"Cooling CCD. Current temperature is {round(current_temp, 2)} °C")
                 self.temperature_ok = current_temp < temperature + cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE)
@@ -82,11 +86,14 @@ class CCD:
         return temperature.value
 
     def take_acquisition(self, num_points=1024) -> np.ndarray:
+        self.exit_flag = False
         self.lib.StartAcquisition()
         acquisition_array_type = c_int32 * num_points
         data = acquisition_array_type()
         # self.lib.WaitForAcquisition() does not work, so use a loop instead and check the status.
         while True:
+            if self.exit_flag:
+                break
             status = c_int()
             self.lib.GetStatus(pointer(status))
             if status.value == CCDErrorCode.DRV_IDLE.value:

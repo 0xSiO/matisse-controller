@@ -31,6 +31,9 @@ class Matisse:
             self._scan_attempts = 0
             self._force_large_scan = True
             self._restart_set_wavelength = False
+            self.is_setting_wavelength = False
+            self.is_scanning_bifi = False
+            self.is_scanning_thin_etalon = False
             self.stabilization_auto_corrections = 0
             self.query('ERROR:CLEAR')  # start with a clean slate
             self.query('MOTORBIREFRINGENT:CLEAR')
@@ -146,6 +149,7 @@ class Matisse:
         wavelength : float
             the desired wavelength
         """
+        self.is_setting_wavelength = True
         assert cfg.get(cfg.WAVELENGTH_LOWER_LIMIT) < wavelength < cfg.get(cfg.WAVELENGTH_UPPER_LIMIT), \
             'Target wavelength out of range.'
 
@@ -193,6 +197,7 @@ class Matisse:
 
             # Restart/exit conditions
             if self.exit_flag:
+                self.is_setting_wavelength = False
                 return
             if self._restart_set_wavelength:
                 self._restart_set_wavelength = False
@@ -222,6 +227,7 @@ class Matisse:
         print('Attempting to lock laser...')
         while not self.laser_locked():
             if self.exit_flag:
+                self.is_setting_wavelength = False
                 return
             if not self.is_lock_correction_on():
                 print('Lock failed, trying again.')
@@ -229,6 +235,8 @@ class Matisse:
                 self.start_laser_lock_correction()
             time.sleep(1)
         self.stabilize_on()
+
+        self.is_setting_wavelength = False
 
     def reset_motors(self):
         """Move the birefringent filter and thin etalon motors to their configured reset positions."""
@@ -258,7 +266,9 @@ class Matisse:
         repeat : bool
             whether to repeat the scan until the wavelength difference is less than cfg.MEDIUM_WAVELENGTH_DRIFT
         """
+        self.is_scanning_bifi = True
         if self.exit_flag or self._scan_attempts > cfg.get(cfg.SCAN_LIMIT) or self._restart_set_wavelength:
+            self.is_scanning_bifi = False
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
@@ -311,6 +321,7 @@ class Matisse:
         else:
             self.set_bifi_motor_pos(best_pos)
         print('Done.')
+        self.is_scanning_bifi = False
 
         if cfg.get(cfg.BIFI_SCAN_SHOW_PLOTS):
             # TODO: Label wavelength at each peak
@@ -398,7 +409,9 @@ class Matisse:
         repeat : bool
             whether to repeat the scan until the wavelength difference is less than cfg.SMALL_WAVELENGTH_DRIFT
         """
+        self.is_scanning_thin_etalon = True
         if self.exit_flag or self._scan_attempts > cfg.get(cfg.SCAN_LIMIT) or self._restart_set_wavelength:
+            self.is_scanning_thin_etalon = False
             return
         if self.target_wavelength is None:
             self.target_wavelength = self.wavemeter_wavelength()
@@ -430,6 +443,7 @@ class Matisse:
             print('Abnormal deviation from smoothed curve detected, the scan region might just contain noise.')
             self._restart_set_wavelength = True
             self._force_large_scan = True
+            self.is_scanning_thin_etalon = False
             return
 
         minima = argrelextrema(smoothed_data, np.less, order=5)
@@ -458,6 +472,7 @@ class Matisse:
         else:
             self.set_thin_etalon_motor_pos(best_pos)
         print('Done.')
+        self.is_scanning_thin_etalon = False
 
         adjacent_differences = np.diff(wavelength_differences)
         left_too_large = (best_minimum_index >= 1 and

@@ -20,6 +20,7 @@ class PLE:
 
     def __init__(self, matisse):
         self.matisse = matisse
+        self.ple_exit_flag = False
         self.plotting_processes = []
 
     @staticmethod
@@ -56,6 +57,8 @@ class PLE:
         **ccd_kwargs
             kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         """
+        self.ple_exit_flag = False
+
         if not scan_name:
             print('WARNING: Name of PLE scan is required.')
             return
@@ -72,6 +75,8 @@ class PLE:
         print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...")
         shamrock.set_grating_grooves(grating_grooves)
         shamrock.set_center_wavelength(center_wavelength)
+        if self.ple_exit_flag:
+            return
         ccd.setup(*ccd_args, **ccd_kwargs)
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
@@ -82,10 +87,10 @@ class PLE:
         }
         for wavelength in wavelengths:
             wavelength = round(float(wavelength), cfg.get(cfg.WAVEMETER_PRECISION))
-            if self.matisse.exit_flag:
+            self.lock_at_wavelength(wavelength)
+            if self.ple_exit_flag:
                 print('Received exit signal, saving PLE data.')
                 break
-            self.lock_at_wavelength(wavelength)
             acquisition_data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
             file_name = f"{str(counter).zfill(3)}_{scan_name}_{wavelength}nm" \
                         f"_StepSize_{step}nm_Range_{wavelength_range}nm.txt"
@@ -99,18 +104,16 @@ class PLE:
         """Try to lock the Matisse at a given wavelength, waiting to return until we're within a small tolerance."""
         tolerance = 10 ** -cfg.get(cfg.WAVEMETER_PRECISION)
         self.matisse.set_wavelength(wavelength)
-        # TODO: Decide whether to keep this, now that we always lock after setting wavelength
-        # if not self.matisse.laser_locked():
-        #     self.matisse.set_recommended_fast_piezo_setpoint()
-        #     self.matisse.start_laser_lock_correction()
-        while abs(wavelength - self.matisse.wavemeter_wavelength()) >= tolerance:
-            if self.matisse.exit_flag:
+        while abs(wavelength - self.matisse.wavemeter_wavelength()) >= tolerance or \
+                (self.matisse.is_setting_wavelength or self.matisse.is_scanning_bifi or self.matisse.is_scanning_thin_etalon):
+            if self.ple_exit_flag:
                 break
             time.sleep(3)
 
     def stop_ple_scan(self):
-        """Trigger the Matisse exit_flag to stop running scans and PLE measurements."""
-        self.matisse.exit_flag = True
+        """Trigger the exit flags to stop running scans and PLE measurements."""
+        self.ple_exit_flag = True
+        ccd.exit_flag = True
 
     def analyze_ple_data(self, data_file_path: str, integration_start: float, integration_end: float,
                          background_file_path=''):
