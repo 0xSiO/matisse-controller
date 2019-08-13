@@ -94,7 +94,7 @@ class CCD:
             else:
                 time.sleep(1)
         self.lib.GetAcquiredData(data, c_int(num_points))
-        data = np.array(data, dtype=np.int32)
+        data = np.flip(np.array(data, dtype=np.int32))  # Data comes out backwards!
         return data
 
     def shutdown(self):
