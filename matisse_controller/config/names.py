@@ -20,6 +20,7 @@ WAVELENGTH_LOWER_LIMIT = 'matisse.wavelength.lower_limit'
 WAVELENGTH_UPPER_LIMIT = 'matisse.wavelength.upper_limit'
 
 SCAN_LIMIT = 'matisse.scanning.limit'
+SCAN_DEVICE_LIMIT = 'matisse.scanning.scan_device_limit'
 
 BIFI_SCAN_RANGE = 'matisse.scanning.birefringent_filter.range'
 BIFI_SCAN_RANGE_SMALL = 'matisse.scanning.birefringent_filter.range_small'

@@ -20,6 +20,7 @@ DEFAULTS = {
         'component_limit_offset': 0.05,
         'scanning': {
             'limit': 15,
+            'scan_device_limit': 5,
             'birefringent_filter': {
                 'range': 400,
                 'range_small': 200,

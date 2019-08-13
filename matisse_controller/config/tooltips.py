@@ -17,6 +17,7 @@ WAVELENGTH_LOWER_LIMIT = 'The lowest wavelength the Matisse is capable of produc
 WAVELENGTH_UPPER_LIMIT = 'The highest wavelength the Matisse is capable of producing.'
 
 SCAN_LIMIT = 'The number of scans allowed before giving up and restarting the wavelength-setting process.'
+SCAN_DEVICE_LIMIT = 'The number of times to use only the reference cell to set the wavelength before restarting the wavelength-setting process.'
 
 BIFI_SCAN_RANGE = 'Total amount of motor steps to move (left and right) when doing a BiFi scan.'
 BIFI_SCAN_RANGE_SMALL = 'Total amount of motor steps to move (left and right) when doing a small BiFi scan.'
