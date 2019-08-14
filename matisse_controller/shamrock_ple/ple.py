@@ -14,7 +14,6 @@ ccd: CCD = None
 shamrock: Shamrock = None
 
 
-# TODO: Add note to README on loading pickled data
 class PLE:
     """PLE scanning functionality with the Andor Shamrock and Newton CCD."""
 
