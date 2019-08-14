@@ -750,13 +750,6 @@ class Matisse:
         (ndarray, ndarray)
             the positions and input values measured during the scan
         """
-        # TODO: Make a context manager for pausing stabilization/scanning
-        stabilize_when_done = False
-        if self.is_stabilizing():
-            self.stabilize_off()
-            stabilize_when_done = True
-        self.stop_scan()
-
         positions = np.linspace(cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_LOWER_LIMIT),
                                 cfg.get(cfg.FAST_PZ_SETPOINT_SCAN_UPPER_LIMIT),
                                 cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
@@ -767,10 +760,6 @@ class Matisse:
             values = np.append(values, self.query('FASTPIEZO:INPUT?', numeric_result=True))
         self.query(f"SCAN:NOW {old_refcell_pos}")
 
-        # TODO: Double check whether to start stabilizing again or to enable lock correction
-        if stabilize_when_done:
-            self.stabilize_on()
-
         return positions, values
 
     def set_recommended_fast_piezo_setpoint(self):
@@ -778,7 +767,17 @@ class Matisse:
         Analyze the data from the reference cell transmission spectrum, and set the fast piezo setpoint to a point
         about halfway between the min and max points on the spectrum. The recommended value is determined by averaging
         a number of scans given by cfg.FAST_PZ_SETPOINT_NUM_SCANS.
+
+        If this doesn't help to lock the laser, use the 'RefCell Properties Measurement' feature in Matisse Commander
+        to set the fast piezo setpoint instead.
+
+        This stops auto-stabilization or any reference cell scans currently running and temporarily enables all
+        component control loops.
         """
+        if self.is_stabilizing():
+            self.stabilize_off()
+        self.stop_scan()
+
         with ControlLoopsOn(self):
             num_scans = cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS)
             total = 0
