@@ -62,8 +62,8 @@ To load the data from a .pickle file:
 
 ```python
 import pickle
-with open('file_name_here.pickle', 'rb') as file:
-    data = pickle.load(file)
+with open('file_name_here.pickle', 'rb') as data_file:
+    data = pickle.load(data_file)
 ```
 
 ## GUI Options
