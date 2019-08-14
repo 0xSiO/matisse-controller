@@ -12,6 +12,7 @@ Tested on Windows 10 (x64).
 - [API Documentation](#api-documentation)
 - [Changelog](#changelog)
 - [Terminology](#terminology)
+- [Pickled Data](#pickled-data)
 - [GUI Options](#gui-options)
 - [Development](#development)
 - [Contributing](#contributing)
@@ -53,6 +54,18 @@ keep the wavelength at a particular value.
 - _Scanning_ may refer to the act of moving a motor back and forth to locate an optimal position, or the act of adjusting the 
 reference cell and stabilization piezos to adjust the wavelength.
 
+## Pickled Data
+PLE data from this application is stored in text files as a list of counts separated by newlines, as well as a _.pickle_
+file, which is an efficient form of binary storage that Python uses to serialize objects.
+
+To load the data from a .pickle file:
+
+```python
+import pickle
+with open('file_name_here.pickle', 'rb') as file:
+    data = pickle.load(file)
+```
+
 ## GUI Options
 
 ### Console
@@ -85,7 +98,14 @@ reference cell and stabilization piezos to adjust the wavelength.
 the target value
 
 ### Shamrock
-- Start PLE Scan: (currently in development)
+- Start PLE Scan: open a dialog to set parameters of a PLE scan, and perform the scan, saving acquired data in text
+files separated by wavelength, and also a .pickle file containing all the data
+- Stop PLE Scan: stop execution of any running PLE scan, saving any data that was taken up to that point
+- Analyze PLE Data: open a dialog to load a .pickle file of a PLE scan, and integrate the counts for each laser
+wavelength used in the scan. Opens a plot of integrated counts vs. laser wavelength afterwards. You can also load
+background data that you'd like to be subtracted from the acquisition data.
+- Take Single Acquisition: acquire a single image from the CCD. This feature does not wait for the CCD to reach a
+particular temperature.
 
 ## Development
 
