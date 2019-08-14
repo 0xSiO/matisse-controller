@@ -137,13 +137,18 @@ class Matisse:
         9. Do a small BiFi scan to make sure we're still on the location with maximum power. If the distance to the new
            motor location is very small, just leave the motor where it is.
         10. Do a small thin etalon scan to make sure we're still on the flank of the right parabola.
-        11. Enable RefCell stabilization, which scans the device up or down until the desired wavelength is reached.
+        11. Attempt to lock the laser, setting the fast piezo setpoint if needed.
+        12. Enable RefCell stabilization, which scans the device up or down until the desired wavelength is reached.
 
         If more than cfg.SCAN_LIMIT scan attempts pass before stabilizing, restart the whole process over again.
         If, during stabilization, more than cfg.CORRECTION_LIMIT corrections are made, start with a large birefringent
         scan the next time this method is run.
+        If more than cfg.SCAN_DEVICE_LIMIT attempts are made to set the wavelength using only the RefCell, start with a
+        large birefringent scan the next time this method is run. This is to prevent falling into a dip in the power
+        diode curve, which causes large jumps in the wavelength (~0.4 nm) that cannot be easily fixed otherwise.
+
         A scan may decide it needs to start the process over again for some other reason, like the thin etalon moving to
-        a location with just noise.
+        a location with mostly noise.
 
         Parameters
         ----------
@@ -231,7 +236,6 @@ class Matisse:
                 self._force_large_scan = False
                 break
 
-        # TODO: Document this update to behavior
         self.start_laser_lock_correction()
         print('Attempting to lock laser...')
         while not self.laser_locked():
