@@ -70,6 +70,7 @@ with open('file_name_here.pickle', 'rb') as data_file:
 
 ### Console
 - Clear Log: clear the log window
+- Close All Plots: close any birefringent filter or thin etalon scan plot windows that may be open
 - Configuration: open a dialog that allows you to customize all configurable options
 - Reset: bring the Matisse back to a "good" default state, unlocked, not stabilzing, etc.
 - Restart: close and re-open the GUI, reinitialize everything. Good for when things go wrong.
