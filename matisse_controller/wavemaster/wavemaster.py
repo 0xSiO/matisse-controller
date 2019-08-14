@@ -3,7 +3,6 @@ import threading
 from serial import Serial, SerialException
 
 
-# TODO: Give up on reading wavemeter display if it takes too long
 class WaveMaster:
     """An interface to serial port communication with the Coherent WaveMaster wavemeter."""
 
@@ -12,6 +11,8 @@ class WaveMaster:
     def __init__(self, port: str):
         try:
             self.serial = Serial(port)
+            self.serial.timeout = 10.0
+            self.serial.write_timeout = 10.0
         except SerialException as err:
             raise IOError("Couldn't open connection to wavemeter.") from err
 
