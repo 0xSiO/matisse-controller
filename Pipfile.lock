@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c6bac76854181d1903a76fe23e8078651a770fe4a3ae2dfa3d850e685bbe8b8c"
+            "sha256": "5f3421fb7133fd0c1663bf516bddf050359f86959e62025b8b3b990feb499112"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,13 @@
         ]
     },
     "default": {
+        "attrs": {
+            "hashes": [
+                "sha256:69c0dbf2ed392de1cb5ec704444b08a5ef81680a61cb899dc08127123af36a79",
+                "sha256:f0b870f674851ecbfbbbd364d6b5cbdff9dcedbc7f3f5e18a6891057f21fe399"
+            ],
+            "version": "==19.1.0"
+        },
         "bidict": {
             "hashes": [
                 "sha256:01bc0a403202513a822363f2d342721256e9a9056be05134aa0b0ba7614bc6cb",
@@ -24,12 +31,34 @@
             "index": "pypi",
             "version": "==0.18.0"
         },
+        "boltons": {
+            "hashes": [
+                "sha256:7aa10b0f5b015678458a7d0422961fc0c7e823c05e644094c0e564931ce0b0df",
+                "sha256:c32b2d121331a9bc7c220050d4273f3aa359b7569cb4794188e71524603113dc"
+            ],
+            "version": "==19.1.0"
+        },
         "cycler": {
             "hashes": [
                 "sha256:1d8a5ae1ff6c5cf9b93e8811e581232ad8920aeec647c37316ceac982b08cb2d",
                 "sha256:cd7b2d1018258d7247a71425e9f26463dfb444d411c39569972f4ce586b0c9d8"
             ],
             "version": "==0.10.0"
+        },
+        "face": {
+            "hashes": [
+                "sha256:38c94ec17a4d6f9628f094b697faca0f802f4028071ce8cbdb3116d4cde772a3",
+                "sha256:9b3ef571d9888ee3b773710b126b92db85ec3116377b8a2c077cb77e8bed8be9"
+            ],
+            "version": "==19.1.2"
+        },
+        "glom": {
+            "hashes": [
+                "sha256:0586e9c7011bb30068fd47b4021e40fab5a29c674801c89c3937f5bc4d44791c",
+                "sha256:c277f34e5e498834a63c2114a25a6c67b5cf0b92f96bb65cba063d861c3d1da6"
+            ],
+            "index": "pypi",
+            "version": "==19.2.0"
         },
         "kiwisolver": {
             "hashes": [
