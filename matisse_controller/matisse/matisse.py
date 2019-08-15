@@ -142,9 +142,6 @@ class Matisse:
         If more than cfg.SCAN_LIMIT scan attempts pass before stabilizing, restart the whole process over again.
         If, during stabilization, more than cfg.CORRECTION_LIMIT corrections are made, start with a large birefringent
         scan the next time this method is run.
-        If more than cfg.SCAN_DEVICE_LIMIT attempts are made to set the wavelength using only the RefCell, start with a
-        large birefringent scan the next time this method is run. This is to prevent falling into a dip in the power
-        diode curve, which causes large jumps in the wavelength (~0.4 nm) that cannot be easily fixed otherwise.
 
         A scan may decide it needs to start the process over again for some other reason, like the thin etalon moving to
         a location with mostly noise.
