@@ -1,8 +1,8 @@
 import copy
 import json
-import operator
-from functools import reduce
 from os import path
+
+import glom
 
 CONFIGURATION = {}
 DEFAULTS = {
@@ -101,20 +101,12 @@ DEFAULTS = {
 
 def get(name: str):
     """Fetch the global configuration value represented by the specified name."""
-    keys = name.split('.')
-    try:
-        return reduce(operator.getitem, keys, CONFIGURATION)
-    except KeyError:
-        return reduce(operator.getitem, keys, DEFAULTS)
+    return glom.glom(CONFIGURATION, name)
 
 
 def set(name: str, value):
     """Set the global configuration value represented by the specified name."""
-    keys = name.split('.')
-    cfg = CONFIGURATION
-    for key in keys[:-1]:
-        cfg = cfg.get(key)
-    cfg[keys[-1]] = value
+    glom.assign(CONFIGURATION, name, value, missing=dict)
 
 
 def load(filename: str):
