@@ -13,8 +13,8 @@ DEFAULTS = {
             'thin_etalon': 12_000
         },
         'wavelength': {
-            'lower_limit': 700,
-            'upper_limit': 800
+            'lower_limit': 720,
+            'upper_limit': 900
         },
         'report_events': False,
         'component_limit_offset': 0.05,
@@ -41,7 +41,7 @@ DEFAULTS = {
                     'window': 21,
                     'polyorder': 3
                 },
-                'max_std_dev_allowed': 2.25
+                'max_std_dev_allowed': 6.25
             },
             'refcell': {
                 'rising_speed': 0.005,
