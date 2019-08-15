@@ -19,7 +19,7 @@ from matisse_controller.gui.logging_stream import LoggingStream
 from matisse_controller.gui.utils import handled_function, handled_slot
 from matisse_controller.gui.widgets import LoggingArea, StatusMonitor
 from matisse_controller.matisse import Matisse
-from matisse_controller.shamrock_ple import PLE, ple
+from matisse_controller.shamrock_ple import PLE
 
 
 class ControlApplication(QApplication):
@@ -46,7 +46,7 @@ class ControlApplication(QApplication):
         self.aboutToQuit.connect(self.clean_up)
         self.work_executor = ThreadPoolExecutor()
         self.matisse_worker: Future = None
-        self.ple_scanner: PLE = PLE(self.matisse)
+        self.ple: PLE = PLE(self.matisse)
         self.ple_scan_worker: Future = None
         self.ple_analysis_worker: Future = None
         self.single_acquisition_worker: Future = None
@@ -81,7 +81,12 @@ class ControlApplication(QApplication):
         self.clear_log_area_action = console_menu.addAction('Clear Log')
         self.close_plots_action = console_menu.addAction('Close All Plots')
         self.configuration_action = console_menu.addAction('Configuration')
-        self.reset_action = console_menu.addAction('Reset')
+        reset_menu = console_menu.addMenu('Reset')
+        self.reset_all_action = reset_menu.addAction('All')
+        self.reset_matisse_motors_action = reset_menu.addAction('Matisse Motors')
+        self.reset_matisse_piezos_action = reset_menu.addAction('Stabilization Piezos')
+        self.reset_matisse_tasks_action = reset_menu.addAction('Matisse Tasks')
+        self.reset_ple_tasks_action = reset_menu.addAction('PLE Tasks')
         self.restart_action = console_menu.addAction('Restart')
 
         set_menu = menu_bar.addMenu('Set')
@@ -133,7 +138,11 @@ class ControlApplication(QApplication):
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
         self.close_plots_action.triggered.connect(self.close_plots)
         self.configuration_action.triggered.connect(self.open_configuration)
-        self.reset_action.triggered.connect(self.reset)
+        self.reset_all_action.triggered.connect(self.reset)
+        self.reset_matisse_motors_action.triggered.connect(self.reset_motors_only)
+        self.reset_matisse_piezos_action.triggered.connect(self.reset_piezos_only)
+        self.reset_matisse_tasks_action.triggered.connect(self.reset_matisse_tasks_only)
+        self.reset_ple_tasks_action.triggered.connect(self.reset_ple_tasks_only)
         self.restart_action.triggered.connect(self.restart)
 
         # Set
@@ -198,9 +207,7 @@ class ControlApplication(QApplication):
         self.status_monitor.clean_up()
         self.log_area.clean_up()
 
-        # PLE cleanup
-        ple.ccd = None
-        ple.shamrock = None
+        PLE.clean_up_globals()
 
         self.log_redirector.__exit__(None, None, None)
 
@@ -234,8 +241,8 @@ class ControlApplication(QApplication):
         dialog.exec()
 
     @handled_slot(bool)
-    # TODO: Expand this into a menu to choose different reset options (motors only, running tasks only, etc.)
-    def reset(self, checked=False, reset_motors=True, reset_piezos=True):
+    def reset(self, checked=False, reset_motors=True, reset_piezos=True, reset_matisse_tasks=True,
+              reset_ple_tasks=True):
         """
         Reset Matisse to a 'good' default state: not locked or stabilizing, motors reset, all tasks finished, etc.
 
@@ -249,14 +256,18 @@ class ControlApplication(QApplication):
             whether to reset the Matisse birefringent filter and thin etalon motors to their configured reset positions
         reset_piezos : bool
             whether to reset the Matisse stabilization piezos
+        reset_matisse_tasks : bool
+            whether to trigger the exit flag and quit any running tasks (like scans)
+        reset_ple_tasks : bool
+            whether to stop any running PLE data analysis tasks and spectrometer acquisitions
         """
-        print('Resetting Matisse and stopping any running tasks.')
         if self.matisse:
-            self.matisse.exit_flag = True
-            if self.matisse_worker is not None and self.matisse_worker.running():
-                print('Waiting for Matisse tasks to complete.')
-                self.matisse_worker.result()
-            self.matisse_worker = None
+            if reset_matisse_tasks:
+                self.matisse.exit_flag = True
+                if self.matisse_worker is not None and self.matisse_worker.running():
+                    print('Waiting for Matisse tasks to complete.')
+                    self.matisse_worker.result()
+                self.matisse_worker = None
             if self.matisse.is_stabilizing():
                 self.matisse.stabilize_off()
             if self.matisse.is_lock_correction_on():
@@ -266,19 +277,39 @@ class ControlApplication(QApplication):
             if reset_piezos:
                 self.matisse.reset_stabilization_piezos()
 
-        if self.ple_analysis_worker and self.ple_analysis_worker.running():
-            print('Waiting for PLE analysis to complete.')
-            self.ple_analysis_worker.result()
+        if reset_ple_tasks:
+            self.ple.stop_ple_tasks()
+
+            if self.ple_analysis_worker and self.ple_analysis_worker.running():
+                print('Waiting for PLE analysis to complete.')
+                self.ple_analysis_worker.result()
             self.ple_analysis_worker = None
-        if self.single_acquisition_worker and self.single_acquisition_worker.running():
-            print('Waiting for acquisition to complete.')
-            self.single_acquisition_worker.result()
+
+            if self.single_acquisition_worker and self.single_acquisition_worker.running():
+                print('Waiting for acquisition to complete.')
+                self.single_acquisition_worker.result()
             self.single_acquisition_worker = None
 
         if self.matisse:
             self.matisse.exit_flag = False
 
         print('Done.')
+
+    @handled_slot(bool)
+    def reset_motors_only(self, checked):
+        self.reset(reset_piezos=False, reset_matisse_tasks=False, reset_ple_tasks=False)
+
+    @handled_slot(bool)
+    def reset_piezos_only(self, checked):
+        self.reset(reset_motors=False, reset_matisse_tasks=False, reset_ple_tasks=False)
+
+    @handled_slot(bool)
+    def reset_matisse_tasks_only(self, checked):
+        self.reset(reset_motors=False, reset_piezos=False, reset_ple_tasks=False)
+
+    @handled_slot(bool)
+    def reset_ple_tasks_only(self, checked):
+        self.reset(reset_motors=False, reset_piezos=False, reset_matisse_tasks=False)
 
     @handled_slot(bool)
     def restart(self, checked):
@@ -444,13 +475,13 @@ class ControlApplication(QApplication):
         if dialog.exec() == QDialog.Accepted:
             ple_options = dialog.get_form_data()
             print('Starting PLE scan.')
-            self.ple_scan_worker = self.work_executor.submit(self.ple_scanner.start_ple_scan, **ple_options)
+            self.ple_scan_worker = self.work_executor.submit(self.ple.start_ple_scan, **ple_options)
             self.ple_scan_worker.add_done_callback(utils.raise_error_from_future)
 
     @handled_slot(bool)
     def stop_ple_scan(self, checked):
         print('Stopping any running PLE scans.')
-        self.ple_scanner.stop_ple_scan()
+        self.ple.stop_ple_tasks()
 
     @handled_slot(bool)
     def analyze_ple_data(self, checked):
@@ -461,7 +492,7 @@ class ControlApplication(QApplication):
         dialog = PLEAnalysisDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
             analysis_options = dialog.get_form_data()
-            self.ple_analysis_worker = self.work_executor.submit(self.ple_scanner.analyze_ple_data, **analysis_options)
+            self.ple_analysis_worker = self.work_executor.submit(self.ple.analyze_ple_data, **analysis_options)
             self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)
 
     @handled_slot(bool)
@@ -473,7 +504,7 @@ class ControlApplication(QApplication):
         dialog = SingleAcquisitionDialog(parent=self.window)
         if dialog.exec() == QDialog.Accepted:
             acquisition_options = dialog.get_form_data()
-            self.single_acquisition_worker = self.work_executor.submit(self.ple_scanner.plot_single_acquisition,
+            self.single_acquisition_worker = self.work_executor.submit(self.ple.plot_single_acquisition,
                                                                        **acquisition_options)
             self.single_acquisition_worker.add_done_callback(utils.raise_error_from_future)
 
