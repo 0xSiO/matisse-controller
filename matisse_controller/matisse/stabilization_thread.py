@@ -46,8 +46,11 @@ class StabilizationThread(threading.Thread):
                     # TODO: Consider logging this event to the event report
                     print(f"WARNING: Wavelength drifted by {drift} nm during stabilization. Making corrections.")
                     self._matisse.stop_scan()
+                    if self._matisse.is_lock_correction_on():
+                        self._matisse.stop_laser_lock_correction()
                     self._matisse.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
                     self._matisse.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+                    self._matisse.start_laser_lock_correction()
                 elif abs(drift) > cfg.get(cfg.STABILIZATION_TOLERANCE):
                     if drift < 0:
                         # measured wavelength is too high
