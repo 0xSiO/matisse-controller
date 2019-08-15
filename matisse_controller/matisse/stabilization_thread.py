@@ -32,6 +32,9 @@ class StabilizationThread(threading.Thread):
         """
         Try to keep the measured wavelength within the configured tolerance by scanning the reference cell.
 
+        If a large drift in wavelength occurs, we likely fell into a dip on the power diode curve. To correct this, a
+        small BiFi scan and a small thin etalon scan will be performed.
+
         Exit if anything is pushed to the message queue.
         """
         while True:
@@ -39,7 +42,13 @@ class StabilizationThread(threading.Thread):
                 current_wavelength = self._matisse.wavemeter_wavelength()
                 drift = self._matisse.target_wavelength - current_wavelength
                 drift = round(drift, cfg.get(cfg.WAVEMETER_PRECISION))
-                if abs(drift) > cfg.get(cfg.STABILIZATION_TOLERANCE):
+                if abs(drift) > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+                    # TODO: Consider logging this event to the event report
+                    print(f"WARNING: Wavelength drifted by {drift} nm during stabilization. Making corrections.")
+                    self._matisse.stop_scan()
+                    self._matisse.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+                    self._matisse.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+                elif abs(drift) > cfg.get(cfg.STABILIZATION_TOLERANCE):
                     if drift < 0:
                         # measured wavelength is too high
                         print(f"Wavelength too high, decreasing. Drift is {drift} nm. Refcell is at {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
