@@ -110,9 +110,6 @@ class ConfigurationDialog(QDialog):
         self.scan_limit_field = QSpinBox()
         self.scan_limit_field.setMinimum(0)
         scan_layout.addRow('Number of scans before retry: ', self.scan_limit_field)
-        self.scan_device_limit_field = QSpinBox()
-        self.scan_device_limit_field.setMinimum(0)
-        scan_layout.addRow('Number of RefCell-only scans before retry: ', self.scan_device_limit_field)
         self.bifi_scan_range_field = QSpinBox()
         self.bifi_scan_range_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
         scan_layout.addRow('BiFi normal scan range:', self.bifi_scan_range_field)
@@ -290,7 +287,6 @@ class ConfigurationDialog(QDialog):
         self.wavelength_upper_limit_field.setToolTip(tooltips.WAVELENGTH_UPPER_LIMIT)
 
         self.scan_limit_field.setToolTip(tooltips.SCAN_LIMIT)
-        self.scan_device_limit_field.setToolTip(tooltips.SCAN_DEVICE_LIMIT)
 
         self.bifi_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE)
         self.bifi_small_scan_range_field.setToolTip(tooltips.BIFI_SCAN_RANGE_SMALL)
@@ -350,8 +346,6 @@ class ConfigurationDialog(QDialog):
         self.report_events_field.setChecked(cfg.get(cfg.REPORT_EVENTS))
 
         self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
-        self.scan_device_limit_field.setValue(cfg.get(cfg.SCAN_DEVICE_LIMIT))
-
         self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
         self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
         self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
@@ -435,8 +429,6 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.REPORT_EVENTS, self.report_events_field.isChecked())
 
         cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
-        cfg.set(cfg.SCAN_DEVICE_LIMIT, self.scan_device_limit_field.value())
-
         cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())

@@ -13,7 +13,6 @@ FIELDS = ['timestamp', 'event_type', 'current_wavelength', 'bifi_pos', 'thin_eta
 class EventType(Enum):
     """An enumeration of different event types. The assigned value goes in each row of the CSV report."""
     SCAN_LIMIT_EXCEEDED = 'scan_limit_exceeded'
-    SCAN_DEVICE_LIMIT_EXCEEDED = 'scan_device_limit_exceeded'
     LOCK_CORRECTION = 'lock_correction'
     STABILIZATION_CORRECTION = 'stabilization_correction'
     STABILIZATION_LIMIT_EXCEEDED = 'stabilization_correction_limit_exceeded'
