@@ -17,7 +17,7 @@ DEFAULTS = {
             'upper_limit': 900
         },
         'report_events': False,
-        'component_limit_offset': 0.05,
+        'component_limit_offset': 0.05,  # TODO: Increase this slightly
         'scanning': {
             'limit': 15,
             'birefringent_filter': {
