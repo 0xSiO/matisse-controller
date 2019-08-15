@@ -262,7 +262,10 @@ this by setting data array to some non-physical value). Another possibility is t
 needed before a scan will work. I'll try some of the SDK examples to make sure it's not an issue with my machine.
 
 Getting issues again when doing a thin etalon scan, motor gives an error and refuses to run :( temporary solution is to
-just add a delay, another solution is to look at the status again.
+just add a delay, another solution is to look at the status again. Update: this occurred because the laser was locked
+when opening the program, and the control loops were not disabled when starting the thin etalon scan. This issue should
+now be corrected.
 
 Wavelength axis on single acquisition measurement from CCD is wrong, looks like the data coming out of the screen is
 different from the data shown in SOLIS!? In SOLIS, to correct the offset, perform a small -28.9 pixel shift of the axis.
+Update: The CCD data was coming out backwards! This is resolved.
