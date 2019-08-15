@@ -159,6 +159,11 @@ class Matisse:
 
         if self.is_lock_correction_on():
             self.stop_laser_lock_correction()
+        # Disable all control loops. This is important if the laser is locked but lock correction isn't on.
+        self.set_fast_piezo_control(False)
+        self.set_piezo_etalon_control(False)
+        self.set_thin_etalon_control(False)
+        self.set_slow_piezo_control(False)
         if self.is_stabilizing():
             self.stabilize_off()
 
