@@ -121,7 +121,6 @@ class ControlApplication(QApplication):
 
         ple_menu = menu_bar.addMenu('Shamrock')
         self.start_ple_scan_action = ple_menu.addAction('Start PLE Scan')
-        self.stop_ple_scan_action = ple_menu.addAction('Stop PLE Scan')
         self.analyze_ple_action = ple_menu.addAction('Analyze PLE Data')
         self.single_acquisition_action = ple_menu.addAction('Take Single Acquisition')
 
@@ -174,7 +173,6 @@ class ControlApplication(QApplication):
 
         # Shamrock
         self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
-        self.stop_ple_scan_action.triggered.connect(self.stop_ple_scan)
         self.analyze_ple_action.triggered.connect(self.analyze_ple_data)
         self.single_acquisition_action.triggered.connect(self.take_single_acquisition)
 
@@ -259,7 +257,7 @@ class ControlApplication(QApplication):
         reset_matisse_tasks : bool
             whether to trigger the exit flag and quit any running tasks (like scans)
         reset_ple_tasks : bool
-            whether to stop any running PLE data analysis tasks and spectrometer acquisitions
+            whether to stop any running PLE-related tasks
         """
         if self.matisse:
             if reset_matisse_tasks:
@@ -279,6 +277,11 @@ class ControlApplication(QApplication):
 
         if reset_ple_tasks:
             self.ple.stop_ple_tasks()
+
+            if self.ple_scan_worker and self.ple_scan_worker.running():
+                print('Waiting for PLE scan to complete.')
+                self.ple_scan_worker.result()
+            self.ple_scan_worker = None
 
             if self.ple_analysis_worker and self.ple_analysis_worker.running():
                 print('Waiting for PLE analysis to complete.')
@@ -477,11 +480,6 @@ class ControlApplication(QApplication):
             print('Starting PLE scan.')
             self.ple_scan_worker = self.work_executor.submit(self.ple.start_ple_scan, **ple_options)
             self.ple_scan_worker.add_done_callback(utils.raise_error_from_future)
-
-    @handled_slot(bool)
-    def stop_ple_scan(self, checked):
-        print('Stopping any running PLE scans.')
-        self.ple.stop_ple_tasks()
 
     @handled_slot(bool)
     def analyze_ple_data(self, checked):

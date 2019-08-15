@@ -72,7 +72,7 @@ with open('file_name_here.pickle', 'rb') as data_file:
 - Clear Log: clear the log window
 - Close All Plots: close any birefringent filter or thin etalon scan plot windows that may be open
 - Configuration: open a dialog that allows you to customize all configurable options
-- Reset: bring the Matisse back to a "good" default state, unlocked, not stabilzing, etc.
+- Reset: reset everything, or individual components (like Matisse motors, Matisse piezos, or PLE tasks)
 - Restart: close and re-open the GUI, reinitialize everything. Good for when things go wrong.
 
 ### Set
@@ -101,7 +101,6 @@ the target value
 ### Shamrock
 - Start PLE Scan: open a dialog to set parameters of a PLE scan, and perform the scan, saving acquired data in text
 files separated by wavelength, and also a .pickle file containing all the data
-- Stop PLE Scan: stop execution of any running PLE scan, saving any data that was taken up to that point
 - Analyze PLE Data: open a dialog to load a .pickle file of a PLE scan, and integrate the counts for each laser
 wavelength used in the scan. Opens a plot of integrated counts vs. laser wavelength afterwards. You can also load
 background data that you'd like to be subtracted from the acquisition data.
