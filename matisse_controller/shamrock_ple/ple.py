@@ -33,6 +33,13 @@ class PLE:
             shamrock = Shamrock()
             print('Shamrock initialized.')
 
+    @staticmethod
+    def clean_up_globals():
+        global ccd
+        global shamrock
+        ccd = None
+        shamrock = None
+
     def start_ple_scan(self, scan_name: str, initial_wavelength: float, final_wavelength: float, step: float,
                        center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
         """
@@ -109,10 +116,11 @@ class PLE:
                 break
             time.sleep(3)
 
-    def stop_ple_scan(self):
+    def stop_ple_tasks(self):
         """Trigger the exit flags to stop running scans and PLE measurements."""
         self.ple_exit_flag = True
-        ccd.exit_flag = True
+        if ccd:
+            ccd.exit_flag = True
 
     def analyze_ple_data(self, data_file_path: str, integration_start: float, integration_end: float,
                          background_file_path=''):
@@ -135,6 +143,8 @@ class PLE:
         background_file_path
             the name of a file to use for subtracting background, should be loadable with numpy.loadtxt
         """
+        self.ple_exit_flag = False
+
         if not data_file_path:
             print('WARNING: No data file provided to analyze.')
             return
@@ -163,6 +173,9 @@ class PLE:
                                                                      center_wavelength, grating_grooves)
             total_counts = {}
             for wavelength in scans.keys():
+                if self.ple_exit_flag:
+                    print('Received exit signal, saving PLE data.')
+                    break
                 if background_data:
                     scans[wavelength] -= background_data
                 total_counts[wavelength] = sum(scans[wavelength][start_pixel:end_pixel])
@@ -175,10 +188,13 @@ class PLE:
         plot_process.start()
 
     def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
+        self.ple_exit_flag = False
         PLE.load_andor_libs()
         print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...")
         shamrock.set_grating_grooves(grating_grooves)
         shamrock.set_center_wavelength(center_wavelength)
+        if self.ple_exit_flag:
+            return
         ccd.setup(*ccd_args, **ccd_kwargs)
         data = ccd.take_acquisition()
         pixels = range(len(data))
