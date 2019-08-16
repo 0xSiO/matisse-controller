@@ -121,6 +121,7 @@ class CCD:
         return data
 
     def shutdown(self):
+        """Run CCD-related cleanup and shutdown procedures."""
         self.lib.CoolerOFF()
         # TODO: Before shutting it down, we should wait for temp to hit -20 °C, otherwise it rises too fast
         # In practice, of course, we don't do this :)

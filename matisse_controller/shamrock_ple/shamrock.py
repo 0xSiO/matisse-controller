@@ -42,6 +42,9 @@ class Shamrock:
         self.shutdown()
 
     def setup_grating_info(self):
+        """
+        Fill out the bidirectional dictionary responsible for holding information about spectrometer gratings.
+        """
         number = c_int()
         self.lib.ShamrockGetNumberGratings(Shamrock.DEVICE_ID, pointer(number))
         blaze = create_string_buffer(8)
@@ -52,22 +55,51 @@ class Shamrock:
             self.gratings[round(lines.value)] = index
 
     def get_grating_grooves(self) -> int:
+        """
+        Returns
+        -------
+        int
+            the number of grooves in the current spectrometer grating
+        """
         index = c_int()
         self.lib.ShamrockGetGrating(Shamrock.DEVICE_ID, pointer(index))
         return self.gratings.inverse[index.value]
 
     def set_grating_grooves(self, num_grooves: int):
+        """
+        Use the spectrometer grating with the specified number of grooves.
+
+        Parameters
+        ----------
+        num_grooves
+            the desired number of grooves
+        """
         if num_grooves != self.get_grating_grooves():
             self.lib.ShamrockSetGrating(Shamrock.DEVICE_ID, c_int(self.gratings[num_grooves]))
 
     def get_center_wavelength(self) -> float:
+        """
+        Returns
+        -------
+        float
+            the current center wavelength of the spectrometer
+        """
         wavelength = c_float()
         self.lib.ShamrockGetWavelength(Shamrock.DEVICE_ID, pointer(wavelength))
         return wavelength.value
 
     def set_center_wavelength(self, wavelength: float):
+        """
+        Set the spectrometer wavelength at the specified value.
+
+        Parameters
+        ----------
+        wavelength
+            the desired center wavelength to set
+        """
         if wavelength != self.get_center_wavelength():
             self.lib.ShamrockSetWavelength(Shamrock.DEVICE_ID, c_float(wavelength))
 
     def shutdown(self):
+        """Run Shamrock-related cleanup and shutdown procedures."""
         self.lib.ShamrockClose()
