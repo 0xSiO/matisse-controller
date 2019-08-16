@@ -101,6 +101,10 @@ class ConfigurationDialog(QDialog):
         self.temperature_tolerance_field = QDoubleSpinBox()
         self.temperature_tolerance_field.setMinimum(3)
         ple_layout.addRow('CCD temperature tolerance: ', self.temperature_tolerance_field)
+        self.wavelength_offset_field = QDoubleSpinBox()
+        self.wavelength_offset_field.setMinimum(0)
+        self.wavelength_offset_field.setDecimals(3)
+        ple_layout.addRow('Wavelength axis offset: ', self.wavelength_offset_field)
         return ple_options
 
     def create_scan_options(self):
@@ -327,6 +331,7 @@ class ConfigurationDialog(QDialog):
 
         self.target_temperature_field.setToolTip(tooltips.PLE_TARGET_TEMPERATURE)
         self.temperature_tolerance_field.setToolTip(tooltips.PLE_TEMPERATURE_TOLERANCE)
+        self.wavelength_offset_field.setToolTip(tooltips.PLE_WAVELENGTH_OFFSET)
 
     def set_current_values_from_config(self):
         self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
@@ -395,6 +400,7 @@ class ConfigurationDialog(QDialog):
 
         self.target_temperature_field.setValue(cfg.get(cfg.PLE_TARGET_TEMPERATURE))
         self.temperature_tolerance_field.setValue(cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE))
+        self.wavelength_offset_field.setValue(cfg.get(cfg.PLE_WAVELENGTH_OFFSET))
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.RestoreDefaults | QDialogButtonBox.Save |
@@ -478,6 +484,7 @@ class ConfigurationDialog(QDialog):
 
         cfg.set(cfg.PLE_TARGET_TEMPERATURE, self.target_temperature_field.value())
         cfg.set(cfg.PLE_TEMPERATURE_TOLERANCE, self.temperature_tolerance_field.value())
+        cfg.set(cfg.PLE_WAVELENGTH_OFFSET, self.wavelength_offset_field.value())
 
         cfg.save()
         self.close()
