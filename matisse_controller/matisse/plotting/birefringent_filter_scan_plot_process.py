@@ -17,29 +17,29 @@ class BirefringentFilterScanPlotProcess(multiprocessing.Process):
         self.using_new_pos = using_new_pos
 
     def run(self):
-        self.plot_birefringent_scan(self.positions, self.voltages, self.smoothed_data)
-        self.plot_birefringent_selection(self.old_pos, self.best_pos)
-        self.plot_birefringent_maxima(self.positions[self.maxima], self.smoothed_data[self.maxima])
+        self.plot_birefringent_scan()
+        self.plot_birefringent_selection()
+        self.plot_birefringent_maxima()
         self.add_bifi_scan_legend()
         plt.show()
 
-    def plot_birefringent_scan(self, positions, voltages, smoothed_voltages):
-        plt.figure(f"Birefringent Filter Scan: {positions[0]} to {positions[-1]}")
+    def plot_birefringent_scan(self):
+        plt.figure(f"Birefringent Filter Scan: {self.positions[0]} to {self.positions[-1]}")
         plt.cla()
         plt.title('Power Diode Voltage vs. BiFi Motor Position')
-        plt.xlim(positions[0], positions[-1])
+        plt.xlim(self.positions[0], self.positions[-1])
         plt.xlabel('Position')
         plt.ylabel('Voltage (V)')
-        plt.plot(positions, voltages)
-        plt.plot(positions, smoothed_voltages)
+        plt.plot(self.positions, self.voltages)
+        plt.plot(self.positions, self.smoothed_data)
 
-    def plot_birefringent_maxima(self, positions, voltages):
-        plt.plot(positions, voltages, 'r*')
+    def plot_birefringent_maxima(self):
+        plt.plot(self.positions[self.maxima], self.smoothed_data[self.maxima], 'r*')
 
-    def plot_birefringent_selection(self, old_pos, new_pos):
-        plt.axvline(old_pos, 0, 1, color='r', linestyle='--')
+    def plot_birefringent_selection(self):
+        plt.axvline(self.old_pos, 0, 1, color='r', linestyle='--')
         if self.using_new_pos:
-            plt.axvline(new_pos, 0, 1, color='r', linestyle='-')
+            plt.axvline(self.best_pos, 0, 1, color='r', linestyle='-')
 
     def add_bifi_scan_legend(self):
         names = ['Raw', 'Smoothed', 'Old Pos']
