@@ -58,6 +58,10 @@ class PLE:
             ending wavelength for the PLE scan
         step
             the desired change in wavelength between each individual scan
+        center_wavelength
+            the wavelength at which to set the spectrometer
+        grating_grooves
+            the number of grooves to use for the spectrometer grating
         *ccd_args
             args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         **ccd_kwargs

@@ -6,7 +6,7 @@ import matisse_controller.shamrock_ple.ple as ple
 
 
 def take_background(number):
-    p = ple.PLE(None)
+    ple.PLE.load_andor_libs()
     cfg.set(cfg.PLE_TEMPERATURE_TOLERANCE, 4)
     ple.ccd.setup(0.1)
 
