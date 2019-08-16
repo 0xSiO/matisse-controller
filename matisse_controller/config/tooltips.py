@@ -8,6 +8,7 @@ STATUS_MONITOR_FONT_SIZE = 'The font size of the status monitor at the bottom of
 
 BIFI_RESET_POS = 'The position at which to set the birefringent motor during a reset operation.'
 THIN_ETA_RESET_POS = 'The position at which to set the thin etalon motor during a reset operation, or before a large scan.'
+THIN_ETA_RAND_RANGE = 'Limit for range of thin etalon randomization away from the reset position when starting the wavelength-setting process.'
 
 REPORT_EVENTS = 'Should we log important events (like an automatic correction while stabilizing) to a CSV file?'
 
@@ -27,7 +28,6 @@ BIFI_SMOOTHING_FILTER_POLYORDER = 'Savitzky-Golay filter parameter for BiFi scan
 
 THIN_ETA_SCAN_RANGE = 'Total amount of motor steps to move (left and right) when doing a thin etalon scan.'
 THIN_ETA_SCAN_RANGE_SMALL = 'Total amount of motor steps to move (left and right) when doing a small thin etalon scan.'
-THIN_ETA_RAND_RANGE = 'Limit for range of thin etalon randomization away from the reset position when starting the wavelength-setting process.'
 THIN_ETA_SCAN_STEP = 'Amount of motor steps to increment when doing a thin etalon scan.'
 THIN_ETA_NUDGE = 'Amount of motor steps to move after a thin etalon scan has finished.'
 THIN_ETA_SHOW_PLOTS = 'Should we open matplotlib windows after a thin etalon scan?'
@@ -56,5 +56,5 @@ STABILIZATION_TOLERANCE = 'How much drift is tolerated, in nanometers, when auto
 CORRECTION_LIMIT = 'Number of auto-corrections allowed during stabilization before restarting the wavelength-setting process.'
 
 PLE_TARGET_TEMPERATURE = 'Default target temperature at which to cool down the CCD camera.'
-PLE_TEMPERATURE_TOLERANCE = 'When cooling down the CCD, the temperature still fluctuates several degrees. How many degrees should we allow the CCD to drift before waiting to cool again?'
+PLE_TEMPERATURE_TOLERANCE = 'How close to the target temperature should we get, in degrees, before continuing with a CCD-related task?'
 PLE_WAVELENGTH_OFFSET = 'How many nanometers should we shift CCD data when converting between pixels and wavelengths?'

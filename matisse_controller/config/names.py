@@ -11,6 +11,7 @@ STATUS_MONITOR_FONT_SIZE = 'gui.status_monitor.font_size'
 
 BIFI_RESET_POS = 'matisse.reset_positions.birefringent_filter'
 THIN_ETA_RESET_POS = 'matisse.reset_positions.thin_etalon'
+THIN_ETA_RAND_RANGE = 'matisse.scanning.thin_etalon.randomization_range'
 
 REPORT_EVENTS = 'matisse.report_events'
 
@@ -30,7 +31,6 @@ BIFI_SMOOTHING_FILTER_POLYORDER = 'matisse.scanning.birefringent_filter.smoothin
 
 THIN_ETA_SCAN_RANGE = 'matisse.scanning.thin_etalon.range'
 THIN_ETA_SCAN_RANGE_SMALL = 'matisse.scanning.thin_etalon.range_small'
-THIN_ETA_RAND_RANGE = 'matisse.scanning.thin_etalon.randomization_range'
 THIN_ETA_SCAN_STEP = 'matisse.scanning.thin_etalon.step'
 THIN_ETA_NUDGE = 'matisse.scanning.thin_etalon.nudge'
 THIN_ETA_SHOW_PLOTS = 'matisse.scanning.thin_etalon.show_plots'
