@@ -40,8 +40,7 @@ class StabilizationThread(threading.Thread):
         while True:
             if self.messages.qsize() == 0:
                 current_wavelength = self._matisse.wavemeter_wavelength()
-                drift = self._matisse.target_wavelength - current_wavelength
-                drift = round(drift, cfg.get(cfg.WAVEMETER_PRECISION))
+                drift = round(current_wavelength - self._matisse.target_wavelength, cfg.get(cfg.WAVEMETER_PRECISION))
                 # TODO: This threshold is large, maybe add another config option for this condition
                 if abs(drift) > cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
                     # TODO: Consider logging this event to the event report
@@ -54,7 +53,7 @@ class StabilizationThread(threading.Thread):
                     self._matisse.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
                     self._matisse.start_laser_lock_correction()
                 elif abs(drift) > cfg.get(cfg.STABILIZATION_TOLERANCE):
-                    if drift < 0:
+                    if drift > 0:
                         # measured wavelength is too high
                         print(f"Wavelength too high, decreasing. Drift is {drift} nm. Refcell is at {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
                         if not self._matisse.is_any_limit_reached():
@@ -63,7 +62,7 @@ class StabilizationThread(threading.Thread):
                                           f"wavelength drifted by {drift} nm")
                             self._matisse.start_scan(matisse.SCAN_MODE_DOWN)
                         else:
-                            self.do_stabilization_correction(current_wavelength, drift)
+                            self.do_stabilization_correction(current_wavelength)
                     else:
                         # measured wavelength is too low
                         print(f"Wavelength too low, increasing.  Drift is {drift} nm. Refcell is at {self._matisse.query('SCAN:NOW?', numeric_result=True)}")
@@ -73,7 +72,7 @@ class StabilizationThread(threading.Thread):
                                           f"wavelength drifted by {drift} nm")
                             self._matisse.start_scan(matisse.SCAN_MODE_UP)
                         else:
-                            self.do_stabilization_correction(current_wavelength, drift)
+                            self.do_stabilization_correction(current_wavelength)
                 else:
                     self._matisse.stop_scan()
                     # print(f"Within tolerance. Drift is {drift}")
@@ -82,7 +81,7 @@ class StabilizationThread(threading.Thread):
                 self._matisse.stop_scan()
                 break
 
-    def do_stabilization_correction(self, wavelength, drift):
+    def do_stabilization_correction(self, wavelength):
         """Reset the stabilization piezos and optionally log the correction event."""
         print('WARNING: A component has hit a limit while adjusting the RefCell. Attempting automatic corrections.')
         self._matisse.stop_scan()
