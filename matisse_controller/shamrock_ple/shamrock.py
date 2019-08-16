@@ -16,6 +16,13 @@ class Shamrock:
         1799: 0.01578125
     }
 
+    # Offset of center wavelength, in nanometers, for a given grating
+    GRATINGS_OFFSET_NM = {
+        300: 1.325,
+        1200: 0,  # TODO: Figure the rest of these out manually
+        1799: 0
+    }
+
     def __init__(self):
         try:
             self.lib = load_lib(Shamrock.LIBRARY_NAME)

@@ -80,11 +80,28 @@ class CCD:
         print('CCD ready for acquisition.')
 
     def get_temperature(self) -> float:
+        """
+        Returns
+        -------
+        float
+            the current temperature of the CCD camera
+        """
         temperature = c_float()
         self.lib.GetTemperatureF(pointer(temperature))
         return temperature.value
 
     def take_acquisition(self, num_points=1024) -> np.ndarray:
+        """
+        Parameters
+        ----------
+        num_points
+            the number of pixels to read from the CCD camera - in FVB mode, this is the width of the screen.
+
+        Returns
+        -------
+        ndarray
+            an array of counts for each pixel on the CCD screen
+        """
         self.exit_flag = False
         self.lib.StartAcquisition()
         acquisition_array_type = c_int32 * num_points

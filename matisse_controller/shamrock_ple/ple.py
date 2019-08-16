@@ -24,6 +24,10 @@ class PLE:
 
     @staticmethod
     def load_andor_libs():
+        """
+        Initialize the interfaces to the Andor Shamrock and Newton CCD. This only needs to be run once, since the two
+        devices are global variables.
+        """
         global ccd
         global shamrock
         if ccd is None:
@@ -35,6 +39,9 @@ class PLE:
 
     @staticmethod
     def clean_up_globals():
+        """
+        Remove references to the Shamrock and Newton, allowing us to re-initialize them again later.
+        """
         global ccd
         global shamrock
         ccd = None
@@ -132,8 +139,6 @@ class PLE:
         Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength.
 
         Loads PLE data from {name}.pickle and pickles integrated counts for each wavelength into {name}_analysis.pickle.
-        If an analysis file already exists, it will plot that instead.
-
         Optionally subtract background from given file name. The background file should be loadable with numpy.loadtxt.
 
         Parameters
@@ -197,9 +202,11 @@ class PLE:
         ccd.setup(*ccd_args, **ccd_kwargs)
         data = ccd.take_acquisition()
         pixels = range(len(data))
+        nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
+        offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
         # Point-slope formula for calculating wavelengths from pixels
         # Use pixel + 1 because indexes range from 0 to 1023, CCD center is at 512 but zero-indexing would put it at 511
-        wavelengths = [Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves] * (pixel + 1 - CCD.WIDTH / 2) + center_wavelength + cfg.get(cfg.PLE_WAVELENGTH_OFFSET) for pixel in pixels]
+        wavelengths = [nm_per_pixel * (pixel + 1 - CCD.WIDTH / 2) + center_wavelength + offset for pixel in pixels]
         plot_process = SingleAcquisitionPlotProcess(wavelengths, data)
         self.plotting_processes.append(plot_process)
         plot_process.start()
@@ -207,7 +214,8 @@ class PLE:
     def find_integration_endpoints(self, start_wavelength, end_wavelength, center_wavelength, grating_grooves):
         """Convert a starting and ending wavelength to CCD pixels."""
         nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
+        offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
         # Invert pixel -> wavelength conversion
-        start_pixel = int(CCD.WIDTH / 2 - 1 + (start_wavelength - center_wavelength - cfg.get(cfg.PLE_WAVELENGTH_OFFSET)) / nm_per_pixel)
-        end_pixel = int(CCD.WIDTH / 2 - 1 + (end_wavelength - center_wavelength - cfg.get(cfg.PLE_WAVELENGTH_OFFSET)) / nm_per_pixel)
+        start_pixel = int(CCD.WIDTH / 2 - 1 + (start_wavelength - center_wavelength - offset) / nm_per_pixel)
+        end_pixel = int(CCD.WIDTH / 2 - 1 + (end_wavelength - center_wavelength - offset) / nm_per_pixel)
         return start_pixel, end_pixel
