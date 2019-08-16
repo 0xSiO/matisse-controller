@@ -57,6 +57,7 @@ class ConfigurationDialog(QDialog):
         general_layout.addRow('Wavemeter measurement delay: ', self.wavemeter_measurement_delay_field)
         self.component_limit_offset_field = QDoubleSpinBox()
         self.component_limit_offset_field.setMinimum(0)
+        self.component_limit_offset_field.setDecimals(3)
         general_layout.addRow('Component limit offset: ', self.component_limit_offset_field)
         self.wavelength_lower_limit_field = QDoubleSpinBox()
         self.wavelength_lower_limit_field.setMinimum(0)
@@ -74,6 +75,10 @@ class ConfigurationDialog(QDialog):
         self.thin_eta_reset_pos_field.setMinimum(matisse.THIN_ETALON_LOWER_LIMIT)
         self.thin_eta_reset_pos_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT)
         general_layout.addRow('Thin etalon reset position: ', self.thin_eta_reset_pos_field)
+        self.thin_eta_rand_range_field = QSpinBox()
+        self.thin_eta_rand_range_field.setMinimum(0)
+        self.thin_eta_rand_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 2)
+        general_layout.addRow('Thin etalon randomization range: ', self.thin_eta_rand_range_field)
         self.report_events_field = QCheckBox()
         general_layout.addRow('Report events? ', self.report_events_field)
         return general_options
@@ -138,10 +143,6 @@ class ConfigurationDialog(QDialog):
         self.thin_eta_small_scan_range_field = QSpinBox()
         self.thin_eta_small_scan_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 4)
         scan_layout.addRow('Thin etalon small scan range:', self.thin_eta_small_scan_range_field)
-        self.thin_eta_rand_range_field = QSpinBox()
-        self.thin_eta_rand_range_field.setMinimum(0)
-        self.thin_eta_rand_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 2)
-        scan_layout.addRow('Thin etalon randomization range: ', self.thin_eta_rand_range_field)
         self.thin_eta_scan_step_field = QSpinBox()
         scan_layout.addRow('Thin etalon scan step:', self.thin_eta_scan_step_field)
         self.thin_eta_nudge_field = QSpinBox()
@@ -282,6 +283,7 @@ class ConfigurationDialog(QDialog):
 
         self.bifi_reset_pos_field.setToolTip(tooltips.BIFI_RESET_POS)
         self.thin_eta_reset_pos_field.setToolTip(tooltips.THIN_ETA_RESET_POS)
+        self.thin_eta_rand_range_field.setToolTip(tooltips.THIN_ETA_RAND_RANGE)
 
         self.report_events_field.setToolTip(tooltips.REPORT_EVENTS)
 
@@ -301,7 +303,6 @@ class ConfigurationDialog(QDialog):
 
         self.thin_eta_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE)
         self.thin_eta_small_scan_range_field.setToolTip(tooltips.THIN_ETA_SCAN_RANGE_SMALL)
-        self.thin_eta_rand_range_field.setToolTip(tooltips.THIN_ETA_RAND_RANGE)
         self.thin_eta_scan_step_field.setToolTip(tooltips.THIN_ETA_SCAN_STEP)
         self.thin_eta_nudge_field.setToolTip(tooltips.THIN_ETA_NUDGE)
         self.thin_eta_scan_show_plots_field.setToolTip(tooltips.THIN_ETA_SHOW_PLOTS)
@@ -347,10 +348,12 @@ class ConfigurationDialog(QDialog):
         self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
         self.bifi_reset_pos_field.setValue(cfg.get(cfg.BIFI_RESET_POS))
         self.thin_eta_reset_pos_field.setValue(cfg.get(cfg.THIN_ETA_RESET_POS))
+        self.thin_eta_rand_range_field.setValue(cfg.get(cfg.THIN_ETA_RAND_RANGE))
 
         self.report_events_field.setChecked(cfg.get(cfg.REPORT_EVENTS))
 
         self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
+
         self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
         self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
         self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
@@ -360,7 +363,6 @@ class ConfigurationDialog(QDialog):
 
         self.thin_eta_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE))
         self.thin_eta_small_scan_range_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
-        self.thin_eta_rand_range_field.setValue(cfg.get(cfg.THIN_ETA_RAND_RANGE))
         self.thin_eta_scan_step_field.setValue(cfg.get(cfg.THIN_ETA_SCAN_STEP))
         self.thin_eta_nudge_field.setValue(cfg.get(cfg.THIN_ETA_NUDGE))
         self.thin_eta_scan_show_plots_field.setChecked(cfg.get(cfg.THIN_ETA_SHOW_PLOTS))
@@ -431,10 +433,12 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
         cfg.set(cfg.BIFI_RESET_POS, self.bifi_reset_pos_field.value())
         cfg.set(cfg.THIN_ETA_RESET_POS, self.thin_eta_reset_pos_field.value())
+        cfg.set(cfg.THIN_ETA_RAND_RANGE, self.thin_eta_rand_range_field.value())
 
         cfg.set(cfg.REPORT_EVENTS, self.report_events_field.isChecked())
 
         cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
+
         cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())
@@ -444,7 +448,6 @@ class ConfigurationDialog(QDialog):
 
         cfg.set(cfg.THIN_ETA_SCAN_RANGE, self.thin_eta_scan_range_field.value())
         cfg.set(cfg.THIN_ETA_SCAN_RANGE_SMALL, self.thin_eta_small_scan_range_field.value())
-        cfg.set(cfg.THIN_ETA_RAND_RANGE, self.thin_eta_rand_range_field.value())
         cfg.set(cfg.THIN_ETA_SCAN_STEP, self.thin_eta_scan_step_field.value())
         cfg.set(cfg.THIN_ETA_NUDGE, self.thin_eta_nudge_field.value())
         cfg.set(cfg.THIN_ETA_SHOW_PLOTS, self.thin_eta_scan_show_plots_field.isChecked())
