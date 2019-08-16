@@ -70,4 +70,3 @@ REFCELL_LOWER_CORRECTION_POS = 'matisse.correction.refcell_pos_lower'
 
 PLE_TARGET_TEMPERATURE = 'ple.target_temperature'
 PLE_TEMPERATURE_TOLERANCE = 'ple.temperature_tolerance'
-PLE_WAVELENGTH_OFFSET = 'ple.wavelength_axis_offset'
