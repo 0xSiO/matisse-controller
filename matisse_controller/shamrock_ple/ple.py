@@ -153,33 +153,27 @@ class PLE:
         data_file_name = os.path.basename(data_file_path).split('.')[0]
         analysis_file_path = os.path.join(data_dir, f"{data_file_name}_analysis.pickle")
 
-        if os.path.exists(analysis_file_path):
-            print(f"Using existing analysis file.")
-            with open(analysis_file_path, 'rb') as analysis_file:
-                total_counts = pickle.load(analysis_file)
+        with open(data_file_path, 'rb') as full_data_file:
+            scans = pickle.load(full_data_file)
+
+        if background_file_path:
+            background_data = np.loadtxt(background_file_path)
         else:
-            print(f"Generating new analysis file.")
-            with open(data_file_path, 'rb') as full_data_file:
-                scans = pickle.load(full_data_file)
+            background_data = None
 
-            if background_file_path:
-                background_data = np.loadtxt(background_file_path)
-            else:
-                background_data = None
-
-            center_wavelength = scans.pop('center_wavelength')
-            grating_grooves = scans.pop('grating_grooves')
-            start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
-                                                                     center_wavelength, grating_grooves)
-            total_counts = {}
-            for wavelength in scans.keys():
-                if self.ple_exit_flag:
-                    print('Received exit signal, saving PLE data.')
-                    break
-                if background_data.any():
-                    scans[wavelength] = scans[wavelength].astype(np.double)
-                    scans[wavelength] -= background_data
-                total_counts[wavelength] = sum(scans[wavelength][start_pixel:end_pixel])
+        center_wavelength = scans.pop('center_wavelength')
+        grating_grooves = scans.pop('grating_grooves')
+        start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
+                                                                 center_wavelength, grating_grooves)
+        total_counts = {}
+        for wavelength in scans.keys():
+            if self.ple_exit_flag:
+                print('Received exit signal, saving PLE data.')
+                break
+            if background_data.any():
+                scans[wavelength] = scans[wavelength].astype(np.double)
+                scans[wavelength] -= background_data
+            total_counts[wavelength] = sum(scans[wavelength][start_pixel:end_pixel])
 
         with open(analysis_file_path, 'wb') as analysis_file:
             pickle.dump(total_counts, analysis_file, pickle.HIGHEST_PROTOCOL)
