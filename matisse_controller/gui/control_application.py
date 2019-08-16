@@ -187,6 +187,8 @@ class ControlApplication(QApplication):
     def setup_matisse(self):
         try:
             self.matisse: Matisse = Matisse()
+            if self.matisse.all_control_loops_on() and not self.matisse.is_lock_correction_on():
+                self.matisse.start_laser_lock_correction()
         except Exception as err:
             self.matisse: Matisse = None
             raise err
