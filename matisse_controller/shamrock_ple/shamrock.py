@@ -16,11 +16,12 @@ class Shamrock:
         1799: 0.01578125
     }
 
-    # Offset of center wavelength, in nanometers, for a given grating
+    # The offset to add, in nanometers, to data in a spectrum taken with a given grating.
+    # These tend to change over time, so update accordingly. Offset is abs(pixel shift) * (nm per pixel)
     GRATINGS_OFFSET_NM = {
-        300: 1.325,
-        1200: 0,  # TODO: Figure the rest of these out manually
-        1799: 0
+        300: 1.325,  # -11.4 px, last calibrated Aug 2019
+        1200: 0.109,  # -4 px, last calibrated Apr 2015
+        1799: 0.470  # -29.8 px, last calibrated Dec 2018
     }
 
     def __init__(self):

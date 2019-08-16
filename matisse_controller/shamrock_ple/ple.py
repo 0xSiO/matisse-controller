@@ -192,6 +192,21 @@ class PLE:
         plot_process.start()
 
     def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
+        """
+        Plot a single acquisition from the CCD at the given center wavelength and using the grating with the given
+        number of grooves.
+
+        Parameters
+        ----------
+        center_wavelength
+            the wavelength at which to set the spectrometer
+        grating_grooves
+            the number of grooves to use for the spectrometer grating
+        *ccd_args
+            args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        **ccd_kwargs
+            kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        """
         self.ple_exit_flag = False
         PLE.load_andor_libs()
         print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...")
@@ -211,8 +226,27 @@ class PLE:
         self.plotting_processes.append(plot_process)
         plot_process.start()
 
-    def find_integration_endpoints(self, start_wavelength, end_wavelength, center_wavelength, grating_grooves):
-        """Convert a starting and ending wavelength to CCD pixels."""
+    def find_integration_endpoints(self, start_wavelength: float, end_wavelength: float, center_wavelength: float,
+                                   grating_grooves: int):
+        """
+        Convert a starting and ending wavelength to CCD pixels.
+
+        Parameters
+        ----------
+        start_wavelength
+            starting point of integration, in nanometers
+        end_wavelength
+            ending point of integration, in nanometers
+        center_wavelength
+            the wavelength at which the spectrometer was set
+        grating_grooves
+            the number of grooves used for the spectrometer grating
+
+        Returns
+        -------
+        (int, int)
+            the start and end pixels corresponding to the given start and end wavelengths
+        """
         nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
         offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
         # Invert pixel -> wavelength conversion
