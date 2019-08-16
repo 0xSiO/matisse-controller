@@ -200,7 +200,8 @@ class PLE:
         data = ccd.take_acquisition()
         pixels = range(len(data))
         # Point-slope formula for calculating wavelengths from pixels
-        wavelengths = [Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves] * (pixel + 1 - len(pixels) / 2) + center_wavelength for pixel in pixels]
+        # Use pixel + 1 because indexes range from 0 to 1023, CCD center is at 512 but zero-indexing would put it at 511
+        wavelengths = [Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves] * (pixel + 1 - CCD.WIDTH / 2) + center_wavelength + cfg.get(cfg.PLE_WAVELENGTH_OFFSET) for pixel in pixels]
         plot_process = SingleAcquisitionPlotProcess(wavelengths, data)
         self.plotting_processes.append(plot_process)
         plot_process.start()
@@ -208,6 +209,7 @@ class PLE:
     def find_integration_endpoints(self, start_wavelength, end_wavelength, center_wavelength, grating_grooves):
         """Convert a starting and ending wavelength to CCD pixels."""
         nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
-        start_pixel = int(CCD.WIDTH / 2 + (start_wavelength - center_wavelength) / nm_per_pixel)
-        end_pixel = int(CCD.WIDTH / 2 + (end_wavelength - center_wavelength) / nm_per_pixel)
+        # Invert pixel -> wavelength conversion
+        start_pixel = int(CCD.WIDTH / 2 - 1 + (start_wavelength - center_wavelength - cfg.get(cfg.PLE_WAVELENGTH_OFFSET)) / nm_per_pixel)
+        end_pixel = int(CCD.WIDTH / 2 - 1 + (end_wavelength - center_wavelength - cfg.get(cfg.PLE_WAVELENGTH_OFFSET)) / nm_per_pixel)
         return start_pixel, end_pixel

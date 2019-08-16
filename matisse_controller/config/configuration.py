@@ -88,7 +88,8 @@ DEFAULTS = {
     },
     'ple': {
         'target_temperature': -70,
-        'temperature_tolerance': 3.25
+        'temperature_tolerance': 3.25,
+        'wavelength_axis_offset': 1.325
     },
     'gui': {
         'status_monitor': {

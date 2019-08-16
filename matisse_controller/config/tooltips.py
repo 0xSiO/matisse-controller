@@ -57,3 +57,4 @@ CORRECTION_LIMIT = 'Number of auto-corrections allowed during stabilization befo
 
 PLE_TARGET_TEMPERATURE = 'Default target temperature at which to cool down the CCD camera.'
 PLE_TEMPERATURE_TOLERANCE = 'When cooling down the CCD, the temperature still fluctuates several degrees. How many degrees should we allow the CCD to drift before waiting to cool again?'
+PLE_WAVELENGTH_OFFSET = 'How many nanometers should we shift CCD data when converting between pixels and wavelengths?'
