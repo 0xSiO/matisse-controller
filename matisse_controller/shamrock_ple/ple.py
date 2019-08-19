@@ -48,9 +48,8 @@ class PLE:
         ccd = None
         shamrock = None
 
-    # TODO: Option to select folder in which to save data
-    def start_ple_scan(self, scan_name: str, initial_wavelength: float, final_wavelength: float, step: float,
-                       center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
+    def start_ple_scan(self, scan_name: str, scan_location: str, initial_wavelength: float, final_wavelength: float,
+                       step: float, center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
         """
         Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
 
@@ -60,7 +59,9 @@ class PLE:
         Parameters
         ----------
         scan_name
-            A unique name to give the PLE measurement. This will be included in the name of all the data files.
+            a unique name to give the PLE measurement, which will be included in the name of all the data files
+        scan_location
+            the name of a folder to contain all relevant scan data
         initial_wavelength
             starting wavelength for the PLE scan
         final_wavelength
@@ -81,14 +82,15 @@ class PLE:
         if not scan_name:
             print('WARNING: Name of PLE scan is required.')
             return
+        if not scan_location:
+            print('WARNING: Location of PLE scan is required.')
+            return
 
-        data_file_name = os.path.join(scan_name, f"{scan_name}.pickle")
+        data_file_name = os.path.join(scan_location, f"{scan_name}.pickle")
 
         if os.path.exists(data_file_name):
             print(f"WARNING: A PLE scan has already been run for '{scan_name}'. Choose a new name and try again.")
             return
-        else:
-            os.makedirs(scan_name, exist_ok=True)
 
         PLE.load_andor_libs()
         print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...")
@@ -118,9 +120,9 @@ class PLE:
                 print('Received exit signal, saving PLE data.')
                 break
             acquisition_data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
-            file_name = f"{str(counter).zfill(3)}_{scan_name}_{wavelength}nm" \
-                        f"_StepSize_{step}nm_Range_{wavelength_range}nm.txt"
-            np.savetxt(os.path.join(scan_name, file_name), acquisition_data)
+            file_name = os.path.join(scan_location, f"{str(counter).zfill(3)}_{scan_name}_{wavelength}nm"
+                                                    f"_StepSize_{step}nm_Range_{wavelength_range}nm.txt")
+            np.savetxt(file_name, acquisition_data)
 
             acq_wavelengths = self.pixels_to_wavelengths(range(len(acquisition_data)), center_wavelength, grating_grooves)
             plot_pipe_in.send((acq_wavelengths, acquisition_data))

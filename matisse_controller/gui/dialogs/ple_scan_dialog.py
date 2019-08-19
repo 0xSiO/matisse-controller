@@ -1,3 +1,4 @@
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
 
 import matisse_controller.config as cfg
@@ -13,12 +14,23 @@ class PLEScanDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.setup_form()
+        self.setup_slots()
         self.add_buttons()
+        self.setMinimumWidth(300)
+        self.scan_location = None
 
     def setup_form(self):
         form_layout = QFormLayout()
         self.scan_name_field = QLineEdit()
         form_layout.addRow('Scan name: ', self.scan_name_field)
+
+        scan_location_layout = QHBoxLayout()
+        self.scan_location_button = QPushButton('Select Folder')
+        self.scan_location_label = QLabel()
+        scan_location_layout.addWidget(self.scan_location_button)
+        scan_location_layout.addWidget(self.scan_location_label)
+        form_layout.addRow('Scan Location: ', scan_location_layout)
+
         self.wavelength_start_field = QDoubleSpinBox()
         self.wavelength_start_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
         self.wavelength_start_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
@@ -57,6 +69,9 @@ class PLEScanDialog(QDialog):
         self.grating_grooves_field.setCurrentText(str(ple.shamrock.get_grating_grooves()))
         form_layout.addRow('Grating grooves: ', self.grating_grooves_field)
 
+    def setup_slots(self):
+        self.scan_location_button.clicked.connect(self.select_scan_location)
+
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         button_box.button(QDialogButtonBox.Ok).clicked.connect(self.accept)
@@ -67,6 +82,7 @@ class PLEScanDialog(QDialog):
         return {
             # The keys here MUST match parameter names in the PLE class
             'scan_name': self.scan_name_field.text(),
+            'scan_location': self.scan_location,
             'initial_wavelength': self.wavelength_start_field.value(),
             'final_wavelength': self.wavelength_end_field.value(),
             'step': self.wavelength_step_field.value(),
@@ -74,6 +90,12 @@ class PLEScanDialog(QDialog):
             'center_wavelength': self.center_wavelength_field.value(),
             'grating_grooves': int(self.grating_grooves_field.currentText())
         }
+
+    @pyqtSlot(bool)
+    def select_scan_location(self, checked):
+        self.scan_location = QFileDialog.getExistingDirectory(None, 'Select Folder', '', QFileDialog.ShowDirsOnly |
+                                                              QFileDialog.DontResolveSymlinks)
+        self.scan_location_label.setText(self.scan_location)
 
 
 def main():
