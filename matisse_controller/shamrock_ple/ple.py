@@ -6,7 +6,7 @@ import numpy as np
 
 import matisse_controller.config as cfg
 from matisse_controller.shamrock_ple.ccd import CCD
-from matisse_controller.shamrock_ple.plotting.single_acquisition_plot_process import SingleAcquisitionPlotProcess
+from matisse_controller.shamrock_ple.plotting.spectrum_plot_process import SpectrumPlotProcess
 from matisse_controller.shamrock_ple.shamrock import Shamrock
 from matisse_controller.shamrock_ple.plotting import PLEAnalysisPlotProcess
 
@@ -234,7 +234,7 @@ class PLE:
             plot_process = self.single_acquisition_plot_processes[-1]
             plot_process.add_data(wavelengths, data)
         else:
-            plot_process = SingleAcquisitionPlotProcess(wavelengths, data)
+            plot_process = SpectrumPlotProcess(wavelengths, data)
             self.single_acquisition_plot_processes.append(plot_process)
             plot_process.start()
 

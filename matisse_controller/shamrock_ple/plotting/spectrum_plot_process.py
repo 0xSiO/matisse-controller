@@ -3,7 +3,7 @@ from multiprocessing import Process
 import matplotlib.pyplot as plt
 
 
-class SingleAcquisitionPlotProcess(Process):
+class SpectrumPlotProcess(Process):
     def __init__(self, wavelengths, counts, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.wavelengths = wavelengths
