@@ -179,7 +179,7 @@ class PLE:
             if self.ple_exit_flag:
                 print('Received exit signal, saving PLE data.')
                 break
-            if background_data.any():
+            if background_data and background_data.any():
                 scans[wavelength] = scans[wavelength].astype(np.double)
                 scans[wavelength] -= background_data
             total_counts[wavelength] = sum(scans[wavelength][start_pixel:end_pixel])
