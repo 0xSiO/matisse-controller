@@ -69,6 +69,8 @@ class PLEScanDialog(QDialog):
         self.grating_grooves_field.setCurrentText(str(ple.shamrock.get_grating_grooves()))
         form_layout.addRow('Grating grooves: ', self.grating_grooves_field)
 
+        # TODO: Checkbox of whether to show integrated counts as they come in and integration endpoint fields
+
     def setup_slots(self):
         self.scan_location_button.clicked.connect(self.select_scan_location)
 
