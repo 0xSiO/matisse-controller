@@ -101,11 +101,12 @@ the target value
 ### Shamrock
 - Start PLE Scan: open a dialog to set parameters of a PLE scan, and perform the scan, saving acquired data in text
 files separated by wavelength, and also a .pickle file containing all the data
-- Analyze PLE Data: open a dialog to load a .pickle file of a PLE scan, and integrate the counts for each laser
+- Start PLE Analysis: open a dialog to load a .pickle file of a PLE scan, and integrate the counts for each laser
 wavelength used in the scan. Opens a plot of integrated counts vs. laser wavelength afterwards. You can also load
 background data that you'd like to be subtracted from the acquisition data.
-- Take Single Acquisition: acquire a single image from the CCD. This feature does not wait for the CCD to reach a
-particular temperature.
+- View PLE Analysis: plot the data in a .pickle file representing the analysis of a particular PLE scan
+- View Single Acquisition: plot a file containing data from the CCD, or acquire a single image from the CCD. This
+feature does not wait for the CCD to reach a particular temperature.
 
 ## Development
 
