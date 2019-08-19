@@ -122,6 +122,7 @@ class ControlApplication(QApplication):
         ple_menu = menu_bar.addMenu('Shamrock')
         self.start_ple_scan_action = ple_menu.addAction('Start PLE Scan')
         self.analyze_ple_action = ple_menu.addAction('Analyze PLE Data')
+        self.view_existing_analysis_action = ple_menu.addAction('View Existing Analysis')
         self.single_acquisition_action = ple_menu.addAction('Take Single Acquisition')
 
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
@@ -174,6 +175,7 @@ class ControlApplication(QApplication):
         # Shamrock
         self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
         self.analyze_ple_action.triggered.connect(self.analyze_ple_data)
+        self.view_existing_analysis_action.triggered.connect(self.view_existing_analysis)
         self.single_acquisition_action.triggered.connect(self.take_single_acquisition)
 
     @handled_function
@@ -494,6 +496,10 @@ class ControlApplication(QApplication):
             analysis_options = dialog.get_form_data()
             self.ple_analysis_worker = self.work_executor.submit(self.ple.analyze_ple_data, **analysis_options)
             self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)
+
+    @handled_slot(bool)
+    def view_existing_analysis(self, checked):
+        raise NotImplementedError
 
     @handled_slot(bool)
     def take_single_acquisition(self, checked):
