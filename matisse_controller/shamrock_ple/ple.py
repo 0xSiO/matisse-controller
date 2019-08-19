@@ -103,7 +103,7 @@ class PLE:
         file_name = ''
 
         plot_pipe_in, plot_pipe_out = Pipe()
-        pl_plot_process = SpectrumPlotProcess(pipe=plot_pipe_out)
+        pl_plot_process = SpectrumPlotProcess(pipe=plot_pipe_out, daemon=True)
         self.spectrum_plot_processes.append(pl_plot_process)
         pl_plot_process.start()
 
@@ -209,6 +209,14 @@ class PLE:
         self.analysis_plot_processes.append(plot_process)
         plot_process.start()
 
+    def plot_ple_analysis_file(self, analysis_file_path: str):
+        """Plot the PLE analysis data from the given .pickle file."""
+        with open(analysis_file_path, 'rb') as analysis_file:
+            data = pickle.load(analysis_file)
+        plot_process = PLEAnalysisPlotProcess(data, daemon=True)
+        self.analysis_plot_processes.append(plot_process)
+        plot_process.start()
+
     def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, data_file=None,
                                 **ccd_kwargs):
         """
@@ -244,17 +252,34 @@ class PLE:
 
         wavelengths = self.pixels_to_wavelengths(range(len(data)), center_wavelength, grating_grooves)
 
-        plot_process = SpectrumPlotProcess(wavelengths, data)
+        plot_process = SpectrumPlotProcess(wavelengths, data, daemon=True)
         self.spectrum_plot_processes.append(plot_process)
         plot_process.start()
 
     def pixels_to_wavelengths(self, pixels, center_wavelength: float, grating_grooves: int):
+        """
+        Convert pixels to nanometers using given spectrometer settings.
+
+        Parameters
+        ----------
+        pixels
+            an iterable of pixel indices to be converted to wavelengths
+        center_wavelength
+            the center wavelength used to take the CCD data
+        grating_grooves
+            the number of grooves for the grating used to take the CCD data
+
+        Returns
+        -------
+        ndarray
+            an array of wavelengths that each correspond to a pixel on the CCD screen
+        """
         nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
         offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
         # Point-slope formula for calculating wavelengths from pixels
         # Use pixel + 1 because indexes range from 0 to 1023, CCD center is at 512 but zero-indexing would put it at 511
         wavelengths = [nm_per_pixel * (pixel + 1 - CCD.WIDTH / 2) + center_wavelength + offset for pixel in pixels]
-        return wavelengths
+        return np.array(wavelengths)
 
     def find_integration_endpoints(self, start_wavelength: float, end_wavelength: float, center_wavelength: float,
                                    grating_grooves: int):

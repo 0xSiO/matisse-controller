@@ -18,6 +18,7 @@ class SingleAcquisitionDialog(QDialog):
         self.setup_form()
         self.setup_slots()
         self.add_buttons()
+        self.setMinimumWidth(300)
         self.data_file_path = None
 
     def setup_form(self):
@@ -27,7 +28,12 @@ class SingleAcquisitionDialog(QDialog):
         self.data_file_label = QLabel()
         data_file_selection_layout.addWidget(self.data_file_button)
         data_file_selection_layout.addWidget(self.data_file_label)
-        form_layout.addRow('Show Existing Data: ', data_file_selection_layout)
+        form_layout.addRow('Existing Data: ', data_file_selection_layout)
+
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        form_layout.addRow(line)
 
         self.exposure_time_field = QDoubleSpinBox()
         self.exposure_time_field.setMinimum(0)
