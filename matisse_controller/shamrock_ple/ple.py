@@ -128,6 +128,7 @@ class PLE:
             counter += 1
 
         plot_pipe_in.send(None)
+        self.plot_single_acquisition(center_wavelength, grating_grooves, data_file=file_name)
 
         with open(data_file_name, 'wb') as data_file:
             pickle.dump(data, data_file, pickle.HIGHEST_PROTOCOL)
