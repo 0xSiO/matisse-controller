@@ -24,6 +24,9 @@ class PLEAnalysisDialog(QDialog):
     def setup_form(self):
         form_layout = QFormLayout()
 
+        self.analysis_name_field = QLineEdit()
+        form_layout.addRow('Analysis name: ', self.analysis_name_field)
+
         data_file_selection_layout = QHBoxLayout()
         self.data_file_button = QPushButton('Select File')
         self.data_file_label = QLabel()
@@ -66,6 +69,7 @@ class PLEAnalysisDialog(QDialog):
     def get_form_data(self):
         return {
             # The keys here MUST match parameter names in the PLE class
+            'analysis_name': self.analysis_name_field.text(),
             'data_file_path': self.data_file_path,
             'integration_start': self.integration_start_field.value(),
             'integration_end': self.integration_end_field.value(),

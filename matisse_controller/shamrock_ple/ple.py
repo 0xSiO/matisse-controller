@@ -153,7 +153,7 @@ class PLE:
         if ccd:
             ccd.exit_flag = True
 
-    def analyze_ple_data(self, data_file_path: str, integration_start: float, integration_end: float,
+    def analyze_ple_data(self, analysis_name: str, data_file_path: str, integration_start: float, integration_end: float,
                          background_file_path=''):
         """
         Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength.
@@ -177,10 +177,16 @@ class PLE:
         if not data_file_path:
             print('WARNING: No data file provided to analyze.')
             return
+        if not analysis_name:
+            print('WARNING: Name of analysis is required.')
+            return
 
         data_dir = os.path.abspath(os.path.dirname(data_file_path))
-        data_file_name = os.path.basename(data_file_path).split('.')[0]
-        analysis_file_path = os.path.join(data_dir, f"{data_file_name}_analysis.pickle")
+        analysis_file_path = os.path.join(data_dir, f"{analysis_name}.pickle")
+
+        if os.path.exists(analysis_file_path):
+            print(f"WARNING: An analysis called '{analysis_name}' already exists. Choose a new name and try again.")
+            return
 
         with open(data_file_path, 'rb') as full_data_file:
             scans = pickle.load(full_data_file)
