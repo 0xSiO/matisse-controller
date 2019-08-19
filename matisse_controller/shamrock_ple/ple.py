@@ -100,6 +100,7 @@ class PLE:
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
         counter = 1
+        file_name = ''
 
         plot_pipe_in, plot_pipe_out = Pipe()
         pl_plot_process = SpectrumPlotProcess(pipe=plot_pipe_out)
@@ -128,7 +129,8 @@ class PLE:
             counter += 1
 
         plot_pipe_in.send(None)
-        self.plot_single_acquisition(center_wavelength, grating_grooves, data_file=file_name)
+        if file_name:
+            self.plot_single_acquisition(center_wavelength, grating_grooves, data_file=file_name)
 
         with open(data_file_name, 'wb') as data_file:
             pickle.dump(data, data_file, pickle.HIGHEST_PROTOCOL)
@@ -211,7 +213,8 @@ class PLE:
                                 **ccd_kwargs):
         """
         Plot a single acquisition from the CCD at the given center wavelength and using the grating with the given
-        number of grooves.
+        number of grooves. If a data file name is specified, this will skip reading the CCD and just plot the data
+        in that file.
 
         Parameters
         ----------
