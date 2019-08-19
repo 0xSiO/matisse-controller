@@ -1,2 +1,2 @@
 from .ple_analysis_plot_process import PLEAnalysisPlotProcess
-from .single_acquisition_plot_process import SingleAcquisitionPlotProcess
+from .spectrum_plot_process import SpectrumPlotProcess
