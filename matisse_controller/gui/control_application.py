@@ -6,7 +6,8 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from contextlib import redirect_stdout
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication, QDialog
+from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication, QDialog, \
+    QFileDialog
 
 import matisse_controller.config as cfg
 import matisse_controller.matisse as matisse
@@ -121,9 +122,9 @@ class ControlApplication(QApplication):
 
         ple_menu = menu_bar.addMenu('Shamrock')
         self.start_ple_scan_action = ple_menu.addAction('Start PLE Scan')
-        self.analyze_ple_action = ple_menu.addAction('Analyze PLE Data')
-        self.view_existing_analysis_action = ple_menu.addAction('View Existing Analysis')
-        self.single_acquisition_action = ple_menu.addAction('Take Single Acquisition')
+        self.analyze_ple_action = ple_menu.addAction('Start PLE Analysis')
+        self.view_existing_analysis_action = ple_menu.addAction('View PLE Analysis')
+        self.single_acquisition_action = ple_menu.addAction('View Single Acquisition')
 
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
                                      self.piezo_eta_control_action, self.fast_pz_control_action]
@@ -499,7 +500,15 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def view_existing_analysis(self, checked):
-        raise NotImplementedError
+        if self.ple_analysis_worker and self.ple_analysis_worker.running():
+            print('WARNING: A PLE analysis is currently in progress.')
+            return
+
+        file_path, success = QFileDialog.getOpenFileName(caption='Select Analysis File',
+                                                         filter='Pickle file (*.pickle)')
+        if success:
+            self.ple_analysis_worker = self.work_executor.submit(self.ple.plot_ple_analysis_file, file_path)
+            self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)
 
     @handled_slot(bool)
     def take_single_acquisition(self, checked):
