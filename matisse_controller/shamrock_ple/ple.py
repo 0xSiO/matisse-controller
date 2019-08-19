@@ -47,6 +47,7 @@ class PLE:
         ccd = None
         shamrock = None
 
+    # TODO: Option to select folder in which to save data
     def start_ple_scan(self, scan_name: str, initial_wavelength: float, final_wavelength: float, step: float,
                        center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
         """
@@ -191,7 +192,8 @@ class PLE:
         self.plotting_processes.append(plot_process)
         plot_process.start()
 
-    def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
+    def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, acquisition_data=None,
+                                **ccd_kwargs):
         """
         Plot a single acquisition from the CCD at the given center wavelength and using the grating with the given
         number of grooves.
@@ -202,20 +204,26 @@ class PLE:
             the wavelength at which to set the spectrometer
         grating_grooves
             the number of grooves to use for the spectrometer grating
+        acquisition_data
+            data to plot - if None, will grab data from the CCD
         *ccd_args
             args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         **ccd_kwargs
             kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         """
         self.ple_exit_flag = False
-        PLE.load_andor_libs()
-        print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...")
-        shamrock.set_grating_grooves(grating_grooves)
-        shamrock.set_center_wavelength(center_wavelength)
-        if self.ple_exit_flag:
-            return
-        ccd.setup(*ccd_args, **ccd_kwargs)
-        data = ccd.take_acquisition()
+        if acquisition_data:
+            data = acquisition_data
+        else:
+            PLE.load_andor_libs()
+            print(f"Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...")
+            shamrock.set_grating_grooves(grating_grooves)
+            shamrock.set_center_wavelength(center_wavelength)
+            if self.ple_exit_flag:
+                return
+            ccd.setup(*ccd_args, **ccd_kwargs)
+            data = ccd.take_acquisition()
+
         pixels = range(len(data))
         wavelengths = self.pixels_to_wavelengths(pixels, center_wavelength, grating_grooves)
         plot_process = SingleAcquisitionPlotProcess(wavelengths, data)

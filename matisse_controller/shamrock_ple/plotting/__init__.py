@@ -1,1 +1,2 @@
 from .ple_analysis_plot_process import PLEAnalysisPlotProcess
+from .single_acquisition_plot_process import SingleAcquisitionPlotProcess
