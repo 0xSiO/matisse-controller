@@ -1,3 +1,6 @@
+import os
+
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
 
 import matisse_controller.config as cfg
@@ -13,10 +16,19 @@ class SingleAcquisitionDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.setup_form()
+        self.setup_slots()
         self.add_buttons()
+        self.data_file_path = None
 
     def setup_form(self):
         form_layout = QFormLayout()
+        data_file_selection_layout = QHBoxLayout()
+        self.data_file_button = QPushButton('Select File')
+        self.data_file_label = QLabel()
+        data_file_selection_layout.addWidget(self.data_file_button)
+        data_file_selection_layout.addWidget(self.data_file_label)
+        form_layout.addRow('Show Existing Data: ', data_file_selection_layout)
+
         self.exposure_time_field = QDoubleSpinBox()
         self.exposure_time_field.setMinimum(0)
         self.exposure_time_field.setDecimals(4)
@@ -38,6 +50,9 @@ class SingleAcquisitionDialog(QDialog):
         self.grating_grooves_field.setCurrentText(str(ple.shamrock.get_grating_grooves()))
         form_layout.addRow('Grating grooves: ', self.grating_grooves_field)
 
+    def setup_slots(self):
+        self.data_file_button.clicked.connect(self.select_data_file)
+
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         button_box.button(QDialogButtonBox.Ok).clicked.connect(self.accept)
@@ -50,8 +65,15 @@ class SingleAcquisitionDialog(QDialog):
             'exposure_time': self.exposure_time_field.value(),
             'center_wavelength': self.center_wavelength_field.value(),
             'grating_grooves': int(self.grating_grooves_field.currentText()),
+            'data_file': self.data_file_path,
             'cool_down': False
         }
+
+    @pyqtSlot(bool)
+    def select_data_file(self, checked):
+        self.data_file_path, success = QFileDialog.getOpenFileName(caption='Select Data File',
+                                                          filter='Text file (*.txt)')
+        self.data_file_label.setText(os.path.basename(self.data_file_path))
 
 
 def main():

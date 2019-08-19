@@ -8,16 +8,18 @@ class SingleAcquisitionPlotProcess(Process):
         super().__init__(*args, **kwargs)
         self.wavelengths = wavelengths
         self.counts = counts
-        self.figure = plt.figure('CCD Acquisition')
-        self.axes = self.figure.subplots()
 
     def run(self):
-        self.axes.set_title('Counts vs. Wavelength')
-        self.axes.set_xlim(self.wavelengths[0], self.wavelengths[-1])
-        self.axes.set_xlabel('Wavelength (nm)')
-        self.axes.set_ylabel('Counts')
-        self.axes.plot(self.wavelengths, self.counts)
-        self.figure.show()
+        plt.figure('CCD Acquisition')
+        plt.cla()
+        plt.title('Counts vs. Wavelength')
+        plt.xlim(self.wavelengths[0], self.wavelengths[-1])
+        plt.xlabel('Wavelength (nm)')
+        plt.ylabel('Counts')
+        plt.plot(self.wavelengths, self.counts)
+        plt.show()
 
+    # TODO: This can't run because plt.show() blocks. Use some kind of communication channel instead
     def add_data(self, wavelengths, counts):
-        self.axes.plot(wavelengths, counts)
+        plt.plot(wavelengths, counts)
+        plt.draw()
