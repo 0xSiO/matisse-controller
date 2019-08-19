@@ -1,14 +1,14 @@
 import os
 import pickle
 import time
+from multiprocessing import Pipe
 
 import numpy as np
 
 import matisse_controller.config as cfg
 from matisse_controller.shamrock_ple.ccd import CCD
-from matisse_controller.shamrock_ple.plotting.spectrum_plot_process import SpectrumPlotProcess
+from matisse_controller.shamrock_ple.plotting import *
 from matisse_controller.shamrock_ple.shamrock import Shamrock
-from matisse_controller.shamrock_ple.plotting import PLEAnalysisPlotProcess
 
 ccd: CCD = None
 shamrock: Shamrock = None
@@ -21,7 +21,7 @@ class PLE:
         self.matisse = matisse
         self.ple_exit_flag = False
         self.analysis_plot_processes = []
-        self.single_acquisition_plot_processes = []
+        self.spectrum_plot_processes = []
 
     @staticmethod
     def load_andor_libs():
@@ -100,6 +100,12 @@ class PLE:
         wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
         wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
         counter = 1
+
+        plot_pipe_in, plot_pipe_out = Pipe()
+        pl_plot_process = SpectrumPlotProcess(pipe=plot_pipe_out)
+        self.spectrum_plot_processes.append(pl_plot_process)
+        pl_plot_process.start()
+
         data = {
             'grating_grooves': grating_grooves,
             'center_wavelength': center_wavelength
@@ -114,8 +120,15 @@ class PLE:
             file_name = f"{str(counter).zfill(3)}_{scan_name}_{wavelength}nm" \
                         f"_StepSize_{step}nm_Range_{wavelength_range}nm.txt"
             np.savetxt(os.path.join(scan_name, file_name), acquisition_data)
+
+            acq_wavelengths = self.pixels_to_wavelengths(range(len(acquisition_data)), center_wavelength, grating_grooves)
+            plot_pipe_in.send((acq_wavelengths, acquisition_data))
+
             data[wavelength] = acquisition_data
             counter += 1
+
+        plot_pipe_in.send(None)
+
         with open(data_file_name, 'wb') as data_file:
             pickle.dump(data, data_file, pickle.HIGHEST_PROTOCOL)
 
@@ -194,7 +207,7 @@ class PLE:
         plot_process.start()
 
     def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, data_file=None,
-                                append=True, **ccd_kwargs):
+                                **ccd_kwargs):
         """
         Plot a single acquisition from the CCD at the given center wavelength and using the grating with the given
         number of grooves.
@@ -207,8 +220,6 @@ class PLE:
             the number of grooves to use for the spectrometer grating
         data_file
             file name containing data to plot - if None, will grab data from the CCD
-        append
-            whether to plot the data on top of the most recent plot, if any
         *ccd_args
             args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         **ccd_kwargs
@@ -227,16 +238,11 @@ class PLE:
             ccd.setup(*ccd_args, **ccd_kwargs)
             data = ccd.take_acquisition()
 
-        pixels = range(len(data))
-        wavelengths = self.pixels_to_wavelengths(pixels, center_wavelength, grating_grooves)
+        wavelengths = self.pixels_to_wavelengths(range(len(data)), center_wavelength, grating_grooves)
 
-        if append and self.single_acquisition_plot_processes:
-            plot_process = self.single_acquisition_plot_processes[-1]
-            plot_process.add_data(wavelengths, data)
-        else:
-            plot_process = SpectrumPlotProcess(wavelengths, data)
-            self.single_acquisition_plot_processes.append(plot_process)
-            plot_process.start()
+        plot_process = SpectrumPlotProcess(wavelengths, data)
+        self.spectrum_plot_processes.append(plot_process)
+        plot_process.start()
 
     def pixels_to_wavelengths(self, pixels, center_wavelength: float, grating_grooves: int):
         nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
