@@ -38,6 +38,8 @@ class PLEAnalysisPlotProcess(multiprocessing.Process):
                         break
             except BrokenPipeError:
                 pass
+            except EOFError:
+                pass
         else:
             self.plot_data(self.wavelengths, self.counts)
         plt.show()

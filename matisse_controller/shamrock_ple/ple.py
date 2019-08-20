@@ -104,10 +104,20 @@ class PLE:
         counter = 1
         file_name = ''
 
-        plot_pipe_in, plot_pipe_out = Pipe()
-        pl_plot_process = SpectrumPlotProcess(pipe=plot_pipe_out, daemon=True)
+        pl_pipe_in, pl_pipe_out = Pipe()
+        pl_plot_process = SpectrumPlotProcess(pipe=pl_pipe_out, daemon=True)
         self.spectrum_plot_processes.append(pl_plot_process)
         pl_plot_process.start()
+
+        # TODO: Make these options configurable
+        plot_analysis = True
+        integration_start = 720
+        integration_end = 800
+        if plot_analysis:
+            analysis_pipe_in, analysis_pipe_out = Pipe()
+            analysis_plot_process = PLEAnalysisPlotProcess(pipe=analysis_pipe_out, daemon=True)
+            self.analysis_plot_processes.append(analysis_plot_process)
+            analysis_plot_process.start()
 
         data = {
             'grating_grooves': grating_grooves,
@@ -125,12 +135,17 @@ class PLE:
             np.savetxt(file_name, acquisition_data)
 
             acq_wavelengths = self.pixels_to_wavelengths(range(len(acquisition_data)), center_wavelength, grating_grooves)
-            plot_pipe_in.send((acq_wavelengths, acquisition_data))
+            pl_pipe_in.send((acq_wavelengths, acquisition_data))
+
+            if plot_analysis:
+                start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
+                                                                         center_wavelength, grating_grooves)
+                analysis_pipe_in.send((wavelength, sum(acquisition_data[start_pixel:end_pixel])))
 
             data[wavelength] = acquisition_data
             counter += 1
 
-        plot_pipe_in.send(None)
+        pl_pipe_in.send(None)
         if file_name:
             self.plot_single_acquisition(center_wavelength, grating_grooves, data_file=file_name)
 
