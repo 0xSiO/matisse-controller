@@ -38,4 +38,5 @@ class SpectrumPlotProcess(Process):
     def plot_data(self, wavelengths, counts):
         self.axes.set_xlim(wavelengths[0], wavelengths[-1])
         self.axes.plot(wavelengths, counts)
+        plt.draw()
         plt.pause(0.001)
