@@ -14,6 +14,7 @@ ccd: CCD = None
 shamrock: Shamrock = None
 
 
+# TODO: Method to gracefully close all plots
 class PLE:
     """PLE scanning functionality with the Andor Shamrock and Newton CCD."""
 
@@ -49,7 +50,8 @@ class PLE:
         shamrock = None
 
     def start_ple_scan(self, scan_name: str, scan_location: str, initial_wavelength: float, final_wavelength: float,
-                       step: float, center_wavelength: float, grating_grooves: int, *ccd_args, **ccd_kwargs):
+                       step: float, center_wavelength: float, grating_grooves: int, *ccd_args, plot_analysis=False,
+                       integration_start=None, integration_end=None, **ccd_kwargs):
         """
         Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
 
@@ -72,6 +74,12 @@ class PLE:
             the wavelength at which to set the spectrometer
         grating_grooves
             the number of grooves to use for the spectrometer grating
+        plot_analysis
+            whether to plot the PLE analysis in real time
+        integration_start : float
+            the wavelength at which to start integration for real-time analysis plotting
+        integration_end : float
+            the wavelength at which to stop integration for real-time analysis plotting
         *ccd_args
             args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
         **ccd_kwargs
@@ -109,10 +117,6 @@ class PLE:
         self.spectrum_plot_processes.append(pl_plot_process)
         pl_plot_process.start()
 
-        # TODO: Make these options configurable
-        plot_analysis = True
-        integration_start = 720
-        integration_end = 800
         if plot_analysis:
             analysis_pipe_in, analysis_pipe_out = Pipe()
             analysis_plot_process = PLEAnalysisPlotProcess(pipe=analysis_pipe_out, daemon=True)
@@ -151,6 +155,7 @@ class PLE:
 
         with open(data_file_name, 'wb') as data_file:
             pickle.dump(data, data_file, pickle.HIGHEST_PROTOCOL)
+        print('Finished PLE scan.')
 
     def lock_at_wavelength(self, wavelength: float):
         """Try to lock the Matisse at a given wavelength, waiting to return until we're within a small tolerance."""
