@@ -31,6 +31,10 @@ setup(name='matisse-controller',
           'Source Code': 'https://github.com/lucis-fluxum/matisse-controller'
       },
       packages=find_packages(exclude=['docs', 'tests*']),
+      package_data={
+          '': ['*/*.md'],
+      },
+      include_package_data=True,
       install_requires=['pyvisa >=1, <2', 'pyserial >=3, <4', 'scipy >=1, <2', 'matplotlib >=3, <4', 'pyqt5 >=5',
                         'bidict >=0.18', 'glom >= 19.2'],
       # TODO: Test other python versions
