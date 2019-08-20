@@ -22,6 +22,9 @@ Tested on Windows 10 (x64).
 
     $ pip install matisse-controller
 
+If you plan on using PLE features with Andor instruments, copy the required DLL files from the Andor SDK into 
+`[package install dir]/shamrock_ple/lib` (see the README in that directory for more details)
+
 ## Usage
 
 To launch the GUI, connect the Matisse and a supported wavemeter, and then run:
