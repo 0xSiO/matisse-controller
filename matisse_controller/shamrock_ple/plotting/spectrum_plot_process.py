@@ -29,6 +29,8 @@ class SpectrumPlotProcess(Process):
                         self.plot_data(*data)
             except BrokenPipeError:
                 pass
+            except EOFError:
+                pass
         else:
             self.plot_data(self.wavelengths, self.counts)
         plt.show()
