@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtWidgets import *
 
 import matisse_controller.config as cfg
@@ -16,7 +16,7 @@ class PLEScanDialog(QDialog):
         self.setup_form()
         self.setup_slots()
         self.add_buttons()
-        self.setMinimumWidth(300)
+        self.setMinimumWidth(400)
         self.scan_location = None
 
     def setup_form(self):
@@ -69,10 +69,31 @@ class PLEScanDialog(QDialog):
         self.grating_grooves_field.setCurrentText(str(ple.shamrock.get_grating_grooves()))
         form_layout.addRow('Grating grooves: ', self.grating_grooves_field)
 
-        # TODO: Checkbox of whether to show integrated counts as they come in and integration endpoint fields
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        form_layout.addRow(line)
+
+        self.plot_analysis_field = QCheckBox()
+        form_layout.addRow('Plot analysis in real time? ', self.plot_analysis_field)
+        self.integration_start_field = QDoubleSpinBox()
+        self.integration_start_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.integration_start_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.integration_start_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_start_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_start_field.setEnabled(False)
+        form_layout.addRow('Integration start (nm): ', self.integration_start_field)
+        self.integration_end_field = QDoubleSpinBox()
+        self.integration_end_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.integration_end_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.integration_end_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_end_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_end_field.setEnabled(False)
+        form_layout.addRow('Integration end (nm): ', self.integration_end_field)
 
     def setup_slots(self):
         self.scan_location_button.clicked.connect(self.select_scan_location)
+        self.plot_analysis_field.stateChanged.connect(self.toggle_integration_fields)
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -90,7 +111,10 @@ class PLEScanDialog(QDialog):
             'step': self.wavelength_step_field.value(),
             'exposure_time': self.exposure_time_field.value(),
             'center_wavelength': self.center_wavelength_field.value(),
-            'grating_grooves': int(self.grating_grooves_field.currentText())
+            'grating_grooves': int(self.grating_grooves_field.currentText()),
+            'plot_analysis': self.plot_analysis_field.isChecked(),
+            'integration_start': self.integration_start_field.value(),
+            'integration_end': self.integration_end_field.value()
         }
 
     @pyqtSlot(bool)
@@ -98,6 +122,11 @@ class PLEScanDialog(QDialog):
         self.scan_location = QFileDialog.getExistingDirectory(None, 'Select Folder', '', QFileDialog.ShowDirsOnly |
                                                               QFileDialog.DontResolveSymlinks)
         self.scan_location_label.setText(self.scan_location)
+
+    @pyqtSlot(int)
+    def toggle_integration_fields(self, state):
+        self.integration_start_field.setEnabled(state == Qt.Checked)
+        self.integration_end_field.setEnabled(state == Qt.Checked)
 
 
 def main():
