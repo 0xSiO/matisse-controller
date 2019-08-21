@@ -128,6 +128,7 @@ class PLE:
             'center_wavelength': center_wavelength
         }
         for wavelength in wavelengths:
+            print(f"Starting acquisition {counter}/{len(wavelengths)}.")
             wavelength = round(float(wavelength), cfg.get(cfg.WAVEMETER_PRECISION))
             self.lock_at_wavelength(wavelength)
             if self.ple_exit_flag:
