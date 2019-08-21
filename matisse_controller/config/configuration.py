@@ -35,7 +35,7 @@ DEFAULTS = {
                 'range_small': 1000,
                 'randomization_range': 500,
                 'step': 20,
-                'nudge': 50,
+                'nudge': -50,
                 'show_plots': True,
                 'smoothing_filter': {
                     'window': 21,
