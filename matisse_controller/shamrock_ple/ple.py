@@ -56,7 +56,7 @@ class PLE:
         Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
 
         Generates text files with data from each spectrum taken during the scan, and pickles the Python dictionary of
-        all data into {name}.pickle.
+        all data into {scan_name}.pickle.
 
         Parameters
         ----------
@@ -179,7 +179,7 @@ class PLE:
         """
         Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength.
 
-        Loads PLE data from {name}.pickle and pickles integrated counts for each wavelength into {name}_analysis.pickle.
+        Loads PLE data from a .pickle file and pickles integrated counts for each wavelength into another .pickle file.
         Optionally subtract background from given file name. The background file should be loadable with numpy.loadtxt.
 
         Parameters

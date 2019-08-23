@@ -4,7 +4,7 @@ A Python package to control the Matisse 2 TS laser for the University of Washing
 
 Requirements: Python 3.7+, NI VISA, PyVISA, pySerial, SciPy, matplotlib, PyQt5
 
-Tested on Windows 10 (x64).
+Tested on Windows 7 and 10 (x64).
 
 ## Contents
 - [Installation](#installation)

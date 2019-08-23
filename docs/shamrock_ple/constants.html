@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.6.3" />
 <title>matisse_controller.shamrock_ple.constants API documentation</title>
-<meta name="description" content="Constants used by the Andor SDK to configure CCD behavior." />
+<meta name="description" content="Useful constants to configure CCD and spectrometer, and error codes for these devices." />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,11 +20,13 @@
 <h1 class="title">Module <code>matisse_controller.shamrock_ple.constants</code></h1>
 </header>
 <section id="section-intro">
-<p>Constants used by the Andor SDK to configure CCD behavior.</p>
+<p>Useful constants to configure CCD and spectrometer, and error codes for these devices.</p>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">&#34;&#34;&#34;Constants used by the Andor SDK to configure CCD behavior.&#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34;Useful constants to configure CCD and spectrometer, and error codes for these devices.&#34;&#34;&#34;
+import enum
 
+# Miscellaneous constants used to set up the CCD and spectrometer, using values from Andor documentation.
 ACQ_MODE_SINGLE = 1
 ACQ_MODE_ACCUMULATE = 2
 ACQ_MODE_KINETICS = 3
@@ -37,7 +39,113 @@ READ_MODE_SINGLE_TRACK = 3
 READ_MODE_IMAGE = 4
 COSMIC_RAY_FILTER_OFF = 0
 COSMIC_RAY_FILTER_ON = 2
-TRIGGER_MODE_INTERNAL = 0</code></pre>
+TRIGGER_MODE_INTERNAL = 0
+
+
+class ShamrockErrorCode(enum.Enum):
+    &#34;&#34;&#34;
+    Error codes pulled straight from the Shamrock SDK manual. Note that not all of these codes indicate errors, for
+    example DRV_SUCCESS indicates a successful command.
+    &#34;&#34;&#34;
+    SHAMROCK_COMMUNICATION_ERROR = 20201
+    SHAMROCK_SUCCESS = 20202
+    SHAMROCK_P1INVALID = 20266
+    SHAMROCK_P2INVALID = 20267
+    SHAMROCK_P3INVALID = 20268
+    SHAMROCK_NOT_INITIALIZED = 20275
+
+
+class CCDErrorCode(enum.Enum):
+    &#34;&#34;&#34;
+    Error codes pulled straight from the Andor SDK manual. Note that not all of these codes indicate errors, for
+    example DRV_SUCCESS indicates a successful command, and DRV_TEMPERATURE_STABILIZED indicates successful temperature
+    stabilization.
+    &#34;&#34;&#34;
+    DRV_ERROR_CODES = 20001
+    DRV_SUCCESS = 20002
+    DRV_VXDNOTINSTALLED = 20003
+    DRV_ERROR_SCAN = 20004
+    DRV_ERROR_CHECK_SUM = 20005
+    DRV_ERROR_FILELOAD = 20006
+    DRV_UNKNOWN_FUNCTION = 20007
+    DRV_ERROR_VXD_INIT = 20008
+    DRV_ERROR_ADDRESS = 20009
+    DRV_ERROR_PAGELOCK = 20010
+    DRV_ERROR_PAGE_UNLOCK = 20011
+    DRV_ERROR_BOARDTEST = 20012
+    DRV_ERROR_ACK = 20013
+    DRV_ERROR_UP_FIFO = 20014
+    DRV_ERROR_PATTERN = 20015
+    DRV_ACQUISITION_ERRORS = 20017
+    DRV_ACQ_BUFFER = 20018
+    DRV_ACQ_DOWNFIFO_FULL = 20019
+    DRV_PROC_UNKNOWN_INSTRUCTION = 20020
+    DRV_ILLEGAL_OP_CODE = 20021
+    DRV_KINETIC_TIME_NOT_MET = 20022
+    DRV_ACCUM_TIME_NOT_MET = 20023
+    DRV_NO_NEW_DATA = 20024
+    PCI_DMA_FAIL = 20025
+    DRV_SPOOLERROR = 20026
+    DRV_SPOOLSETUPERROR = 20027
+    SATURATED = 20029
+    DRV_TEMPERATURE_CODES = 20033
+    DRV_TEMPERATURE_OFF = 20034
+    DRV_TEMP_NOT_STABILIZED = 20035
+    DRV_TEMPERATURE_STABILIZED = 20036
+    DRV_TEMPERATURE_NOT_REACHED = 20037
+    DRV_TEMPERATURE_OUT_RANGE = 20038
+    DRV_TEMPERATURE_NOT_SUPPORTED = 20039
+    DRV_TEMPERATURE_DRIFT = 20040
+    DRV_GENERAL_ERRORS = 20049
+    DRV_INVALID_AUX = 20050
+    DRV_COF_NOTLOADED = 20051
+    DRV_FPGAPROG = 20052
+    DRV_FLEXERROR = 20053
+    DRV_GPIBERROR = 20054
+    ERROR_DMA_UPLOAD = 20055
+    DRV_DATATYPE = 20064
+    DRV_DRIVER_ERRORS = 20065
+    DRV_P1INVALID = 20066
+    DRV_P2INVALID = 20067
+    DRV_P3INVALID = 20068
+    DRV_P4INVALID = 20069
+    DRV_INIERROR = 20070
+    DRV_COFERROR = 20071
+    DRV_ACQUIRING = 20072
+    DRV_IDLE = 20073
+    DRV_TEMPCYCLE = 20074
+    DRV_NOT_INITIALIZED = 20075
+    DRV_P5INVALID = 20076
+    DRV_P6INVALID = 20077
+    DRV_INVALID_MODE = 20078
+    DRV_INVALID_FILTER = 20079
+    DRV_I2CERRORS = 20080
+    DRV_DRV_I2CDEVNOTFOUND = 20081
+    DRV_I2CTIMEOUT = 20082
+    DRV_P7INVALID = 20083
+    DRV_USBERROR = 20089
+    DRV_IOCERROR = 20090
+    DRV_VRMVERSIONERROR = 20091
+    DRV_USB_INTERRUPT_ENDPOINT_ERROR = 20093
+    DRV_RANDOM_TRACK_ERROR = 20094
+    DRV_INVALID_TRIGGER_MODE = 20095
+    DRV_LOAD_FIRMWARE_ERROR = 20096
+    DRV_DIVIDE_BY_ZERO_ERROR = 20097
+    DRV_INVALID_RINGEXPOSURES = 20098
+    DRV_BINNING_ERROR = 20099
+    DRV_ERROR_NOCAMERA = 20990
+    DRV_NOT_SUPPORTED = 20991
+    DRV_NOT_AVAILABLE = 20992
+    DRV_ERROR_MAP = 20115
+    DRV_ERROR_UNMAP = 20116
+    DRV_ERROR_MDL = 20117
+    DRV_ERROR_UNMDL = 20118
+    DRV_ERROR_BUFFSIZE = 20119
+    DRV_ERROR_NOHANDLE = 20121
+    DRV_GATING_NOT_AVAILABLE = 20130
+    DRV_FPGA_VOLTAGE_ERROR = 20131
+    DRV_INVALID_AMPLIFIER = 20100
+    DRV_INVALID_COUNTCONVERT_MODE = 20101</code></pre>
 </details>
 </section>
 <section>
@@ -47,6 +155,512 @@ TRIGGER_MODE_INTERNAL = 0</code></pre>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode"><code class="flex name class">
+<span>class <span class="ident">CCDErrorCode</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Error codes pulled straight from the Andor SDK manual. Note that not all of these codes indicate errors, for
+example DRV_SUCCESS indicates a successful command, and DRV_TEMPERATURE_STABILIZED indicates successful temperature
+stabilization.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class CCDErrorCode(enum.Enum):
+    &#34;&#34;&#34;
+    Error codes pulled straight from the Andor SDK manual. Note that not all of these codes indicate errors, for
+    example DRV_SUCCESS indicates a successful command, and DRV_TEMPERATURE_STABILIZED indicates successful temperature
+    stabilization.
+    &#34;&#34;&#34;
+    DRV_ERROR_CODES = 20001
+    DRV_SUCCESS = 20002
+    DRV_VXDNOTINSTALLED = 20003
+    DRV_ERROR_SCAN = 20004
+    DRV_ERROR_CHECK_SUM = 20005
+    DRV_ERROR_FILELOAD = 20006
+    DRV_UNKNOWN_FUNCTION = 20007
+    DRV_ERROR_VXD_INIT = 20008
+    DRV_ERROR_ADDRESS = 20009
+    DRV_ERROR_PAGELOCK = 20010
+    DRV_ERROR_PAGE_UNLOCK = 20011
+    DRV_ERROR_BOARDTEST = 20012
+    DRV_ERROR_ACK = 20013
+    DRV_ERROR_UP_FIFO = 20014
+    DRV_ERROR_PATTERN = 20015
+    DRV_ACQUISITION_ERRORS = 20017
+    DRV_ACQ_BUFFER = 20018
+    DRV_ACQ_DOWNFIFO_FULL = 20019
+    DRV_PROC_UNKNOWN_INSTRUCTION = 20020
+    DRV_ILLEGAL_OP_CODE = 20021
+    DRV_KINETIC_TIME_NOT_MET = 20022
+    DRV_ACCUM_TIME_NOT_MET = 20023
+    DRV_NO_NEW_DATA = 20024
+    PCI_DMA_FAIL = 20025
+    DRV_SPOOLERROR = 20026
+    DRV_SPOOLSETUPERROR = 20027
+    SATURATED = 20029
+    DRV_TEMPERATURE_CODES = 20033
+    DRV_TEMPERATURE_OFF = 20034
+    DRV_TEMP_NOT_STABILIZED = 20035
+    DRV_TEMPERATURE_STABILIZED = 20036
+    DRV_TEMPERATURE_NOT_REACHED = 20037
+    DRV_TEMPERATURE_OUT_RANGE = 20038
+    DRV_TEMPERATURE_NOT_SUPPORTED = 20039
+    DRV_TEMPERATURE_DRIFT = 20040
+    DRV_GENERAL_ERRORS = 20049
+    DRV_INVALID_AUX = 20050
+    DRV_COF_NOTLOADED = 20051
+    DRV_FPGAPROG = 20052
+    DRV_FLEXERROR = 20053
+    DRV_GPIBERROR = 20054
+    ERROR_DMA_UPLOAD = 20055
+    DRV_DATATYPE = 20064
+    DRV_DRIVER_ERRORS = 20065
+    DRV_P1INVALID = 20066
+    DRV_P2INVALID = 20067
+    DRV_P3INVALID = 20068
+    DRV_P4INVALID = 20069
+    DRV_INIERROR = 20070
+    DRV_COFERROR = 20071
+    DRV_ACQUIRING = 20072
+    DRV_IDLE = 20073
+    DRV_TEMPCYCLE = 20074
+    DRV_NOT_INITIALIZED = 20075
+    DRV_P5INVALID = 20076
+    DRV_P6INVALID = 20077
+    DRV_INVALID_MODE = 20078
+    DRV_INVALID_FILTER = 20079
+    DRV_I2CERRORS = 20080
+    DRV_DRV_I2CDEVNOTFOUND = 20081
+    DRV_I2CTIMEOUT = 20082
+    DRV_P7INVALID = 20083
+    DRV_USBERROR = 20089
+    DRV_IOCERROR = 20090
+    DRV_VRMVERSIONERROR = 20091
+    DRV_USB_INTERRUPT_ENDPOINT_ERROR = 20093
+    DRV_RANDOM_TRACK_ERROR = 20094
+    DRV_INVALID_TRIGGER_MODE = 20095
+    DRV_LOAD_FIRMWARE_ERROR = 20096
+    DRV_DIVIDE_BY_ZERO_ERROR = 20097
+    DRV_INVALID_RINGEXPOSURES = 20098
+    DRV_BINNING_ERROR = 20099
+    DRV_ERROR_NOCAMERA = 20990
+    DRV_NOT_SUPPORTED = 20991
+    DRV_NOT_AVAILABLE = 20992
+    DRV_ERROR_MAP = 20115
+    DRV_ERROR_UNMAP = 20116
+    DRV_ERROR_MDL = 20117
+    DRV_ERROR_UNMDL = 20118
+    DRV_ERROR_BUFFSIZE = 20119
+    DRV_ERROR_NOHANDLE = 20121
+    DRV_GATING_NOT_AVAILABLE = 20130
+    DRV_FPGA_VOLTAGE_ERROR = 20131
+    DRV_INVALID_AMPLIFIER = 20100
+    DRV_INVALID_COUNTCONVERT_MODE = 20101</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACCUM_TIME_NOT_MET"><code class="name">var <span class="ident">DRV_ACCUM_TIME_NOT_MET</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQUIRING"><code class="name">var <span class="ident">DRV_ACQUIRING</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQUISITION_ERRORS"><code class="name">var <span class="ident">DRV_ACQUISITION_ERRORS</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQ_BUFFER"><code class="name">var <span class="ident">DRV_ACQ_BUFFER</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQ_DOWNFIFO_FULL"><code class="name">var <span class="ident">DRV_ACQ_DOWNFIFO_FULL</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_BINNING_ERROR"><code class="name">var <span class="ident">DRV_BINNING_ERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_COFERROR"><code class="name">var <span class="ident">DRV_COFERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_COF_NOTLOADED"><code class="name">var <span class="ident">DRV_COF_NOTLOADED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DATATYPE"><code class="name">var <span class="ident">DRV_DATATYPE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DIVIDE_BY_ZERO_ERROR"><code class="name">var <span class="ident">DRV_DIVIDE_BY_ZERO_ERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DRIVER_ERRORS"><code class="name">var <span class="ident">DRV_DRIVER_ERRORS</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DRV_I2CDEVNOTFOUND"><code class="name">var <span class="ident">DRV_DRV_I2CDEVNOTFOUND</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_ACK"><code class="name">var <span class="ident">DRV_ERROR_ACK</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_ADDRESS"><code class="name">var <span class="ident">DRV_ERROR_ADDRESS</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_BOARDTEST"><code class="name">var <span class="ident">DRV_ERROR_BOARDTEST</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_BUFFSIZE"><code class="name">var <span class="ident">DRV_ERROR_BUFFSIZE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_CHECK_SUM"><code class="name">var <span class="ident">DRV_ERROR_CHECK_SUM</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_CODES"><code class="name">var <span class="ident">DRV_ERROR_CODES</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_FILELOAD"><code class="name">var <span class="ident">DRV_ERROR_FILELOAD</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_MAP"><code class="name">var <span class="ident">DRV_ERROR_MAP</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_MDL"><code class="name">var <span class="ident">DRV_ERROR_MDL</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_NOCAMERA"><code class="name">var <span class="ident">DRV_ERROR_NOCAMERA</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_NOHANDLE"><code class="name">var <span class="ident">DRV_ERROR_NOHANDLE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_PAGELOCK"><code class="name">var <span class="ident">DRV_ERROR_PAGELOCK</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_PAGE_UNLOCK"><code class="name">var <span class="ident">DRV_ERROR_PAGE_UNLOCK</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_PATTERN"><code class="name">var <span class="ident">DRV_ERROR_PATTERN</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_SCAN"><code class="name">var <span class="ident">DRV_ERROR_SCAN</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_UNMAP"><code class="name">var <span class="ident">DRV_ERROR_UNMAP</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_UNMDL"><code class="name">var <span class="ident">DRV_ERROR_UNMDL</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_UP_FIFO"><code class="name">var <span class="ident">DRV_ERROR_UP_FIFO</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_VXD_INIT"><code class="name">var <span class="ident">DRV_ERROR_VXD_INIT</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_FLEXERROR"><code class="name">var <span class="ident">DRV_FLEXERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_FPGAPROG"><code class="name">var <span class="ident">DRV_FPGAPROG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_FPGA_VOLTAGE_ERROR"><code class="name">var <span class="ident">DRV_FPGA_VOLTAGE_ERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_GATING_NOT_AVAILABLE"><code class="name">var <span class="ident">DRV_GATING_NOT_AVAILABLE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_GENERAL_ERRORS"><code class="name">var <span class="ident">DRV_GENERAL_ERRORS</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_GPIBERROR"><code class="name">var <span class="ident">DRV_GPIBERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_I2CERRORS"><code class="name">var <span class="ident">DRV_I2CERRORS</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_I2CTIMEOUT"><code class="name">var <span class="ident">DRV_I2CTIMEOUT</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_IDLE"><code class="name">var <span class="ident">DRV_IDLE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ILLEGAL_OP_CODE"><code class="name">var <span class="ident">DRV_ILLEGAL_OP_CODE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INIERROR"><code class="name">var <span class="ident">DRV_INIERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_AMPLIFIER"><code class="name">var <span class="ident">DRV_INVALID_AMPLIFIER</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_AUX"><code class="name">var <span class="ident">DRV_INVALID_AUX</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_COUNTCONVERT_MODE"><code class="name">var <span class="ident">DRV_INVALID_COUNTCONVERT_MODE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_FILTER"><code class="name">var <span class="ident">DRV_INVALID_FILTER</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_MODE"><code class="name">var <span class="ident">DRV_INVALID_MODE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_RINGEXPOSURES"><code class="name">var <span class="ident">DRV_INVALID_RINGEXPOSURES</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_TRIGGER_MODE"><code class="name">var <span class="ident">DRV_INVALID_TRIGGER_MODE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_IOCERROR"><code class="name">var <span class="ident">DRV_IOCERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_KINETIC_TIME_NOT_MET"><code class="name">var <span class="ident">DRV_KINETIC_TIME_NOT_MET</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_LOAD_FIRMWARE_ERROR"><code class="name">var <span class="ident">DRV_LOAD_FIRMWARE_ERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NOT_AVAILABLE"><code class="name">var <span class="ident">DRV_NOT_AVAILABLE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NOT_INITIALIZED"><code class="name">var <span class="ident">DRV_NOT_INITIALIZED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NOT_SUPPORTED"><code class="name">var <span class="ident">DRV_NOT_SUPPORTED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NO_NEW_DATA"><code class="name">var <span class="ident">DRV_NO_NEW_DATA</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P1INVALID"><code class="name">var <span class="ident">DRV_P1INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P2INVALID"><code class="name">var <span class="ident">DRV_P2INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P3INVALID"><code class="name">var <span class="ident">DRV_P3INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P4INVALID"><code class="name">var <span class="ident">DRV_P4INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P5INVALID"><code class="name">var <span class="ident">DRV_P5INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P6INVALID"><code class="name">var <span class="ident">DRV_P6INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P7INVALID"><code class="name">var <span class="ident">DRV_P7INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_PROC_UNKNOWN_INSTRUCTION"><code class="name">var <span class="ident">DRV_PROC_UNKNOWN_INSTRUCTION</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_RANDOM_TRACK_ERROR"><code class="name">var <span class="ident">DRV_RANDOM_TRACK_ERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_SPOOLERROR"><code class="name">var <span class="ident">DRV_SPOOLERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_SPOOLSETUPERROR"><code class="name">var <span class="ident">DRV_SPOOLSETUPERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_SUCCESS"><code class="name">var <span class="ident">DRV_SUCCESS</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPCYCLE"><code class="name">var <span class="ident">DRV_TEMPCYCLE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_CODES"><code class="name">var <span class="ident">DRV_TEMPERATURE_CODES</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_DRIFT"><code class="name">var <span class="ident">DRV_TEMPERATURE_DRIFT</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_NOT_REACHED"><code class="name">var <span class="ident">DRV_TEMPERATURE_NOT_REACHED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_NOT_SUPPORTED"><code class="name">var <span class="ident">DRV_TEMPERATURE_NOT_SUPPORTED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_OFF"><code class="name">var <span class="ident">DRV_TEMPERATURE_OFF</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_OUT_RANGE"><code class="name">var <span class="ident">DRV_TEMPERATURE_OUT_RANGE</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_STABILIZED"><code class="name">var <span class="ident">DRV_TEMPERATURE_STABILIZED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMP_NOT_STABILIZED"><code class="name">var <span class="ident">DRV_TEMP_NOT_STABILIZED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_UNKNOWN_FUNCTION"><code class="name">var <span class="ident">DRV_UNKNOWN_FUNCTION</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_USBERROR"><code class="name">var <span class="ident">DRV_USBERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_USB_INTERRUPT_ENDPOINT_ERROR"><code class="name">var <span class="ident">DRV_USB_INTERRUPT_ENDPOINT_ERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_VRMVERSIONERROR"><code class="name">var <span class="ident">DRV_VRMVERSIONERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_VXDNOTINSTALLED"><code class="name">var <span class="ident">DRV_VXDNOTINSTALLED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.ERROR_DMA_UPLOAD"><code class="name">var <span class="ident">ERROR_DMA_UPLOAD</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.PCI_DMA_FAIL"><code class="name">var <span class="ident">PCI_DMA_FAIL</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.CCDErrorCode.SATURATED"><code class="name">var <span class="ident">SATURATED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.ShamrockErrorCode"><code class="flex name class">
+<span>class <span class="ident">ShamrockErrorCode</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Error codes pulled straight from the Shamrock SDK manual. Note that not all of these codes indicate errors, for
+example DRV_SUCCESS indicates a successful command.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class ShamrockErrorCode(enum.Enum):
+    &#34;&#34;&#34;
+    Error codes pulled straight from the Shamrock SDK manual. Note that not all of these codes indicate errors, for
+    example DRV_SUCCESS indicates a successful command.
+    &#34;&#34;&#34;
+    SHAMROCK_COMMUNICATION_ERROR = 20201
+    SHAMROCK_SUCCESS = 20202
+    SHAMROCK_P1INVALID = 20266
+    SHAMROCK_P2INVALID = 20267
+    SHAMROCK_P3INVALID = 20268
+    SHAMROCK_NOT_INITIALIZED = 20275</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_COMMUNICATION_ERROR"><code class="name">var <span class="ident">SHAMROCK_COMMUNICATION_ERROR</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_NOT_INITIALIZED"><code class="name">var <span class="ident">SHAMROCK_NOT_INITIALIZED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_P1INVALID"><code class="name">var <span class="ident">SHAMROCK_P1INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_P2INVALID"><code class="name">var <span class="ident">SHAMROCK_P2INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_P3INVALID"><code class="name">var <span class="ident">SHAMROCK_P3INVALID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_SUCCESS"><code class="name">var <span class="ident">SHAMROCK_SUCCESS</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -58,6 +672,111 @@ TRIGGER_MODE_INTERNAL = 0</code></pre>
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="matisse_controller.shamrock_ple" href="index.html">matisse_controller.shamrock_ple</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode">CCDErrorCode</a></code></h4>
+<ul class="">
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACCUM_TIME_NOT_MET" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACCUM_TIME_NOT_MET">DRV_ACCUM_TIME_NOT_MET</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQUIRING" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQUIRING">DRV_ACQUIRING</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQUISITION_ERRORS" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQUISITION_ERRORS">DRV_ACQUISITION_ERRORS</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQ_BUFFER" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQ_BUFFER">DRV_ACQ_BUFFER</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQ_DOWNFIFO_FULL" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ACQ_DOWNFIFO_FULL">DRV_ACQ_DOWNFIFO_FULL</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_BINNING_ERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_BINNING_ERROR">DRV_BINNING_ERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_COFERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_COFERROR">DRV_COFERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_COF_NOTLOADED" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_COF_NOTLOADED">DRV_COF_NOTLOADED</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DATATYPE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DATATYPE">DRV_DATATYPE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DIVIDE_BY_ZERO_ERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DIVIDE_BY_ZERO_ERROR">DRV_DIVIDE_BY_ZERO_ERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DRIVER_ERRORS" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DRIVER_ERRORS">DRV_DRIVER_ERRORS</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DRV_I2CDEVNOTFOUND" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_DRV_I2CDEVNOTFOUND">DRV_DRV_I2CDEVNOTFOUND</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_ACK" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_ACK">DRV_ERROR_ACK</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_ADDRESS" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_ADDRESS">DRV_ERROR_ADDRESS</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_BOARDTEST" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_BOARDTEST">DRV_ERROR_BOARDTEST</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_BUFFSIZE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_BUFFSIZE">DRV_ERROR_BUFFSIZE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_CHECK_SUM" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_CHECK_SUM">DRV_ERROR_CHECK_SUM</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_CODES" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_CODES">DRV_ERROR_CODES</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_FILELOAD" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_FILELOAD">DRV_ERROR_FILELOAD</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_MAP" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_MAP">DRV_ERROR_MAP</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_MDL" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_MDL">DRV_ERROR_MDL</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_NOCAMERA" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_NOCAMERA">DRV_ERROR_NOCAMERA</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_NOHANDLE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_NOHANDLE">DRV_ERROR_NOHANDLE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_PAGELOCK" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_PAGELOCK">DRV_ERROR_PAGELOCK</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_PAGE_UNLOCK" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_PAGE_UNLOCK">DRV_ERROR_PAGE_UNLOCK</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_PATTERN" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_PATTERN">DRV_ERROR_PATTERN</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_SCAN" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_SCAN">DRV_ERROR_SCAN</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_UNMAP" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_UNMAP">DRV_ERROR_UNMAP</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_UNMDL" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_UNMDL">DRV_ERROR_UNMDL</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_UP_FIFO" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_UP_FIFO">DRV_ERROR_UP_FIFO</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_VXD_INIT" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ERROR_VXD_INIT">DRV_ERROR_VXD_INIT</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_FLEXERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_FLEXERROR">DRV_FLEXERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_FPGAPROG" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_FPGAPROG">DRV_FPGAPROG</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_FPGA_VOLTAGE_ERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_FPGA_VOLTAGE_ERROR">DRV_FPGA_VOLTAGE_ERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_GATING_NOT_AVAILABLE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_GATING_NOT_AVAILABLE">DRV_GATING_NOT_AVAILABLE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_GENERAL_ERRORS" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_GENERAL_ERRORS">DRV_GENERAL_ERRORS</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_GPIBERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_GPIBERROR">DRV_GPIBERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_I2CERRORS" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_I2CERRORS">DRV_I2CERRORS</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_I2CTIMEOUT" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_I2CTIMEOUT">DRV_I2CTIMEOUT</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_IDLE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_IDLE">DRV_IDLE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ILLEGAL_OP_CODE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_ILLEGAL_OP_CODE">DRV_ILLEGAL_OP_CODE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INIERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INIERROR">DRV_INIERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_AMPLIFIER" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_AMPLIFIER">DRV_INVALID_AMPLIFIER</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_AUX" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_AUX">DRV_INVALID_AUX</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_COUNTCONVERT_MODE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_COUNTCONVERT_MODE">DRV_INVALID_COUNTCONVERT_MODE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_FILTER" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_FILTER">DRV_INVALID_FILTER</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_MODE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_MODE">DRV_INVALID_MODE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_RINGEXPOSURES" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_RINGEXPOSURES">DRV_INVALID_RINGEXPOSURES</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_TRIGGER_MODE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_INVALID_TRIGGER_MODE">DRV_INVALID_TRIGGER_MODE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_IOCERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_IOCERROR">DRV_IOCERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_KINETIC_TIME_NOT_MET" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_KINETIC_TIME_NOT_MET">DRV_KINETIC_TIME_NOT_MET</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_LOAD_FIRMWARE_ERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_LOAD_FIRMWARE_ERROR">DRV_LOAD_FIRMWARE_ERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NOT_AVAILABLE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NOT_AVAILABLE">DRV_NOT_AVAILABLE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NOT_INITIALIZED" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NOT_INITIALIZED">DRV_NOT_INITIALIZED</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NOT_SUPPORTED" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NOT_SUPPORTED">DRV_NOT_SUPPORTED</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NO_NEW_DATA" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_NO_NEW_DATA">DRV_NO_NEW_DATA</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P1INVALID" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P1INVALID">DRV_P1INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P2INVALID" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P2INVALID">DRV_P2INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P3INVALID" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P3INVALID">DRV_P3INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P4INVALID" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P4INVALID">DRV_P4INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P5INVALID" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P5INVALID">DRV_P5INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P6INVALID" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P6INVALID">DRV_P6INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P7INVALID" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_P7INVALID">DRV_P7INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_PROC_UNKNOWN_INSTRUCTION" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_PROC_UNKNOWN_INSTRUCTION">DRV_PROC_UNKNOWN_INSTRUCTION</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_RANDOM_TRACK_ERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_RANDOM_TRACK_ERROR">DRV_RANDOM_TRACK_ERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_SPOOLERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_SPOOLERROR">DRV_SPOOLERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_SPOOLSETUPERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_SPOOLSETUPERROR">DRV_SPOOLSETUPERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_SUCCESS" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_SUCCESS">DRV_SUCCESS</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPCYCLE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPCYCLE">DRV_TEMPCYCLE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_CODES" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_CODES">DRV_TEMPERATURE_CODES</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_DRIFT" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_DRIFT">DRV_TEMPERATURE_DRIFT</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_NOT_REACHED" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_NOT_REACHED">DRV_TEMPERATURE_NOT_REACHED</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_NOT_SUPPORTED" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_NOT_SUPPORTED">DRV_TEMPERATURE_NOT_SUPPORTED</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_OFF" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_OFF">DRV_TEMPERATURE_OFF</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_OUT_RANGE" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_OUT_RANGE">DRV_TEMPERATURE_OUT_RANGE</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_STABILIZED" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMPERATURE_STABILIZED">DRV_TEMPERATURE_STABILIZED</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMP_NOT_STABILIZED" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_TEMP_NOT_STABILIZED">DRV_TEMP_NOT_STABILIZED</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_UNKNOWN_FUNCTION" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_UNKNOWN_FUNCTION">DRV_UNKNOWN_FUNCTION</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_USBERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_USBERROR">DRV_USBERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_USB_INTERRUPT_ENDPOINT_ERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_USB_INTERRUPT_ENDPOINT_ERROR">DRV_USB_INTERRUPT_ENDPOINT_ERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_VRMVERSIONERROR" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_VRMVERSIONERROR">DRV_VRMVERSIONERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_VXDNOTINSTALLED" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.DRV_VXDNOTINSTALLED">DRV_VXDNOTINSTALLED</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.ERROR_DMA_UPLOAD" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.ERROR_DMA_UPLOAD">ERROR_DMA_UPLOAD</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.PCI_DMA_FAIL" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.PCI_DMA_FAIL">PCI_DMA_FAIL</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.CCDErrorCode.SATURATED" href="#matisse_controller.shamrock_ple.constants.CCDErrorCode.SATURATED">SATURATED</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="matisse_controller.shamrock_ple.constants.ShamrockErrorCode" href="#matisse_controller.shamrock_ple.constants.ShamrockErrorCode">ShamrockErrorCode</a></code></h4>
+<ul class="">
+<li><code><a title="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_COMMUNICATION_ERROR" href="#matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_COMMUNICATION_ERROR">SHAMROCK_COMMUNICATION_ERROR</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_NOT_INITIALIZED" href="#matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_NOT_INITIALIZED">SHAMROCK_NOT_INITIALIZED</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_P1INVALID" href="#matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_P1INVALID">SHAMROCK_P1INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_P2INVALID" href="#matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_P2INVALID">SHAMROCK_P2INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_P3INVALID" href="#matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_P3INVALID">SHAMROCK_P3INVALID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_SUCCESS" href="#matisse_controller.shamrock_ple.constants.ShamrockErrorCode.SHAMROCK_SUCCESS">SHAMROCK_SUCCESS</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

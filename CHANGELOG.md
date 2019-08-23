@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 - 23 August 2019
+### Changed
+- Improved documentation throughout the project
+- Improvements to locking and stabilization
+### Added
+- Better GUI menu actions (close plots, better reset options)
+- PLE scan and analysis functionality with Andor Shamrock
+
 ## 0.3.0 - 2 August 2019
 ### Added
 - Finished documentation for most of the project

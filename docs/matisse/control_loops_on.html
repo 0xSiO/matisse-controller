@@ -39,21 +39,19 @@ class ControlLoopsOn(AbstractContextManager):
         self.matisse = matisse
 
     def __enter__(self):
-        print(&#39;Starting control loops... &#39;)
+        print(&#39;Starting control loops.&#39;)
         self.matisse.set_slow_piezo_control(True)
         self.matisse.set_thin_etalon_control(True)
         self.matisse.set_piezo_etalon_control(True)
         self.matisse.set_fast_piezo_control(True)
         assert self.matisse.all_control_loops_on()
-        print(&#39;Done.&#39;)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print(&#39;Stopping control loops... &#39;)
+        print(&#39;Stopping control loops.&#39;)
         self.matisse.set_fast_piezo_control(False)
         self.matisse.set_piezo_etalon_control(False)
         self.matisse.set_thin_etalon_control(False)
-        self.matisse.set_slow_piezo_control(False)
-        print(&#39;Done.&#39;)</code></pre>
+        self.matisse.set_slow_piezo_control(False)</code></pre>
 </details>
 </section>
 <section>
@@ -93,21 +91,19 @@ class ControlLoopsOn(AbstractContextManager):
         self.matisse = matisse
 
     def __enter__(self):
-        print(&#39;Starting control loops... &#39;)
+        print(&#39;Starting control loops.&#39;)
         self.matisse.set_slow_piezo_control(True)
         self.matisse.set_thin_etalon_control(True)
         self.matisse.set_piezo_etalon_control(True)
         self.matisse.set_fast_piezo_control(True)
         assert self.matisse.all_control_loops_on()
-        print(&#39;Done.&#39;)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print(&#39;Stopping control loops... &#39;)
+        print(&#39;Stopping control loops.&#39;)
         self.matisse.set_fast_piezo_control(False)
         self.matisse.set_piezo_etalon_control(False)
         self.matisse.set_thin_etalon_control(False)
-        self.matisse.set_slow_piezo_control(False)
-        print(&#39;Done.&#39;)</code></pre>
+        self.matisse.set_slow_piezo_control(False)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">

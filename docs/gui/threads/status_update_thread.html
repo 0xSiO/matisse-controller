@@ -28,6 +28,7 @@ from queue import Queue
 from PyQt5.QtCore import QThread, pyqtSignal
 
 import matisse_controller.config as cfg
+import matisse_controller.matisse as matisse
 from matisse_controller.gui.threads import ExitFlag
 from matisse_controller.gui.utils import red_text, orange_text, green_text
 
@@ -69,7 +70,7 @@ class StatusUpdateThread(QThread):
                     is_stabilizing = self.matisse.is_stabilizing()
                     is_scanning = self.matisse.is_scanning()
                     is_locked = self.matisse.laser_locked()
-                    wavemeter_value = self.matisse.wavemeter.get_raw_value()
+                    wavemeter_value = self.matisse.wavemeter_raw_value()
 
                     bifi_pos_text = f&#34;BiFi:{bifi_pos}&#34;
                     thin_eta_pos_text = f&#34;Thin Eta:{thin_eta_pos}&#34;
@@ -82,13 +83,13 @@ class StatusUpdateThread(QThread):
                     wavemeter_text = f&#34;Wavemeter:{wavemeter_value}&#34;
 
                     limit_offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
-                    refcell_at_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset &lt; refcell_pos &lt; self.matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
-                    slow_pz_at_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset &lt; slow_pz_pos &lt; self.matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
-                    pz_eta_at_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + limit_offset &lt; pz_eta_pos &lt; self.matisse.PIEZO_ETALON_UPPER_LIMIT - limit_offset
+                    refcell_at_limit = not matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset &lt; refcell_pos &lt; matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
+                    slow_pz_at_limit = not matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset &lt; slow_pz_pos &lt; matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
+                    pz_eta_at_limit = not matisse.PIEZO_ETALON_LOWER_LIMIT + limit_offset &lt; pz_eta_pos &lt; matisse.PIEZO_ETALON_UPPER_LIMIT - limit_offset
                     warn_offset = limit_offset * 2
-                    refcell_near_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + warn_offset &lt; refcell_pos &lt; self.matisse.REFERENCE_CELL_UPPER_LIMIT - warn_offset
-                    slow_pz_near_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + warn_offset &lt; slow_pz_pos &lt; self.matisse.SLOW_PIEZO_UPPER_LIMIT - warn_offset
-                    pz_eta_near_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + warn_offset &lt; pz_eta_pos &lt; self.matisse.PIEZO_ETALON_UPPER_LIMIT - warn_offset
+                    refcell_near_limit = not matisse.REFERENCE_CELL_LOWER_LIMIT + warn_offset &lt; refcell_pos &lt; matisse.REFERENCE_CELL_UPPER_LIMIT - warn_offset
+                    slow_pz_near_limit = not matisse.SLOW_PIEZO_LOWER_LIMIT + warn_offset &lt; slow_pz_pos &lt; matisse.SLOW_PIEZO_UPPER_LIMIT - warn_offset
+                    pz_eta_near_limit = not matisse.PIEZO_ETALON_LOWER_LIMIT + warn_offset &lt; pz_eta_pos &lt; matisse.PIEZO_ETALON_UPPER_LIMIT - warn_offset
 
                     if refcell_at_limit:
                         refcell_pos_text = red_text(refcell_pos_text)
@@ -186,7 +187,7 @@ The interval between successive updates is specified by a configuration option.<
                     is_stabilizing = self.matisse.is_stabilizing()
                     is_scanning = self.matisse.is_scanning()
                     is_locked = self.matisse.laser_locked()
-                    wavemeter_value = self.matisse.wavemeter.get_raw_value()
+                    wavemeter_value = self.matisse.wavemeter_raw_value()
 
                     bifi_pos_text = f&#34;BiFi:{bifi_pos}&#34;
                     thin_eta_pos_text = f&#34;Thin Eta:{thin_eta_pos}&#34;
@@ -199,13 +200,13 @@ The interval between successive updates is specified by a configuration option.<
                     wavemeter_text = f&#34;Wavemeter:{wavemeter_value}&#34;
 
                     limit_offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
-                    refcell_at_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset &lt; refcell_pos &lt; self.matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
-                    slow_pz_at_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset &lt; slow_pz_pos &lt; self.matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
-                    pz_eta_at_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + limit_offset &lt; pz_eta_pos &lt; self.matisse.PIEZO_ETALON_UPPER_LIMIT - limit_offset
+                    refcell_at_limit = not matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset &lt; refcell_pos &lt; matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
+                    slow_pz_at_limit = not matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset &lt; slow_pz_pos &lt; matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
+                    pz_eta_at_limit = not matisse.PIEZO_ETALON_LOWER_LIMIT + limit_offset &lt; pz_eta_pos &lt; matisse.PIEZO_ETALON_UPPER_LIMIT - limit_offset
                     warn_offset = limit_offset * 2
-                    refcell_near_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + warn_offset &lt; refcell_pos &lt; self.matisse.REFERENCE_CELL_UPPER_LIMIT - warn_offset
-                    slow_pz_near_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + warn_offset &lt; slow_pz_pos &lt; self.matisse.SLOW_PIEZO_UPPER_LIMIT - warn_offset
-                    pz_eta_near_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + warn_offset &lt; pz_eta_pos &lt; self.matisse.PIEZO_ETALON_UPPER_LIMIT - warn_offset
+                    refcell_near_limit = not matisse.REFERENCE_CELL_LOWER_LIMIT + warn_offset &lt; refcell_pos &lt; matisse.REFERENCE_CELL_UPPER_LIMIT - warn_offset
+                    slow_pz_near_limit = not matisse.SLOW_PIEZO_LOWER_LIMIT + warn_offset &lt; slow_pz_pos &lt; matisse.SLOW_PIEZO_UPPER_LIMIT - warn_offset
+                    pz_eta_near_limit = not matisse.PIEZO_ETALON_LOWER_LIMIT + warn_offset &lt; pz_eta_pos &lt; matisse.PIEZO_ETALON_UPPER_LIMIT - warn_offset
 
                     if refcell_at_limit:
                         refcell_pos_text = red_text(refcell_pos_text)
@@ -260,7 +261,7 @@ The interval between successive updates is specified by a configuration option.<
                 is_stabilizing = self.matisse.is_stabilizing()
                 is_scanning = self.matisse.is_scanning()
                 is_locked = self.matisse.laser_locked()
-                wavemeter_value = self.matisse.wavemeter.get_raw_value()
+                wavemeter_value = self.matisse.wavemeter_raw_value()
 
                 bifi_pos_text = f&#34;BiFi:{bifi_pos}&#34;
                 thin_eta_pos_text = f&#34;Thin Eta:{thin_eta_pos}&#34;
@@ -273,13 +274,13 @@ The interval between successive updates is specified by a configuration option.<
                 wavemeter_text = f&#34;Wavemeter:{wavemeter_value}&#34;
 
                 limit_offset = cfg.get(cfg.COMPONENT_LIMIT_OFFSET)
-                refcell_at_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset &lt; refcell_pos &lt; self.matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
-                slow_pz_at_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset &lt; slow_pz_pos &lt; self.matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
-                pz_eta_at_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + limit_offset &lt; pz_eta_pos &lt; self.matisse.PIEZO_ETALON_UPPER_LIMIT - limit_offset
+                refcell_at_limit = not matisse.REFERENCE_CELL_LOWER_LIMIT + limit_offset &lt; refcell_pos &lt; matisse.REFERENCE_CELL_UPPER_LIMIT - limit_offset
+                slow_pz_at_limit = not matisse.SLOW_PIEZO_LOWER_LIMIT + limit_offset &lt; slow_pz_pos &lt; matisse.SLOW_PIEZO_UPPER_LIMIT - limit_offset
+                pz_eta_at_limit = not matisse.PIEZO_ETALON_LOWER_LIMIT + limit_offset &lt; pz_eta_pos &lt; matisse.PIEZO_ETALON_UPPER_LIMIT - limit_offset
                 warn_offset = limit_offset * 2
-                refcell_near_limit = not self.matisse.REFERENCE_CELL_LOWER_LIMIT + warn_offset &lt; refcell_pos &lt; self.matisse.REFERENCE_CELL_UPPER_LIMIT - warn_offset
-                slow_pz_near_limit = not self.matisse.SLOW_PIEZO_LOWER_LIMIT + warn_offset &lt; slow_pz_pos &lt; self.matisse.SLOW_PIEZO_UPPER_LIMIT - warn_offset
-                pz_eta_near_limit = not self.matisse.PIEZO_ETALON_LOWER_LIMIT + warn_offset &lt; pz_eta_pos &lt; self.matisse.PIEZO_ETALON_UPPER_LIMIT - warn_offset
+                refcell_near_limit = not matisse.REFERENCE_CELL_LOWER_LIMIT + warn_offset &lt; refcell_pos &lt; matisse.REFERENCE_CELL_UPPER_LIMIT - warn_offset
+                slow_pz_near_limit = not matisse.SLOW_PIEZO_LOWER_LIMIT + warn_offset &lt; slow_pz_pos &lt; matisse.SLOW_PIEZO_UPPER_LIMIT - warn_offset
+                pz_eta_near_limit = not matisse.PIEZO_ETALON_LOWER_LIMIT + warn_offset &lt; pz_eta_pos &lt; matisse.PIEZO_ETALON_UPPER_LIMIT - warn_offset
 
                 if refcell_at_limit:
                     refcell_pos_text = red_text(refcell_pos_text)

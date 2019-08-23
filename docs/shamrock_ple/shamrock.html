@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>matisse_controller.shamrock_ple.shamrock API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>matisse_controller.shamrock_ple.shamrock</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">from ctypes import *
+from bidict import bidict
+
+from matisse_controller.shamrock_ple.utils import load_lib
+
+
+# TODO: Note that for some reason the Shamrock will not be found unless SOLIS is installed. Probably a driver issue :(
+class Shamrock:
+    LIBRARY_NAME = &#39;ShamrockCIF.dll&#39;
+    DEVICE_ID = c_int(0)
+
+    # Below constants are calculated using a pre-calibrated wavelength axis on SOLIS (end - start) / 1024
+    GRATINGS_NM_PER_PIXEL = {
+        300: 0.116523437,
+        1200: 0.0273535156,
+        1799: 0.01578125
+    }
+
+    # The offset to add, in nanometers, to data in a spectrum taken with a given grating.
+    # These tend to change over time, so update accordingly. Offset is abs(pixel shift) * (nm per pixel)
+    GRATINGS_OFFSET_NM = {
+        300: 1.325,  # -11.4 px, last calibrated Aug 2019
+        1200: 0.109,  # -4 px, last calibrated Apr 2015
+        1799: 0.470  # -29.8 px, last calibrated Dec 2018
+    }
+
+    def __init__(self):
+        try:
+            self.lib = load_lib(Shamrock.LIBRARY_NAME)
+            self.lib.ShamrockInitialize()
+
+            num_devices = c_int()
+            self.lib.ShamrockGetNumberDevices(pointer(num_devices))
+            assert num_devices.value &gt; 0, &#39;No spectrometer found.&#39;
+
+            self.gratings = bidict()
+            self.setup_grating_info()
+        except OSError as err:
+            raise RuntimeError(&#39;Unable to initialize Andor Shamrock API.&#39;) from err
+
+    def __del__(self):
+        self.shutdown()
+
+    def setup_grating_info(self):
+        &#34;&#34;&#34;
+        Fill out the bidirectional dictionary responsible for holding information about spectrometer gratings.
+        &#34;&#34;&#34;
+        number = c_int()
+        self.lib.ShamrockGetNumberGratings(Shamrock.DEVICE_ID, pointer(number))
+        blaze = create_string_buffer(8)
+        for index in range(1, number.value + 1):
+            lines, home, offset = c_float(), c_int(), c_int()
+            self.lib.ShamrockGetGratingInfo(Shamrock.DEVICE_ID, c_int(index), pointer(lines), blaze, pointer(home),
+                                            pointer(offset))
+            self.gratings[round(lines.value)] = index
+
+    def get_grating_grooves(self) -&gt; int:
+        &#34;&#34;&#34;
+        Returns
+        -------
+        int
+            the number of grooves in the current spectrometer grating
+        &#34;&#34;&#34;
+        index = c_int()
+        self.lib.ShamrockGetGrating(Shamrock.DEVICE_ID, pointer(index))
+        return self.gratings.inverse[index.value]
+
+    def set_grating_grooves(self, num_grooves: int):
+        &#34;&#34;&#34;
+        Use the spectrometer grating with the specified number of grooves.
+
+        Parameters
+        ----------
+        num_grooves
+            the desired number of grooves
+        &#34;&#34;&#34;
+        if num_grooves != self.get_grating_grooves():
+            self.lib.ShamrockSetGrating(Shamrock.DEVICE_ID, c_int(self.gratings[num_grooves]))
+
+    def get_center_wavelength(self) -&gt; float:
+        &#34;&#34;&#34;
+        Returns
+        -------
+        float
+            the current center wavelength of the spectrometer
+        &#34;&#34;&#34;
+        wavelength = c_float()
+        self.lib.ShamrockGetWavelength(Shamrock.DEVICE_ID, pointer(wavelength))
+        return wavelength.value
+
+    def set_center_wavelength(self, wavelength: float):
+        &#34;&#34;&#34;
+        Set the spectrometer wavelength at the specified value.
+
+        Parameters
+        ----------
+        wavelength
+            the desired center wavelength to set
+        &#34;&#34;&#34;
+        if wavelength != self.get_center_wavelength():
+            self.lib.ShamrockSetWavelength(Shamrock.DEVICE_ID, c_float(wavelength))
+
+    def shutdown(self):
+        &#34;&#34;&#34;Run Shamrock-related cleanup and shutdown procedures.&#34;&#34;&#34;
+        self.lib.ShamrockClose()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock"><code class="flex name class">
+<span>class <span class="ident">Shamrock</span></span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class Shamrock:
+    LIBRARY_NAME = &#39;ShamrockCIF.dll&#39;
+    DEVICE_ID = c_int(0)
+
+    # Below constants are calculated using a pre-calibrated wavelength axis on SOLIS (end - start) / 1024
+    GRATINGS_NM_PER_PIXEL = {
+        300: 0.116523437,
+        1200: 0.0273535156,
+        1799: 0.01578125
+    }
+
+    # The offset to add, in nanometers, to data in a spectrum taken with a given grating.
+    # These tend to change over time, so update accordingly. Offset is abs(pixel shift) * (nm per pixel)
+    GRATINGS_OFFSET_NM = {
+        300: 1.325,  # -11.4 px, last calibrated Aug 2019
+        1200: 0.109,  # -4 px, last calibrated Apr 2015
+        1799: 0.470  # -29.8 px, last calibrated Dec 2018
+    }
+
+    def __init__(self):
+        try:
+            self.lib = load_lib(Shamrock.LIBRARY_NAME)
+            self.lib.ShamrockInitialize()
+
+            num_devices = c_int()
+            self.lib.ShamrockGetNumberDevices(pointer(num_devices))
+            assert num_devices.value &gt; 0, &#39;No spectrometer found.&#39;
+
+            self.gratings = bidict()
+            self.setup_grating_info()
+        except OSError as err:
+            raise RuntimeError(&#39;Unable to initialize Andor Shamrock API.&#39;) from err
+
+    def __del__(self):
+        self.shutdown()
+
+    def setup_grating_info(self):
+        &#34;&#34;&#34;
+        Fill out the bidirectional dictionary responsible for holding information about spectrometer gratings.
+        &#34;&#34;&#34;
+        number = c_int()
+        self.lib.ShamrockGetNumberGratings(Shamrock.DEVICE_ID, pointer(number))
+        blaze = create_string_buffer(8)
+        for index in range(1, number.value + 1):
+            lines, home, offset = c_float(), c_int(), c_int()
+            self.lib.ShamrockGetGratingInfo(Shamrock.DEVICE_ID, c_int(index), pointer(lines), blaze, pointer(home),
+                                            pointer(offset))
+            self.gratings[round(lines.value)] = index
+
+    def get_grating_grooves(self) -&gt; int:
+        &#34;&#34;&#34;
+        Returns
+        -------
+        int
+            the number of grooves in the current spectrometer grating
+        &#34;&#34;&#34;
+        index = c_int()
+        self.lib.ShamrockGetGrating(Shamrock.DEVICE_ID, pointer(index))
+        return self.gratings.inverse[index.value]
+
+    def set_grating_grooves(self, num_grooves: int):
+        &#34;&#34;&#34;
+        Use the spectrometer grating with the specified number of grooves.
+
+        Parameters
+        ----------
+        num_grooves
+            the desired number of grooves
+        &#34;&#34;&#34;
+        if num_grooves != self.get_grating_grooves():
+            self.lib.ShamrockSetGrating(Shamrock.DEVICE_ID, c_int(self.gratings[num_grooves]))
+
+    def get_center_wavelength(self) -&gt; float:
+        &#34;&#34;&#34;
+        Returns
+        -------
+        float
+            the current center wavelength of the spectrometer
+        &#34;&#34;&#34;
+        wavelength = c_float()
+        self.lib.ShamrockGetWavelength(Shamrock.DEVICE_ID, pointer(wavelength))
+        return wavelength.value
+
+    def set_center_wavelength(self, wavelength: float):
+        &#34;&#34;&#34;
+        Set the spectrometer wavelength at the specified value.
+
+        Parameters
+        ----------
+        wavelength
+            the desired center wavelength to set
+        &#34;&#34;&#34;
+        if wavelength != self.get_center_wavelength():
+            self.lib.ShamrockSetWavelength(Shamrock.DEVICE_ID, c_float(wavelength))
+
+    def shutdown(self):
+        &#34;&#34;&#34;Run Shamrock-related cleanup and shutdown procedures.&#34;&#34;&#34;
+        self.lib.ShamrockClose()</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.DEVICE_ID"><code class="name">var <span class="ident">DEVICE_ID</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.GRATINGS_NM_PER_PIXEL"><code class="name">var <span class="ident">GRATINGS_NM_PER_PIXEL</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.GRATINGS_OFFSET_NM"><code class="name">var <span class="ident">GRATINGS_OFFSET_NM</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.LIBRARY_NAME"><code class="name">var <span class="ident">LIBRARY_NAME</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.get_center_wavelength"><code class="name flex">
+<span>def <span class="ident">get_center_wavelength</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>the current center wavelength of the spectrometer</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_center_wavelength(self) -&gt; float:
+    &#34;&#34;&#34;
+    Returns
+    -------
+    float
+        the current center wavelength of the spectrometer
+    &#34;&#34;&#34;
+    wavelength = c_float()
+    self.lib.ShamrockGetWavelength(Shamrock.DEVICE_ID, pointer(wavelength))
+    return wavelength.value</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.get_grating_grooves"><code class="name flex">
+<span>def <span class="ident">get_grating_grooves</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>the number of grooves in the current spectrometer grating</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_grating_grooves(self) -&gt; int:
+    &#34;&#34;&#34;
+    Returns
+    -------
+    int
+        the number of grooves in the current spectrometer grating
+    &#34;&#34;&#34;
+    index = c_int()
+    self.lib.ShamrockGetGrating(Shamrock.DEVICE_ID, pointer(index))
+    return self.gratings.inverse[index.value]</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.set_center_wavelength"><code class="name flex">
+<span>def <span class="ident">set_center_wavelength</span></span>(<span>self, wavelength)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Set the spectrometer wavelength at the specified value.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>wavelength</code></strong></dt>
+<dd>the desired center wavelength to set</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_center_wavelength(self, wavelength: float):
+    &#34;&#34;&#34;
+    Set the spectrometer wavelength at the specified value.
+
+    Parameters
+    ----------
+    wavelength
+        the desired center wavelength to set
+    &#34;&#34;&#34;
+    if wavelength != self.get_center_wavelength():
+        self.lib.ShamrockSetWavelength(Shamrock.DEVICE_ID, c_float(wavelength))</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.set_grating_grooves"><code class="name flex">
+<span>def <span class="ident">set_grating_grooves</span></span>(<span>self, num_grooves)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Use the spectrometer grating with the specified number of grooves.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>num_grooves</code></strong></dt>
+<dd>the desired number of grooves</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def set_grating_grooves(self, num_grooves: int):
+    &#34;&#34;&#34;
+    Use the spectrometer grating with the specified number of grooves.
+
+    Parameters
+    ----------
+    num_grooves
+        the desired number of grooves
+    &#34;&#34;&#34;
+    if num_grooves != self.get_grating_grooves():
+        self.lib.ShamrockSetGrating(Shamrock.DEVICE_ID, c_int(self.gratings[num_grooves]))</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.setup_grating_info"><code class="name flex">
+<span>def <span class="ident">setup_grating_info</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Fill out the bidirectional dictionary responsible for holding information about spectrometer gratings.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def setup_grating_info(self):
+    &#34;&#34;&#34;
+    Fill out the bidirectional dictionary responsible for holding information about spectrometer gratings.
+    &#34;&#34;&#34;
+    number = c_int()
+    self.lib.ShamrockGetNumberGratings(Shamrock.DEVICE_ID, pointer(number))
+    blaze = create_string_buffer(8)
+    for index in range(1, number.value + 1):
+        lines, home, offset = c_float(), c_int(), c_int()
+        self.lib.ShamrockGetGratingInfo(Shamrock.DEVICE_ID, c_int(index), pointer(lines), blaze, pointer(home),
+                                        pointer(offset))
+        self.gratings[round(lines.value)] = index</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.shamrock.Shamrock.shutdown"><code class="name flex">
+<span>def <span class="ident">shutdown</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Run Shamrock-related cleanup and shutdown procedures.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def shutdown(self):
+    &#34;&#34;&#34;Run Shamrock-related cleanup and shutdown procedures.&#34;&#34;&#34;
+    self.lib.ShamrockClose()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="matisse_controller.shamrock_ple" href="index.html">matisse_controller.shamrock_ple</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock" href="#matisse_controller.shamrock_ple.shamrock.Shamrock">Shamrock</a></code></h4>
+<ul class="">
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.DEVICE_ID" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.DEVICE_ID">DEVICE_ID</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.GRATINGS_NM_PER_PIXEL" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.GRATINGS_NM_PER_PIXEL">GRATINGS_NM_PER_PIXEL</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.GRATINGS_OFFSET_NM" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.GRATINGS_OFFSET_NM">GRATINGS_OFFSET_NM</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.LIBRARY_NAME" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.LIBRARY_NAME">LIBRARY_NAME</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.get_center_wavelength" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.get_center_wavelength">get_center_wavelength</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.get_grating_grooves" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.get_grating_grooves">get_grating_grooves</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.set_center_wavelength" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.set_center_wavelength">set_center_wavelength</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.set_grating_grooves" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.set_grating_grooves">set_grating_grooves</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.setup_grating_info" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.setup_grating_info">setup_grating_info</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.shamrock.Shamrock.shutdown" href="#matisse_controller.shamrock_ple.shamrock.Shamrock.shutdown">shutdown</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

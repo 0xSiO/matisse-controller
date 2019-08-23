@@ -27,7 +27,8 @@ from PyQt5.QtWidgets import *
 
 import matisse_controller.config as cfg
 import matisse_controller.config.tooltips as tooltips
-from matisse_controller.matisse import Matisse
+import matisse_controller.matisse as matisse
+from matisse_controller.shamrock_ple.ccd import CCD
 
 
 class ConfigurationDialog(QDialog):
@@ -46,6 +47,7 @@ class ConfigurationDialog(QDialog):
     def add_options(self):
         general_options = self.create_general_options()
         gui_options = self.create_gui_options()
+        ple_options = self.create_ple_options()
         scan_options = self.create_scan_options()
         locking_options = self.create_locking_options()
         self.set_tooltips()
@@ -56,6 +58,7 @@ class ConfigurationDialog(QDialog):
         column_1 = QVBoxLayout()
         column_1.addWidget(general_options)
         column_1.addWidget(gui_options)
+        column_1.addWidget(ple_options)
         form_layout.addLayout(column_1)
         form_layout.addWidget(scan_options)
         form_layout.addWidget(locking_options)
@@ -78,6 +81,7 @@ class ConfigurationDialog(QDialog):
         general_layout.addRow(&#39;Wavemeter measurement delay: &#39;, self.wavemeter_measurement_delay_field)
         self.component_limit_offset_field = QDoubleSpinBox()
         self.component_limit_offset_field.setMinimum(0)
+        self.component_limit_offset_field.setDecimals(3)
         general_layout.addRow(&#39;Component limit offset: &#39;, self.component_limit_offset_field)
         self.wavelength_lower_limit_field = QDoubleSpinBox()
         self.wavelength_lower_limit_field.setMinimum(0)
@@ -88,13 +92,17 @@ class ConfigurationDialog(QDialog):
         self.wavelength_upper_limit_field.setMaximum(2000)
         general_layout.addRow(&#39;Wavelength upper limit: &#39;, self.wavelength_upper_limit_field)
         self.bifi_reset_pos_field = QSpinBox()
-        self.bifi_reset_pos_field.setMinimum(Matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
-        self.bifi_reset_pos_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
+        self.bifi_reset_pos_field.setMinimum(matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
+        self.bifi_reset_pos_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
         general_layout.addRow(&#39;BiFi reset position: &#39;, self.bifi_reset_pos_field)
         self.thin_eta_reset_pos_field = QSpinBox()
-        self.thin_eta_reset_pos_field.setMinimum(Matisse.THIN_ETALON_LOWER_LIMIT)
-        self.thin_eta_reset_pos_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT)
+        self.thin_eta_reset_pos_field.setMinimum(matisse.THIN_ETALON_LOWER_LIMIT)
+        self.thin_eta_reset_pos_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT)
         general_layout.addRow(&#39;Thin etalon reset position: &#39;, self.thin_eta_reset_pos_field)
+        self.thin_eta_rand_range_field = QSpinBox()
+        self.thin_eta_rand_range_field.setMinimum(0)
+        self.thin_eta_rand_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 2)
+        general_layout.addRow(&#39;Thin etalon randomization range: &#39;, self.thin_eta_rand_range_field)
         self.report_events_field = QCheckBox()
         general_layout.addRow(&#39;Report events? &#39;, self.report_events_field)
         return general_options
@@ -111,6 +119,19 @@ class ConfigurationDialog(QDialog):
         gui_layout.addRow(&#39;Status monitor font size: &#39;, self.status_monitor_font_size_field)
         return gui_options
 
+    def create_ple_options(self):
+        ple_options = QGroupBox(&#39;PLE&#39;)
+        ple_layout = QFormLayout()
+        ple_options.setLayout(ple_layout)
+        self.target_temperature_field = QSpinBox()
+        self.target_temperature_field.setMinimum(CCD.MIN_TEMP)
+        self.target_temperature_field.setMaximum(CCD.MAX_TEMP)
+        ple_layout.addRow(&#39;Default target CCD temperature: &#39;, self.target_temperature_field)
+        self.temperature_tolerance_field = QDoubleSpinBox()
+        self.temperature_tolerance_field.setMinimum(3)
+        ple_layout.addRow(&#39;CCD temperature tolerance: &#39;, self.temperature_tolerance_field)
+        return ple_options
+
     def create_scan_options(self):
         scan_options = QGroupBox(&#39;Scanning&#39;)
         scan_layout = QFormLayout()
@@ -119,10 +140,10 @@ class ConfigurationDialog(QDialog):
         self.scan_limit_field.setMinimum(0)
         scan_layout.addRow(&#39;Number of scans before retry: &#39;, self.scan_limit_field)
         self.bifi_scan_range_field = QSpinBox()
-        self.bifi_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
+        self.bifi_scan_range_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
         scan_layout.addRow(&#39;BiFi normal scan range:&#39;, self.bifi_scan_range_field)
         self.bifi_small_scan_range_field = QSpinBox()
-        self.bifi_small_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
+        self.bifi_small_scan_range_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
         scan_layout.addRow(&#39;BiFi small scan range:&#39;, self.bifi_small_scan_range_field)
         self.bifi_scan_step_field = QSpinBox()
         scan_layout.addRow(&#39;BiFi scan step:&#39;, self.bifi_scan_step_field)
@@ -137,10 +158,10 @@ class ConfigurationDialog(QDialog):
         self.bifi_smoothing_polyorder_field.setMinimum(1)
         scan_layout.addRow(&#39;BiFi smoothing filter polyorder: &#39;, self.bifi_smoothing_polyorder_field)
         self.thin_eta_scan_range_field = QSpinBox()
-        self.thin_eta_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 2)
+        self.thin_eta_scan_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 2)
         scan_layout.addRow(&#39;Thin etalon normal scan range:&#39;, self.thin_eta_scan_range_field)
         self.thin_eta_small_scan_range_field = QSpinBox()
-        self.thin_eta_small_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 4)
+        self.thin_eta_small_scan_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 4)
         scan_layout.addRow(&#39;Thin etalon small scan range:&#39;, self.thin_eta_small_scan_range_field)
         self.thin_eta_scan_step_field = QSpinBox()
         scan_layout.addRow(&#39;Thin etalon scan step:&#39;, self.thin_eta_scan_step_field)
@@ -187,12 +208,12 @@ class ConfigurationDialog(QDialog):
         self.locking_timeout_field.setMinimum(0)
         locking_layout.addRow(&#39;Locking timeout: &#39;, self.locking_timeout_field)
         self.fast_pz_setpoint_lower_limit_field = QDoubleSpinBox()
-        self.fast_pz_setpoint_lower_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.fast_pz_setpoint_lower_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.fast_pz_setpoint_lower_limit_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.fast_pz_setpoint_lower_limit_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;Fast piezo setpoint scan lower limit: &#39;, self.fast_pz_setpoint_lower_limit_field)
         self.fast_pz_setpoint_upper_limit_field = QDoubleSpinBox()
-        self.fast_pz_setpoint_upper_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.fast_pz_setpoint_upper_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.fast_pz_setpoint_upper_limit_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.fast_pz_setpoint_upper_limit_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;Fast piezo setpoint scan upper limit: &#39;, self.fast_pz_setpoint_upper_limit_field)
         self.fast_pz_setpoint_num_points_field = QSpinBox()
         self.fast_pz_setpoint_num_points_field.setMinimum(32)
@@ -206,48 +227,48 @@ class ConfigurationDialog(QDialog):
         locking_layout.addRow(&#39;Number of auto-corrections before retry: &#39;, self.auto_correction_limit_field)
         self.pz_eta_upper_correction_pos_field = QDoubleSpinBox()
         self.pz_eta_upper_correction_pos_field.setSingleStep(0.01)
-        self.pz_eta_upper_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
-        self.pz_eta_upper_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        self.pz_eta_upper_correction_pos_field.setMinimum(matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_upper_correction_pos_field.setMaximum(matisse.PIEZO_ETALON_UPPER_LIMIT)
         locking_layout.addRow(&#39;Piezo etalon upper correction pos: &#39;, self.pz_eta_upper_correction_pos_field)
         self.slow_pz_upper_correction_pos_field = QDoubleSpinBox()
         self.slow_pz_upper_correction_pos_field.setSingleStep(0.01)
-        self.slow_pz_upper_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
-        self.slow_pz_upper_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        self.slow_pz_upper_correction_pos_field.setMinimum(matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_upper_correction_pos_field.setMaximum(matisse.SLOW_PIEZO_UPPER_LIMIT)
         locking_layout.addRow(&#39;Slow piezo upper correction pos: &#39;, self.slow_pz_upper_correction_pos_field)
         self.refcell_upper_correction_pos_field = QDoubleSpinBox()
         self.refcell_upper_correction_pos_field.setSingleStep(0.01)
-        self.refcell_upper_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.refcell_upper_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.refcell_upper_correction_pos_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_upper_correction_pos_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;RefCell upper correction pos: &#39;, self.refcell_upper_correction_pos_field)
         self.pz_eta_mid_correction_pos_field = QDoubleSpinBox()
         self.pz_eta_mid_correction_pos_field.setSingleStep(0.01)
-        self.pz_eta_mid_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
-        self.pz_eta_mid_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        self.pz_eta_mid_correction_pos_field.setMinimum(matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_mid_correction_pos_field.setMaximum(matisse.PIEZO_ETALON_UPPER_LIMIT)
         locking_layout.addRow(&#39;Piezo etalon mid correction pos: &#39;, self.pz_eta_mid_correction_pos_field)
         self.slow_pz_mid_correction_pos_field = QDoubleSpinBox()
         self.slow_pz_mid_correction_pos_field.setSingleStep(0.01)
-        self.slow_pz_mid_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
-        self.slow_pz_mid_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        self.slow_pz_mid_correction_pos_field.setMinimum(matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_mid_correction_pos_field.setMaximum(matisse.SLOW_PIEZO_UPPER_LIMIT)
         locking_layout.addRow(&#39;Slow piezo mid correction pos: &#39;, self.slow_pz_mid_correction_pos_field)
         self.refcell_mid_correction_pos_field = QDoubleSpinBox()
         self.refcell_mid_correction_pos_field.setSingleStep(0.01)
-        self.refcell_mid_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.refcell_mid_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.refcell_mid_correction_pos_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_mid_correction_pos_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;RefCell mid correction pos: &#39;, self.refcell_mid_correction_pos_field)
         self.pz_eta_lower_correction_pos_field = QDoubleSpinBox()
         self.pz_eta_lower_correction_pos_field.setSingleStep(0.01)
-        self.pz_eta_lower_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
-        self.pz_eta_lower_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        self.pz_eta_lower_correction_pos_field.setMinimum(matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_lower_correction_pos_field.setMaximum(matisse.PIEZO_ETALON_UPPER_LIMIT)
         locking_layout.addRow(&#39;Piezo etalon lower correction pos: &#39;, self.pz_eta_lower_correction_pos_field)
         self.slow_pz_lower_correction_pos_field = QDoubleSpinBox()
         self.slow_pz_lower_correction_pos_field.setSingleStep(0.01)
-        self.slow_pz_lower_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
-        self.slow_pz_lower_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        self.slow_pz_lower_correction_pos_field.setMinimum(matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_lower_correction_pos_field.setMaximum(matisse.SLOW_PIEZO_UPPER_LIMIT)
         locking_layout.addRow(&#39;Slow piezo lower correction pos: &#39;, self.slow_pz_lower_correction_pos_field)
         self.refcell_lower_correction_pos_field = QDoubleSpinBox()
         self.refcell_lower_correction_pos_field.setSingleStep(0.01)
-        self.refcell_lower_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.refcell_lower_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.refcell_lower_correction_pos_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_lower_correction_pos_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;RefCell lower correction pos: &#39;, self.refcell_lower_correction_pos_field)
         self.stabilization_rising_speed_field = QDoubleSpinBox()
         self.stabilization_rising_speed_field.setDecimals(3)
@@ -282,6 +303,7 @@ class ConfigurationDialog(QDialog):
 
         self.bifi_reset_pos_field.setToolTip(tooltips.BIFI_RESET_POS)
         self.thin_eta_reset_pos_field.setToolTip(tooltips.THIN_ETA_RESET_POS)
+        self.thin_eta_rand_range_field.setToolTip(tooltips.THIN_ETA_RAND_RANGE)
 
         self.report_events_field.setToolTip(tooltips.REPORT_EVENTS)
 
@@ -328,6 +350,9 @@ class ConfigurationDialog(QDialog):
 
         self.auto_correction_limit_field.setToolTip(tooltips.CORRECTION_LIMIT)
 
+        self.target_temperature_field.setToolTip(tooltips.PLE_TARGET_TEMPERATURE)
+        self.temperature_tolerance_field.setToolTip(tooltips.PLE_TEMPERATURE_TOLERANCE)
+
     def set_current_values_from_config(self):
         self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
         self.wavemeter_port_field.setText(cfg.get(cfg.WAVEMETER_PORT))
@@ -342,10 +367,12 @@ class ConfigurationDialog(QDialog):
         self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
         self.bifi_reset_pos_field.setValue(cfg.get(cfg.BIFI_RESET_POS))
         self.thin_eta_reset_pos_field.setValue(cfg.get(cfg.THIN_ETA_RESET_POS))
+        self.thin_eta_rand_range_field.setValue(cfg.get(cfg.THIN_ETA_RAND_RANGE))
 
         self.report_events_field.setChecked(cfg.get(cfg.REPORT_EVENTS))
 
         self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
+
         self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
         self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
         self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
@@ -375,6 +402,11 @@ class ConfigurationDialog(QDialog):
         self.fast_pz_setpoint_num_points_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
         self.fast_pz_setpoint_num_scans_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS))
 
+        self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
+        self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
+        self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
+        self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
+
         self.auto_correction_limit_field.setValue(cfg.get(cfg.CORRECTION_LIMIT))
 
         self.pz_eta_upper_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS))
@@ -387,10 +419,8 @@ class ConfigurationDialog(QDialog):
         self.slow_pz_lower_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS))
         self.refcell_lower_correction_pos_field.setValue(cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS))
 
-        self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
-        self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
-        self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
-        self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
+        self.target_temperature_field.setValue(cfg.get(cfg.PLE_TARGET_TEMPERATURE))
+        self.temperature_tolerance_field.setValue(cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE))
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.RestoreDefaults | QDialogButtonBox.Save |
@@ -421,10 +451,12 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
         cfg.set(cfg.BIFI_RESET_POS, self.bifi_reset_pos_field.value())
         cfg.set(cfg.THIN_ETA_RESET_POS, self.thin_eta_reset_pos_field.value())
+        cfg.set(cfg.THIN_ETA_RAND_RANGE, self.thin_eta_rand_range_field.value())
 
         cfg.set(cfg.REPORT_EVENTS, self.report_events_field.isChecked())
 
         cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
+
         cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())
@@ -454,6 +486,11 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.FAST_PZ_SETPOINT_NUM_POINTS, self.fast_pz_setpoint_num_points_field.value())
         cfg.set(cfg.FAST_PZ_SETPOINT_NUM_SCANS, self.fast_pz_setpoint_num_scans_field.value())
 
+        cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
+        cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
+        cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
+        cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+
         cfg.set(cfg.CORRECTION_LIMIT, self.auto_correction_limit_field.value())
 
         cfg.set(cfg.PIEZO_ETA_UPPER_CORRECTION_POS, self.pz_eta_upper_correction_pos_field.value())
@@ -466,10 +503,8 @@ class ConfigurationDialog(QDialog):
         cfg.set(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS, self.slow_pz_lower_correction_pos_field.value())
         cfg.set(cfg.REFCELL_LOWER_CORRECTION_POS, self.refcell_lower_correction_pos_field.value())
 
-        cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
-        cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
-        cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
-        cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+        cfg.set(cfg.PLE_TARGET_TEMPERATURE, self.target_temperature_field.value())
+        cfg.set(cfg.PLE_TEMPERATURE_TOLERANCE, self.temperature_tolerance_field.value())
 
         cfg.save()
         self.close()
@@ -546,6 +581,7 @@ if __name__ == &#39;__main__&#39;:
     def add_options(self):
         general_options = self.create_general_options()
         gui_options = self.create_gui_options()
+        ple_options = self.create_ple_options()
         scan_options = self.create_scan_options()
         locking_options = self.create_locking_options()
         self.set_tooltips()
@@ -556,6 +592,7 @@ if __name__ == &#39;__main__&#39;:
         column_1 = QVBoxLayout()
         column_1.addWidget(general_options)
         column_1.addWidget(gui_options)
+        column_1.addWidget(ple_options)
         form_layout.addLayout(column_1)
         form_layout.addWidget(scan_options)
         form_layout.addWidget(locking_options)
@@ -578,6 +615,7 @@ if __name__ == &#39;__main__&#39;:
         general_layout.addRow(&#39;Wavemeter measurement delay: &#39;, self.wavemeter_measurement_delay_field)
         self.component_limit_offset_field = QDoubleSpinBox()
         self.component_limit_offset_field.setMinimum(0)
+        self.component_limit_offset_field.setDecimals(3)
         general_layout.addRow(&#39;Component limit offset: &#39;, self.component_limit_offset_field)
         self.wavelength_lower_limit_field = QDoubleSpinBox()
         self.wavelength_lower_limit_field.setMinimum(0)
@@ -588,13 +626,17 @@ if __name__ == &#39;__main__&#39;:
         self.wavelength_upper_limit_field.setMaximum(2000)
         general_layout.addRow(&#39;Wavelength upper limit: &#39;, self.wavelength_upper_limit_field)
         self.bifi_reset_pos_field = QSpinBox()
-        self.bifi_reset_pos_field.setMinimum(Matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
-        self.bifi_reset_pos_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
+        self.bifi_reset_pos_field.setMinimum(matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
+        self.bifi_reset_pos_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
         general_layout.addRow(&#39;BiFi reset position: &#39;, self.bifi_reset_pos_field)
         self.thin_eta_reset_pos_field = QSpinBox()
-        self.thin_eta_reset_pos_field.setMinimum(Matisse.THIN_ETALON_LOWER_LIMIT)
-        self.thin_eta_reset_pos_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT)
+        self.thin_eta_reset_pos_field.setMinimum(matisse.THIN_ETALON_LOWER_LIMIT)
+        self.thin_eta_reset_pos_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT)
         general_layout.addRow(&#39;Thin etalon reset position: &#39;, self.thin_eta_reset_pos_field)
+        self.thin_eta_rand_range_field = QSpinBox()
+        self.thin_eta_rand_range_field.setMinimum(0)
+        self.thin_eta_rand_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 2)
+        general_layout.addRow(&#39;Thin etalon randomization range: &#39;, self.thin_eta_rand_range_field)
         self.report_events_field = QCheckBox()
         general_layout.addRow(&#39;Report events? &#39;, self.report_events_field)
         return general_options
@@ -611,6 +653,19 @@ if __name__ == &#39;__main__&#39;:
         gui_layout.addRow(&#39;Status monitor font size: &#39;, self.status_monitor_font_size_field)
         return gui_options
 
+    def create_ple_options(self):
+        ple_options = QGroupBox(&#39;PLE&#39;)
+        ple_layout = QFormLayout()
+        ple_options.setLayout(ple_layout)
+        self.target_temperature_field = QSpinBox()
+        self.target_temperature_field.setMinimum(CCD.MIN_TEMP)
+        self.target_temperature_field.setMaximum(CCD.MAX_TEMP)
+        ple_layout.addRow(&#39;Default target CCD temperature: &#39;, self.target_temperature_field)
+        self.temperature_tolerance_field = QDoubleSpinBox()
+        self.temperature_tolerance_field.setMinimum(3)
+        ple_layout.addRow(&#39;CCD temperature tolerance: &#39;, self.temperature_tolerance_field)
+        return ple_options
+
     def create_scan_options(self):
         scan_options = QGroupBox(&#39;Scanning&#39;)
         scan_layout = QFormLayout()
@@ -619,10 +674,10 @@ if __name__ == &#39;__main__&#39;:
         self.scan_limit_field.setMinimum(0)
         scan_layout.addRow(&#39;Number of scans before retry: &#39;, self.scan_limit_field)
         self.bifi_scan_range_field = QSpinBox()
-        self.bifi_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
+        self.bifi_scan_range_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
         scan_layout.addRow(&#39;BiFi normal scan range:&#39;, self.bifi_scan_range_field)
         self.bifi_small_scan_range_field = QSpinBox()
-        self.bifi_small_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
+        self.bifi_small_scan_range_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
         scan_layout.addRow(&#39;BiFi small scan range:&#39;, self.bifi_small_scan_range_field)
         self.bifi_scan_step_field = QSpinBox()
         scan_layout.addRow(&#39;BiFi scan step:&#39;, self.bifi_scan_step_field)
@@ -637,10 +692,10 @@ if __name__ == &#39;__main__&#39;:
         self.bifi_smoothing_polyorder_field.setMinimum(1)
         scan_layout.addRow(&#39;BiFi smoothing filter polyorder: &#39;, self.bifi_smoothing_polyorder_field)
         self.thin_eta_scan_range_field = QSpinBox()
-        self.thin_eta_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 2)
+        self.thin_eta_scan_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 2)
         scan_layout.addRow(&#39;Thin etalon normal scan range:&#39;, self.thin_eta_scan_range_field)
         self.thin_eta_small_scan_range_field = QSpinBox()
-        self.thin_eta_small_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 4)
+        self.thin_eta_small_scan_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 4)
         scan_layout.addRow(&#39;Thin etalon small scan range:&#39;, self.thin_eta_small_scan_range_field)
         self.thin_eta_scan_step_field = QSpinBox()
         scan_layout.addRow(&#39;Thin etalon scan step:&#39;, self.thin_eta_scan_step_field)
@@ -687,12 +742,12 @@ if __name__ == &#39;__main__&#39;:
         self.locking_timeout_field.setMinimum(0)
         locking_layout.addRow(&#39;Locking timeout: &#39;, self.locking_timeout_field)
         self.fast_pz_setpoint_lower_limit_field = QDoubleSpinBox()
-        self.fast_pz_setpoint_lower_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.fast_pz_setpoint_lower_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.fast_pz_setpoint_lower_limit_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.fast_pz_setpoint_lower_limit_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;Fast piezo setpoint scan lower limit: &#39;, self.fast_pz_setpoint_lower_limit_field)
         self.fast_pz_setpoint_upper_limit_field = QDoubleSpinBox()
-        self.fast_pz_setpoint_upper_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.fast_pz_setpoint_upper_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.fast_pz_setpoint_upper_limit_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.fast_pz_setpoint_upper_limit_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;Fast piezo setpoint scan upper limit: &#39;, self.fast_pz_setpoint_upper_limit_field)
         self.fast_pz_setpoint_num_points_field = QSpinBox()
         self.fast_pz_setpoint_num_points_field.setMinimum(32)
@@ -706,48 +761,48 @@ if __name__ == &#39;__main__&#39;:
         locking_layout.addRow(&#39;Number of auto-corrections before retry: &#39;, self.auto_correction_limit_field)
         self.pz_eta_upper_correction_pos_field = QDoubleSpinBox()
         self.pz_eta_upper_correction_pos_field.setSingleStep(0.01)
-        self.pz_eta_upper_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
-        self.pz_eta_upper_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        self.pz_eta_upper_correction_pos_field.setMinimum(matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_upper_correction_pos_field.setMaximum(matisse.PIEZO_ETALON_UPPER_LIMIT)
         locking_layout.addRow(&#39;Piezo etalon upper correction pos: &#39;, self.pz_eta_upper_correction_pos_field)
         self.slow_pz_upper_correction_pos_field = QDoubleSpinBox()
         self.slow_pz_upper_correction_pos_field.setSingleStep(0.01)
-        self.slow_pz_upper_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
-        self.slow_pz_upper_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        self.slow_pz_upper_correction_pos_field.setMinimum(matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_upper_correction_pos_field.setMaximum(matisse.SLOW_PIEZO_UPPER_LIMIT)
         locking_layout.addRow(&#39;Slow piezo upper correction pos: &#39;, self.slow_pz_upper_correction_pos_field)
         self.refcell_upper_correction_pos_field = QDoubleSpinBox()
         self.refcell_upper_correction_pos_field.setSingleStep(0.01)
-        self.refcell_upper_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.refcell_upper_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.refcell_upper_correction_pos_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_upper_correction_pos_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;RefCell upper correction pos: &#39;, self.refcell_upper_correction_pos_field)
         self.pz_eta_mid_correction_pos_field = QDoubleSpinBox()
         self.pz_eta_mid_correction_pos_field.setSingleStep(0.01)
-        self.pz_eta_mid_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
-        self.pz_eta_mid_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        self.pz_eta_mid_correction_pos_field.setMinimum(matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_mid_correction_pos_field.setMaximum(matisse.PIEZO_ETALON_UPPER_LIMIT)
         locking_layout.addRow(&#39;Piezo etalon mid correction pos: &#39;, self.pz_eta_mid_correction_pos_field)
         self.slow_pz_mid_correction_pos_field = QDoubleSpinBox()
         self.slow_pz_mid_correction_pos_field.setSingleStep(0.01)
-        self.slow_pz_mid_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
-        self.slow_pz_mid_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        self.slow_pz_mid_correction_pos_field.setMinimum(matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_mid_correction_pos_field.setMaximum(matisse.SLOW_PIEZO_UPPER_LIMIT)
         locking_layout.addRow(&#39;Slow piezo mid correction pos: &#39;, self.slow_pz_mid_correction_pos_field)
         self.refcell_mid_correction_pos_field = QDoubleSpinBox()
         self.refcell_mid_correction_pos_field.setSingleStep(0.01)
-        self.refcell_mid_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.refcell_mid_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.refcell_mid_correction_pos_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_mid_correction_pos_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;RefCell mid correction pos: &#39;, self.refcell_mid_correction_pos_field)
         self.pz_eta_lower_correction_pos_field = QDoubleSpinBox()
         self.pz_eta_lower_correction_pos_field.setSingleStep(0.01)
-        self.pz_eta_lower_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
-        self.pz_eta_lower_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+        self.pz_eta_lower_correction_pos_field.setMinimum(matisse.PIEZO_ETALON_LOWER_LIMIT)
+        self.pz_eta_lower_correction_pos_field.setMaximum(matisse.PIEZO_ETALON_UPPER_LIMIT)
         locking_layout.addRow(&#39;Piezo etalon lower correction pos: &#39;, self.pz_eta_lower_correction_pos_field)
         self.slow_pz_lower_correction_pos_field = QDoubleSpinBox()
         self.slow_pz_lower_correction_pos_field.setSingleStep(0.01)
-        self.slow_pz_lower_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
-        self.slow_pz_lower_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+        self.slow_pz_lower_correction_pos_field.setMinimum(matisse.SLOW_PIEZO_LOWER_LIMIT)
+        self.slow_pz_lower_correction_pos_field.setMaximum(matisse.SLOW_PIEZO_UPPER_LIMIT)
         locking_layout.addRow(&#39;Slow piezo lower correction pos: &#39;, self.slow_pz_lower_correction_pos_field)
         self.refcell_lower_correction_pos_field = QDoubleSpinBox()
         self.refcell_lower_correction_pos_field.setSingleStep(0.01)
-        self.refcell_lower_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-        self.refcell_lower_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+        self.refcell_lower_correction_pos_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+        self.refcell_lower_correction_pos_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
         locking_layout.addRow(&#39;RefCell lower correction pos: &#39;, self.refcell_lower_correction_pos_field)
         self.stabilization_rising_speed_field = QDoubleSpinBox()
         self.stabilization_rising_speed_field.setDecimals(3)
@@ -782,6 +837,7 @@ if __name__ == &#39;__main__&#39;:
 
         self.bifi_reset_pos_field.setToolTip(tooltips.BIFI_RESET_POS)
         self.thin_eta_reset_pos_field.setToolTip(tooltips.THIN_ETA_RESET_POS)
+        self.thin_eta_rand_range_field.setToolTip(tooltips.THIN_ETA_RAND_RANGE)
 
         self.report_events_field.setToolTip(tooltips.REPORT_EVENTS)
 
@@ -828,6 +884,9 @@ if __name__ == &#39;__main__&#39;:
 
         self.auto_correction_limit_field.setToolTip(tooltips.CORRECTION_LIMIT)
 
+        self.target_temperature_field.setToolTip(tooltips.PLE_TARGET_TEMPERATURE)
+        self.temperature_tolerance_field.setToolTip(tooltips.PLE_TEMPERATURE_TOLERANCE)
+
     def set_current_values_from_config(self):
         self.matisse_device_id_field.setText(cfg.get(cfg.MATISSE_DEVICE_ID))
         self.wavemeter_port_field.setText(cfg.get(cfg.WAVEMETER_PORT))
@@ -842,10 +901,12 @@ if __name__ == &#39;__main__&#39;:
         self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
         self.bifi_reset_pos_field.setValue(cfg.get(cfg.BIFI_RESET_POS))
         self.thin_eta_reset_pos_field.setValue(cfg.get(cfg.THIN_ETA_RESET_POS))
+        self.thin_eta_rand_range_field.setValue(cfg.get(cfg.THIN_ETA_RAND_RANGE))
 
         self.report_events_field.setChecked(cfg.get(cfg.REPORT_EVENTS))
 
         self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
+
         self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
         self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
         self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
@@ -875,6 +936,11 @@ if __name__ == &#39;__main__&#39;:
         self.fast_pz_setpoint_num_points_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
         self.fast_pz_setpoint_num_scans_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS))
 
+        self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
+        self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
+        self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
+        self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
+
         self.auto_correction_limit_field.setValue(cfg.get(cfg.CORRECTION_LIMIT))
 
         self.pz_eta_upper_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS))
@@ -887,10 +953,8 @@ if __name__ == &#39;__main__&#39;:
         self.slow_pz_lower_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS))
         self.refcell_lower_correction_pos_field.setValue(cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS))
 
-        self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
-        self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
-        self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
-        self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
+        self.target_temperature_field.setValue(cfg.get(cfg.PLE_TARGET_TEMPERATURE))
+        self.temperature_tolerance_field.setValue(cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE))
 
     def add_buttons(self):
         button_box = QDialogButtonBox(QDialogButtonBox.RestoreDefaults | QDialogButtonBox.Save |
@@ -921,10 +985,12 @@ if __name__ == &#39;__main__&#39;:
         cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
         cfg.set(cfg.BIFI_RESET_POS, self.bifi_reset_pos_field.value())
         cfg.set(cfg.THIN_ETA_RESET_POS, self.thin_eta_reset_pos_field.value())
+        cfg.set(cfg.THIN_ETA_RAND_RANGE, self.thin_eta_rand_range_field.value())
 
         cfg.set(cfg.REPORT_EVENTS, self.report_events_field.isChecked())
 
         cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
+
         cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
         cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())
@@ -954,6 +1020,11 @@ if __name__ == &#39;__main__&#39;:
         cfg.set(cfg.FAST_PZ_SETPOINT_NUM_POINTS, self.fast_pz_setpoint_num_points_field.value())
         cfg.set(cfg.FAST_PZ_SETPOINT_NUM_SCANS, self.fast_pz_setpoint_num_scans_field.value())
 
+        cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
+        cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
+        cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
+        cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+
         cfg.set(cfg.CORRECTION_LIMIT, self.auto_correction_limit_field.value())
 
         cfg.set(cfg.PIEZO_ETA_UPPER_CORRECTION_POS, self.pz_eta_upper_correction_pos_field.value())
@@ -966,10 +1037,8 @@ if __name__ == &#39;__main__&#39;:
         cfg.set(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS, self.slow_pz_lower_correction_pos_field.value())
         cfg.set(cfg.REFCELL_LOWER_CORRECTION_POS, self.refcell_lower_correction_pos_field.value())
 
-        cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
-        cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
-        cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
-        cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+        cfg.set(cfg.PLE_TARGET_TEMPERATURE, self.target_temperature_field.value())
+        cfg.set(cfg.PLE_TEMPERATURE_TOLERANCE, self.temperature_tolerance_field.value())
 
         cfg.save()
         self.close()
@@ -1021,6 +1090,7 @@ if __name__ == &#39;__main__&#39;:
 <pre><code class="python">def add_options(self):
     general_options = self.create_general_options()
     gui_options = self.create_gui_options()
+    ple_options = self.create_ple_options()
     scan_options = self.create_scan_options()
     locking_options = self.create_locking_options()
     self.set_tooltips()
@@ -1031,6 +1101,7 @@ if __name__ == &#39;__main__&#39;:
     column_1 = QVBoxLayout()
     column_1.addWidget(general_options)
     column_1.addWidget(gui_options)
+    column_1.addWidget(ple_options)
     form_layout.addLayout(column_1)
     form_layout.addWidget(scan_options)
     form_layout.addWidget(locking_options)
@@ -1073,6 +1144,7 @@ def cancel(self, checked):
     general_layout.addRow(&#39;Wavemeter measurement delay: &#39;, self.wavemeter_measurement_delay_field)
     self.component_limit_offset_field = QDoubleSpinBox()
     self.component_limit_offset_field.setMinimum(0)
+    self.component_limit_offset_field.setDecimals(3)
     general_layout.addRow(&#39;Component limit offset: &#39;, self.component_limit_offset_field)
     self.wavelength_lower_limit_field = QDoubleSpinBox()
     self.wavelength_lower_limit_field.setMinimum(0)
@@ -1083,13 +1155,17 @@ def cancel(self, checked):
     self.wavelength_upper_limit_field.setMaximum(2000)
     general_layout.addRow(&#39;Wavelength upper limit: &#39;, self.wavelength_upper_limit_field)
     self.bifi_reset_pos_field = QSpinBox()
-    self.bifi_reset_pos_field.setMinimum(Matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
-    self.bifi_reset_pos_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
+    self.bifi_reset_pos_field.setMinimum(matisse.BIREFRINGENT_FILTER_LOWER_LIMIT)
+    self.bifi_reset_pos_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT)
     general_layout.addRow(&#39;BiFi reset position: &#39;, self.bifi_reset_pos_field)
     self.thin_eta_reset_pos_field = QSpinBox()
-    self.thin_eta_reset_pos_field.setMinimum(Matisse.THIN_ETALON_LOWER_LIMIT)
-    self.thin_eta_reset_pos_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT)
+    self.thin_eta_reset_pos_field.setMinimum(matisse.THIN_ETALON_LOWER_LIMIT)
+    self.thin_eta_reset_pos_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT)
     general_layout.addRow(&#39;Thin etalon reset position: &#39;, self.thin_eta_reset_pos_field)
+    self.thin_eta_rand_range_field = QSpinBox()
+    self.thin_eta_rand_range_field.setMinimum(0)
+    self.thin_eta_rand_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 2)
+    general_layout.addRow(&#39;Thin etalon randomization range: &#39;, self.thin_eta_rand_range_field)
     self.report_events_field = QCheckBox()
     general_layout.addRow(&#39;Report events? &#39;, self.report_events_field)
     return general_options</code></pre>
@@ -1130,12 +1206,12 @@ def cancel(self, checked):
     self.locking_timeout_field.setMinimum(0)
     locking_layout.addRow(&#39;Locking timeout: &#39;, self.locking_timeout_field)
     self.fast_pz_setpoint_lower_limit_field = QDoubleSpinBox()
-    self.fast_pz_setpoint_lower_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-    self.fast_pz_setpoint_lower_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    self.fast_pz_setpoint_lower_limit_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.fast_pz_setpoint_lower_limit_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
     locking_layout.addRow(&#39;Fast piezo setpoint scan lower limit: &#39;, self.fast_pz_setpoint_lower_limit_field)
     self.fast_pz_setpoint_upper_limit_field = QDoubleSpinBox()
-    self.fast_pz_setpoint_upper_limit_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-    self.fast_pz_setpoint_upper_limit_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    self.fast_pz_setpoint_upper_limit_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.fast_pz_setpoint_upper_limit_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
     locking_layout.addRow(&#39;Fast piezo setpoint scan upper limit: &#39;, self.fast_pz_setpoint_upper_limit_field)
     self.fast_pz_setpoint_num_points_field = QSpinBox()
     self.fast_pz_setpoint_num_points_field.setMinimum(32)
@@ -1149,48 +1225,48 @@ def cancel(self, checked):
     locking_layout.addRow(&#39;Number of auto-corrections before retry: &#39;, self.auto_correction_limit_field)
     self.pz_eta_upper_correction_pos_field = QDoubleSpinBox()
     self.pz_eta_upper_correction_pos_field.setSingleStep(0.01)
-    self.pz_eta_upper_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
-    self.pz_eta_upper_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+    self.pz_eta_upper_correction_pos_field.setMinimum(matisse.PIEZO_ETALON_LOWER_LIMIT)
+    self.pz_eta_upper_correction_pos_field.setMaximum(matisse.PIEZO_ETALON_UPPER_LIMIT)
     locking_layout.addRow(&#39;Piezo etalon upper correction pos: &#39;, self.pz_eta_upper_correction_pos_field)
     self.slow_pz_upper_correction_pos_field = QDoubleSpinBox()
     self.slow_pz_upper_correction_pos_field.setSingleStep(0.01)
-    self.slow_pz_upper_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
-    self.slow_pz_upper_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+    self.slow_pz_upper_correction_pos_field.setMinimum(matisse.SLOW_PIEZO_LOWER_LIMIT)
+    self.slow_pz_upper_correction_pos_field.setMaximum(matisse.SLOW_PIEZO_UPPER_LIMIT)
     locking_layout.addRow(&#39;Slow piezo upper correction pos: &#39;, self.slow_pz_upper_correction_pos_field)
     self.refcell_upper_correction_pos_field = QDoubleSpinBox()
     self.refcell_upper_correction_pos_field.setSingleStep(0.01)
-    self.refcell_upper_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-    self.refcell_upper_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    self.refcell_upper_correction_pos_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.refcell_upper_correction_pos_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
     locking_layout.addRow(&#39;RefCell upper correction pos: &#39;, self.refcell_upper_correction_pos_field)
     self.pz_eta_mid_correction_pos_field = QDoubleSpinBox()
     self.pz_eta_mid_correction_pos_field.setSingleStep(0.01)
-    self.pz_eta_mid_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
-    self.pz_eta_mid_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+    self.pz_eta_mid_correction_pos_field.setMinimum(matisse.PIEZO_ETALON_LOWER_LIMIT)
+    self.pz_eta_mid_correction_pos_field.setMaximum(matisse.PIEZO_ETALON_UPPER_LIMIT)
     locking_layout.addRow(&#39;Piezo etalon mid correction pos: &#39;, self.pz_eta_mid_correction_pos_field)
     self.slow_pz_mid_correction_pos_field = QDoubleSpinBox()
     self.slow_pz_mid_correction_pos_field.setSingleStep(0.01)
-    self.slow_pz_mid_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
-    self.slow_pz_mid_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+    self.slow_pz_mid_correction_pos_field.setMinimum(matisse.SLOW_PIEZO_LOWER_LIMIT)
+    self.slow_pz_mid_correction_pos_field.setMaximum(matisse.SLOW_PIEZO_UPPER_LIMIT)
     locking_layout.addRow(&#39;Slow piezo mid correction pos: &#39;, self.slow_pz_mid_correction_pos_field)
     self.refcell_mid_correction_pos_field = QDoubleSpinBox()
     self.refcell_mid_correction_pos_field.setSingleStep(0.01)
-    self.refcell_mid_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-    self.refcell_mid_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    self.refcell_mid_correction_pos_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.refcell_mid_correction_pos_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
     locking_layout.addRow(&#39;RefCell mid correction pos: &#39;, self.refcell_mid_correction_pos_field)
     self.pz_eta_lower_correction_pos_field = QDoubleSpinBox()
     self.pz_eta_lower_correction_pos_field.setSingleStep(0.01)
-    self.pz_eta_lower_correction_pos_field.setMinimum(Matisse.PIEZO_ETALON_LOWER_LIMIT)
-    self.pz_eta_lower_correction_pos_field.setMaximum(Matisse.PIEZO_ETALON_UPPER_LIMIT)
+    self.pz_eta_lower_correction_pos_field.setMinimum(matisse.PIEZO_ETALON_LOWER_LIMIT)
+    self.pz_eta_lower_correction_pos_field.setMaximum(matisse.PIEZO_ETALON_UPPER_LIMIT)
     locking_layout.addRow(&#39;Piezo etalon lower correction pos: &#39;, self.pz_eta_lower_correction_pos_field)
     self.slow_pz_lower_correction_pos_field = QDoubleSpinBox()
     self.slow_pz_lower_correction_pos_field.setSingleStep(0.01)
-    self.slow_pz_lower_correction_pos_field.setMinimum(Matisse.SLOW_PIEZO_LOWER_LIMIT)
-    self.slow_pz_lower_correction_pos_field.setMaximum(Matisse.SLOW_PIEZO_UPPER_LIMIT)
+    self.slow_pz_lower_correction_pos_field.setMinimum(matisse.SLOW_PIEZO_LOWER_LIMIT)
+    self.slow_pz_lower_correction_pos_field.setMaximum(matisse.SLOW_PIEZO_UPPER_LIMIT)
     locking_layout.addRow(&#39;Slow piezo lower correction pos: &#39;, self.slow_pz_lower_correction_pos_field)
     self.refcell_lower_correction_pos_field = QDoubleSpinBox()
     self.refcell_lower_correction_pos_field.setSingleStep(0.01)
-    self.refcell_lower_correction_pos_field.setMinimum(Matisse.REFERENCE_CELL_LOWER_LIMIT)
-    self.refcell_lower_correction_pos_field.setMaximum(Matisse.REFERENCE_CELL_UPPER_LIMIT)
+    self.refcell_lower_correction_pos_field.setMinimum(matisse.REFERENCE_CELL_LOWER_LIMIT)
+    self.refcell_lower_correction_pos_field.setMaximum(matisse.REFERENCE_CELL_UPPER_LIMIT)
     locking_layout.addRow(&#39;RefCell lower correction pos: &#39;, self.refcell_lower_correction_pos_field)
     self.stabilization_rising_speed_field = QDoubleSpinBox()
     self.stabilization_rising_speed_field.setDecimals(3)
@@ -1215,6 +1291,27 @@ def cancel(self, checked):
     return locking_options</code></pre>
 </details>
 </dd>
+<dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_ple_options"><code class="name flex">
+<span>def <span class="ident">create_ple_options</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def create_ple_options(self):
+    ple_options = QGroupBox(&#39;PLE&#39;)
+    ple_layout = QFormLayout()
+    ple_options.setLayout(ple_layout)
+    self.target_temperature_field = QSpinBox()
+    self.target_temperature_field.setMinimum(CCD.MIN_TEMP)
+    self.target_temperature_field.setMaximum(CCD.MAX_TEMP)
+    ple_layout.addRow(&#39;Default target CCD temperature: &#39;, self.target_temperature_field)
+    self.temperature_tolerance_field = QDoubleSpinBox()
+    self.temperature_tolerance_field.setMinimum(3)
+    ple_layout.addRow(&#39;CCD temperature tolerance: &#39;, self.temperature_tolerance_field)
+    return ple_options</code></pre>
+</details>
+</dd>
 <dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_scan_options"><code class="name flex">
 <span>def <span class="ident">create_scan_options</span></span>(<span>self)</span>
 </code></dt>
@@ -1230,10 +1327,10 @@ def cancel(self, checked):
     self.scan_limit_field.setMinimum(0)
     scan_layout.addRow(&#39;Number of scans before retry: &#39;, self.scan_limit_field)
     self.bifi_scan_range_field = QSpinBox()
-    self.bifi_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
+    self.bifi_scan_range_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 2)
     scan_layout.addRow(&#39;BiFi normal scan range:&#39;, self.bifi_scan_range_field)
     self.bifi_small_scan_range_field = QSpinBox()
-    self.bifi_small_scan_range_field.setMaximum(Matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
+    self.bifi_small_scan_range_field.setMaximum(matisse.BIREFRINGENT_FILTER_UPPER_LIMIT / 4)
     scan_layout.addRow(&#39;BiFi small scan range:&#39;, self.bifi_small_scan_range_field)
     self.bifi_scan_step_field = QSpinBox()
     scan_layout.addRow(&#39;BiFi scan step:&#39;, self.bifi_scan_step_field)
@@ -1248,10 +1345,10 @@ def cancel(self, checked):
     self.bifi_smoothing_polyorder_field.setMinimum(1)
     scan_layout.addRow(&#39;BiFi smoothing filter polyorder: &#39;, self.bifi_smoothing_polyorder_field)
     self.thin_eta_scan_range_field = QSpinBox()
-    self.thin_eta_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 2)
+    self.thin_eta_scan_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 2)
     scan_layout.addRow(&#39;Thin etalon normal scan range:&#39;, self.thin_eta_scan_range_field)
     self.thin_eta_small_scan_range_field = QSpinBox()
-    self.thin_eta_small_scan_range_field.setMaximum(Matisse.THIN_ETALON_UPPER_LIMIT / 4)
+    self.thin_eta_small_scan_range_field.setMaximum(matisse.THIN_ETALON_UPPER_LIMIT / 4)
     scan_layout.addRow(&#39;Thin etalon small scan range:&#39;, self.thin_eta_small_scan_range_field)
     self.thin_eta_scan_step_field = QSpinBox()
     scan_layout.addRow(&#39;Thin etalon scan step:&#39;, self.thin_eta_scan_step_field)
@@ -1341,10 +1438,12 @@ def save_configuration(self, checked):
     cfg.set(cfg.WAVELENGTH_UPPER_LIMIT, self.wavelength_upper_limit_field.value())
     cfg.set(cfg.BIFI_RESET_POS, self.bifi_reset_pos_field.value())
     cfg.set(cfg.THIN_ETA_RESET_POS, self.thin_eta_reset_pos_field.value())
+    cfg.set(cfg.THIN_ETA_RAND_RANGE, self.thin_eta_rand_range_field.value())
 
     cfg.set(cfg.REPORT_EVENTS, self.report_events_field.isChecked())
 
     cfg.set(cfg.SCAN_LIMIT, self.scan_limit_field.value())
+
     cfg.set(cfg.BIFI_SCAN_RANGE, self.bifi_scan_range_field.value())
     cfg.set(cfg.BIFI_SCAN_RANGE_SMALL, self.bifi_small_scan_range_field.value())
     cfg.set(cfg.BIFI_SCAN_STEP, self.bifi_scan_step_field.value())
@@ -1374,6 +1473,11 @@ def save_configuration(self, checked):
     cfg.set(cfg.FAST_PZ_SETPOINT_NUM_POINTS, self.fast_pz_setpoint_num_points_field.value())
     cfg.set(cfg.FAST_PZ_SETPOINT_NUM_SCANS, self.fast_pz_setpoint_num_scans_field.value())
 
+    cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
+    cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
+    cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
+    cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+
     cfg.set(cfg.CORRECTION_LIMIT, self.auto_correction_limit_field.value())
 
     cfg.set(cfg.PIEZO_ETA_UPPER_CORRECTION_POS, self.pz_eta_upper_correction_pos_field.value())
@@ -1386,10 +1490,8 @@ def save_configuration(self, checked):
     cfg.set(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS, self.slow_pz_lower_correction_pos_field.value())
     cfg.set(cfg.REFCELL_LOWER_CORRECTION_POS, self.refcell_lower_correction_pos_field.value())
 
-    cfg.set(cfg.STABILIZATION_RISING_SPEED, self.stabilization_rising_speed_field.value())
-    cfg.set(cfg.STABILIZATION_FALLING_SPEED, self.stabilization_falling_speed_field.value())
-    cfg.set(cfg.STABILIZATION_DELAY, self.stabilization_delay_field.value())
-    cfg.set(cfg.STABILIZATION_TOLERANCE, self.stabilization_tolerance_field.value())
+    cfg.set(cfg.PLE_TARGET_TEMPERATURE, self.target_temperature_field.value())
+    cfg.set(cfg.PLE_TEMPERATURE_TOLERANCE, self.temperature_tolerance_field.value())
 
     cfg.save()
     self.close()</code></pre>
@@ -1416,10 +1518,12 @@ def save_configuration(self, checked):
     self.wavelength_upper_limit_field.setValue(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
     self.bifi_reset_pos_field.setValue(cfg.get(cfg.BIFI_RESET_POS))
     self.thin_eta_reset_pos_field.setValue(cfg.get(cfg.THIN_ETA_RESET_POS))
+    self.thin_eta_rand_range_field.setValue(cfg.get(cfg.THIN_ETA_RAND_RANGE))
 
     self.report_events_field.setChecked(cfg.get(cfg.REPORT_EVENTS))
 
     self.scan_limit_field.setValue(cfg.get(cfg.SCAN_LIMIT))
+
     self.bifi_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE))
     self.bifi_small_scan_range_field.setValue(cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
     self.bifi_scan_step_field.setValue(cfg.get(cfg.BIFI_SCAN_STEP))
@@ -1449,6 +1553,11 @@ def save_configuration(self, checked):
     self.fast_pz_setpoint_num_points_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_POINTS))
     self.fast_pz_setpoint_num_scans_field.setValue(cfg.get(cfg.FAST_PZ_SETPOINT_NUM_SCANS))
 
+    self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
+    self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
+    self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
+    self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))
+
     self.auto_correction_limit_field.setValue(cfg.get(cfg.CORRECTION_LIMIT))
 
     self.pz_eta_upper_correction_pos_field.setValue(cfg.get(cfg.PIEZO_ETA_UPPER_CORRECTION_POS))
@@ -1461,10 +1570,8 @@ def save_configuration(self, checked):
     self.slow_pz_lower_correction_pos_field.setValue(cfg.get(cfg.SLOW_PIEZO_LOWER_CORRECTION_POS))
     self.refcell_lower_correction_pos_field.setValue(cfg.get(cfg.REFCELL_LOWER_CORRECTION_POS))
 
-    self.stabilization_rising_speed_field.setValue(cfg.get(cfg.STABILIZATION_RISING_SPEED))
-    self.stabilization_falling_speed_field.setValue(cfg.get(cfg.STABILIZATION_FALLING_SPEED))
-    self.stabilization_delay_field.setValue(cfg.get(cfg.STABILIZATION_DELAY))
-    self.stabilization_tolerance_field.setValue(cfg.get(cfg.STABILIZATION_TOLERANCE))</code></pre>
+    self.target_temperature_field.setValue(cfg.get(cfg.PLE_TARGET_TEMPERATURE))
+    self.temperature_tolerance_field.setValue(cfg.get(cfg.PLE_TEMPERATURE_TOLERANCE))</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.set_tooltips"><code class="name flex">
@@ -1485,6 +1592,7 @@ def save_configuration(self, checked):
 
     self.bifi_reset_pos_field.setToolTip(tooltips.BIFI_RESET_POS)
     self.thin_eta_reset_pos_field.setToolTip(tooltips.THIN_ETA_RESET_POS)
+    self.thin_eta_rand_range_field.setToolTip(tooltips.THIN_ETA_RAND_RANGE)
 
     self.report_events_field.setToolTip(tooltips.REPORT_EVENTS)
 
@@ -1529,7 +1637,10 @@ def save_configuration(self, checked):
     self.stabilization_delay_field.setToolTip(tooltips.STABILIZATION_DELAY)
     self.stabilization_tolerance_field.setToolTip(tooltips.STABILIZATION_TOLERANCE)
 
-    self.auto_correction_limit_field.setToolTip(tooltips.CORRECTION_LIMIT)</code></pre>
+    self.auto_correction_limit_field.setToolTip(tooltips.CORRECTION_LIMIT)
+
+    self.target_temperature_field.setToolTip(tooltips.PLE_TARGET_TEMPERATURE)
+    self.temperature_tolerance_field.setToolTip(tooltips.PLE_TEMPERATURE_TOLERANCE)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1564,6 +1675,7 @@ def save_configuration(self, checked):
 <li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_general_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_general_options">create_general_options</a></code></li>
 <li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_gui_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_gui_options">create_gui_options</a></code></li>
 <li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_locking_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_locking_options">create_locking_options</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_ple_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_ple_options">create_ple_options</a></code></li>
 <li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_scan_options" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.create_scan_options">create_scan_options</a></code></li>
 <li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.ensure_odd_value" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.ensure_odd_value">ensure_odd_value</a></code></li>
 <li><code><a title="matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.restore_defaults" href="#matisse_controller.gui.dialogs.configuration_dialog.ConfigurationDialog.restore_defaults">restore_defaults</a></code></li>

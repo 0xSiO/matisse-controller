@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>matisse_controller.gui.dialogs.ple_scan_dialog API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>matisse_controller.gui.dialogs.ple_scan_dialog</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtWidgets import *
+
+import matisse_controller.config as cfg
+import matisse_controller.shamrock_ple.ple as ple
+
+
+class PLEScanDialog(QDialog):
+    &#34;&#34;&#34;A dialog for setting options needed to perform a PLE scan.&#34;&#34;&#34;
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowTitle(&#39;PLE Scan Parameters&#39;)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.setup_form()
+        self.setup_slots()
+        self.add_buttons()
+        self.setMinimumWidth(400)
+        self.scan_location = None
+
+    def setup_form(self):
+        form_layout = QFormLayout()
+        self.scan_name_field = QLineEdit()
+        form_layout.addRow(&#39;Scan name: &#39;, self.scan_name_field)
+
+        scan_location_layout = QHBoxLayout()
+        self.scan_location_button = QPushButton(&#39;Select Folder&#39;)
+        self.scan_location_label = QLabel()
+        scan_location_layout.addWidget(self.scan_location_button)
+        scan_location_layout.addWidget(self.scan_location_label)
+        form_layout.addRow(&#39;Scan Location: &#39;, scan_location_layout)
+
+        self.wavelength_start_field = QDoubleSpinBox()
+        self.wavelength_start_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.wavelength_start_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.wavelength_start_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.wavelength_start_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        form_layout.addRow(&#39;Wavelength start (nm): &#39;, self.wavelength_start_field)
+        self.wavelength_end_field = QDoubleSpinBox()
+        self.wavelength_end_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.wavelength_end_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.wavelength_end_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.wavelength_end_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        form_layout.addRow(&#39;Wavelength end (nm): &#39;, self.wavelength_end_field)
+        self.wavelength_step_field = QDoubleSpinBox()
+        self.wavelength_step_field.setMinimum(0)
+        self.wavelength_step_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.wavelength_step_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        form_layout.addRow(&#39;Wavelength step (nm): &#39;, self.wavelength_step_field)
+        self.exposure_time_field = QDoubleSpinBox()
+        self.exposure_time_field.setMinimum(0)
+        self.exposure_time_field.setDecimals(4)
+        form_layout.addRow(&#39;Exposure time (s): &#39;, self.exposure_time_field)
+        self.layout.addLayout(form_layout)
+
+        # We need to make sure the Andor libraries are loaded to access the spectrometer
+        ple.PLE.load_andor_libs()
+
+        self.center_wavelength_field = QDoubleSpinBox()
+        self.center_wavelength_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.center_wavelength_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.center_wavelength_field.setValue(ple.shamrock.get_center_wavelength())
+        form_layout.addRow(&#39;Center wavelength (nm): &#39;, self.center_wavelength_field)
+
+        self.grating_grooves_field = QComboBox()
+        for groove_num in ple.shamrock.gratings.keys():
+            self.grating_grooves_field.addItem(f&#34;{groove_num}&#34;, ple.shamrock.gratings[groove_num])
+        self.grating_grooves_field.setCurrentText(str(ple.shamrock.get_grating_grooves()))
+        form_layout.addRow(&#39;Grating grooves: &#39;, self.grating_grooves_field)
+
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        form_layout.addRow(line)
+
+        self.plot_analysis_field = QCheckBox()
+        form_layout.addRow(&#39;Plot analysis in real time? &#39;, self.plot_analysis_field)
+        self.integration_start_field = QDoubleSpinBox()
+        self.integration_start_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.integration_start_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.integration_start_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_start_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_start_field.setEnabled(False)
+        form_layout.addRow(&#39;Integration start (nm): &#39;, self.integration_start_field)
+        self.integration_end_field = QDoubleSpinBox()
+        self.integration_end_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.integration_end_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.integration_end_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_end_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_end_field.setEnabled(False)
+        form_layout.addRow(&#39;Integration end (nm): &#39;, self.integration_end_field)
+
+    def setup_slots(self):
+        self.scan_location_button.clicked.connect(self.select_scan_location)
+        self.plot_analysis_field.stateChanged.connect(self.toggle_integration_fields)
+
+    def add_buttons(self):
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.button(QDialogButtonBox.Ok).clicked.connect(self.accept)
+        button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.reject)
+        self.layout.addWidget(button_box)
+
+    def get_form_data(self):
+        return {
+            # The keys here MUST match parameter names in the PLE class
+            &#39;scan_name&#39;: self.scan_name_field.text(),
+            &#39;scan_location&#39;: self.scan_location,
+            &#39;initial_wavelength&#39;: self.wavelength_start_field.value(),
+            &#39;final_wavelength&#39;: self.wavelength_end_field.value(),
+            &#39;step&#39;: self.wavelength_step_field.value(),
+            &#39;exposure_time&#39;: self.exposure_time_field.value(),
+            &#39;center_wavelength&#39;: self.center_wavelength_field.value(),
+            &#39;grating_grooves&#39;: int(self.grating_grooves_field.currentText()),
+            &#39;plot_analysis&#39;: self.plot_analysis_field.isChecked(),
+            &#39;integration_start&#39;: self.integration_start_field.value(),
+            &#39;integration_end&#39;: self.integration_end_field.value()
+        }
+
+    @pyqtSlot(bool)
+    def select_scan_location(self, checked):
+        self.scan_location = QFileDialog.getExistingDirectory(None, &#39;Select Folder&#39;, &#39;&#39;, QFileDialog.ShowDirsOnly |
+                                                              QFileDialog.DontResolveSymlinks)
+        self.scan_location_label.setText(self.scan_location)
+
+    @pyqtSlot(int)
+    def toggle_integration_fields(self, state):
+        self.integration_start_field.setEnabled(state == Qt.Checked)
+        self.integration_end_field.setEnabled(state == Qt.Checked)
+
+
+def main():
+    app = QApplication([])
+    d = PLEScanDialog()
+    if d.exec() == QDialog.Accepted:
+        print(d.get_form_data())
+    app.exit()
+
+
+if __name__ == &#39;__main__&#39;:
+    main()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="matisse_controller.gui.dialogs.ple_scan_dialog.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def main():
+    app = QApplication([])
+    d = PLEScanDialog()
+    if d.exec() == QDialog.Accepted:
+        print(d.get_form_data())
+    app.exit()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog"><code class="flex name class">
+<span>class <span class="ident">PLEScanDialog</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A dialog for setting options needed to perform a PLE scan.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class PLEScanDialog(QDialog):
+    &#34;&#34;&#34;A dialog for setting options needed to perform a PLE scan.&#34;&#34;&#34;
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowTitle(&#39;PLE Scan Parameters&#39;)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.setup_form()
+        self.setup_slots()
+        self.add_buttons()
+        self.setMinimumWidth(400)
+        self.scan_location = None
+
+    def setup_form(self):
+        form_layout = QFormLayout()
+        self.scan_name_field = QLineEdit()
+        form_layout.addRow(&#39;Scan name: &#39;, self.scan_name_field)
+
+        scan_location_layout = QHBoxLayout()
+        self.scan_location_button = QPushButton(&#39;Select Folder&#39;)
+        self.scan_location_label = QLabel()
+        scan_location_layout.addWidget(self.scan_location_button)
+        scan_location_layout.addWidget(self.scan_location_label)
+        form_layout.addRow(&#39;Scan Location: &#39;, scan_location_layout)
+
+        self.wavelength_start_field = QDoubleSpinBox()
+        self.wavelength_start_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.wavelength_start_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.wavelength_start_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.wavelength_start_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        form_layout.addRow(&#39;Wavelength start (nm): &#39;, self.wavelength_start_field)
+        self.wavelength_end_field = QDoubleSpinBox()
+        self.wavelength_end_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.wavelength_end_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.wavelength_end_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.wavelength_end_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        form_layout.addRow(&#39;Wavelength end (nm): &#39;, self.wavelength_end_field)
+        self.wavelength_step_field = QDoubleSpinBox()
+        self.wavelength_step_field.setMinimum(0)
+        self.wavelength_step_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.wavelength_step_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        form_layout.addRow(&#39;Wavelength step (nm): &#39;, self.wavelength_step_field)
+        self.exposure_time_field = QDoubleSpinBox()
+        self.exposure_time_field.setMinimum(0)
+        self.exposure_time_field.setDecimals(4)
+        form_layout.addRow(&#39;Exposure time (s): &#39;, self.exposure_time_field)
+        self.layout.addLayout(form_layout)
+
+        # We need to make sure the Andor libraries are loaded to access the spectrometer
+        ple.PLE.load_andor_libs()
+
+        self.center_wavelength_field = QDoubleSpinBox()
+        self.center_wavelength_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.center_wavelength_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.center_wavelength_field.setValue(ple.shamrock.get_center_wavelength())
+        form_layout.addRow(&#39;Center wavelength (nm): &#39;, self.center_wavelength_field)
+
+        self.grating_grooves_field = QComboBox()
+        for groove_num in ple.shamrock.gratings.keys():
+            self.grating_grooves_field.addItem(f&#34;{groove_num}&#34;, ple.shamrock.gratings[groove_num])
+        self.grating_grooves_field.setCurrentText(str(ple.shamrock.get_grating_grooves()))
+        form_layout.addRow(&#39;Grating grooves: &#39;, self.grating_grooves_field)
+
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        form_layout.addRow(line)
+
+        self.plot_analysis_field = QCheckBox()
+        form_layout.addRow(&#39;Plot analysis in real time? &#39;, self.plot_analysis_field)
+        self.integration_start_field = QDoubleSpinBox()
+        self.integration_start_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.integration_start_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.integration_start_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_start_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_start_field.setEnabled(False)
+        form_layout.addRow(&#39;Integration start (nm): &#39;, self.integration_start_field)
+        self.integration_end_field = QDoubleSpinBox()
+        self.integration_end_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+        self.integration_end_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+        self.integration_end_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_end_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+        self.integration_end_field.setEnabled(False)
+        form_layout.addRow(&#39;Integration end (nm): &#39;, self.integration_end_field)
+
+    def setup_slots(self):
+        self.scan_location_button.clicked.connect(self.select_scan_location)
+        self.plot_analysis_field.stateChanged.connect(self.toggle_integration_fields)
+
+    def add_buttons(self):
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.button(QDialogButtonBox.Ok).clicked.connect(self.accept)
+        button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.reject)
+        self.layout.addWidget(button_box)
+
+    def get_form_data(self):
+        return {
+            # The keys here MUST match parameter names in the PLE class
+            &#39;scan_name&#39;: self.scan_name_field.text(),
+            &#39;scan_location&#39;: self.scan_location,
+            &#39;initial_wavelength&#39;: self.wavelength_start_field.value(),
+            &#39;final_wavelength&#39;: self.wavelength_end_field.value(),
+            &#39;step&#39;: self.wavelength_step_field.value(),
+            &#39;exposure_time&#39;: self.exposure_time_field.value(),
+            &#39;center_wavelength&#39;: self.center_wavelength_field.value(),
+            &#39;grating_grooves&#39;: int(self.grating_grooves_field.currentText()),
+            &#39;plot_analysis&#39;: self.plot_analysis_field.isChecked(),
+            &#39;integration_start&#39;: self.integration_start_field.value(),
+            &#39;integration_end&#39;: self.integration_end_field.value()
+        }
+
+    @pyqtSlot(bool)
+    def select_scan_location(self, checked):
+        self.scan_location = QFileDialog.getExistingDirectory(None, &#39;Select Folder&#39;, &#39;&#39;, QFileDialog.ShowDirsOnly |
+                                                              QFileDialog.DontResolveSymlinks)
+        self.scan_location_label.setText(self.scan_location)
+
+    @pyqtSlot(int)
+    def toggle_integration_fields(self, state):
+        self.integration_start_field.setEnabled(state == Qt.Checked)
+        self.integration_end_field.setEnabled(state == Qt.Checked)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QDialog</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.add_buttons"><code class="name flex">
+<span>def <span class="ident">add_buttons</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def add_buttons(self):
+    button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+    button_box.button(QDialogButtonBox.Ok).clicked.connect(self.accept)
+    button_box.button(QDialogButtonBox.Cancel).clicked.connect(self.reject)
+    self.layout.addWidget(button_box)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.get_form_data"><code class="name flex">
+<span>def <span class="ident">get_form_data</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def get_form_data(self):
+    return {
+        # The keys here MUST match parameter names in the PLE class
+        &#39;scan_name&#39;: self.scan_name_field.text(),
+        &#39;scan_location&#39;: self.scan_location,
+        &#39;initial_wavelength&#39;: self.wavelength_start_field.value(),
+        &#39;final_wavelength&#39;: self.wavelength_end_field.value(),
+        &#39;step&#39;: self.wavelength_step_field.value(),
+        &#39;exposure_time&#39;: self.exposure_time_field.value(),
+        &#39;center_wavelength&#39;: self.center_wavelength_field.value(),
+        &#39;grating_grooves&#39;: int(self.grating_grooves_field.currentText()),
+        &#39;plot_analysis&#39;: self.plot_analysis_field.isChecked(),
+        &#39;integration_start&#39;: self.integration_start_field.value(),
+        &#39;integration_end&#39;: self.integration_end_field.value()
+    }</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.select_scan_location"><code class="name flex">
+<span>def <span class="ident">select_scan_location</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@pyqtSlot(bool)
+def select_scan_location(self, checked):
+    self.scan_location = QFileDialog.getExistingDirectory(None, &#39;Select Folder&#39;, &#39;&#39;, QFileDialog.ShowDirsOnly |
+                                                          QFileDialog.DontResolveSymlinks)
+    self.scan_location_label.setText(self.scan_location)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.setup_form"><code class="name flex">
+<span>def <span class="ident">setup_form</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def setup_form(self):
+    form_layout = QFormLayout()
+    self.scan_name_field = QLineEdit()
+    form_layout.addRow(&#39;Scan name: &#39;, self.scan_name_field)
+
+    scan_location_layout = QHBoxLayout()
+    self.scan_location_button = QPushButton(&#39;Select Folder&#39;)
+    self.scan_location_label = QLabel()
+    scan_location_layout.addWidget(self.scan_location_button)
+    scan_location_layout.addWidget(self.scan_location_label)
+    form_layout.addRow(&#39;Scan Location: &#39;, scan_location_layout)
+
+    self.wavelength_start_field = QDoubleSpinBox()
+    self.wavelength_start_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+    self.wavelength_start_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+    self.wavelength_start_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+    self.wavelength_start_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+    form_layout.addRow(&#39;Wavelength start (nm): &#39;, self.wavelength_start_field)
+    self.wavelength_end_field = QDoubleSpinBox()
+    self.wavelength_end_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+    self.wavelength_end_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+    self.wavelength_end_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+    self.wavelength_end_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+    form_layout.addRow(&#39;Wavelength end (nm): &#39;, self.wavelength_end_field)
+    self.wavelength_step_field = QDoubleSpinBox()
+    self.wavelength_step_field.setMinimum(0)
+    self.wavelength_step_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+    self.wavelength_step_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+    form_layout.addRow(&#39;Wavelength step (nm): &#39;, self.wavelength_step_field)
+    self.exposure_time_field = QDoubleSpinBox()
+    self.exposure_time_field.setMinimum(0)
+    self.exposure_time_field.setDecimals(4)
+    form_layout.addRow(&#39;Exposure time (s): &#39;, self.exposure_time_field)
+    self.layout.addLayout(form_layout)
+
+    # We need to make sure the Andor libraries are loaded to access the spectrometer
+    ple.PLE.load_andor_libs()
+
+    self.center_wavelength_field = QDoubleSpinBox()
+    self.center_wavelength_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+    self.center_wavelength_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+    self.center_wavelength_field.setValue(ple.shamrock.get_center_wavelength())
+    form_layout.addRow(&#39;Center wavelength (nm): &#39;, self.center_wavelength_field)
+
+    self.grating_grooves_field = QComboBox()
+    for groove_num in ple.shamrock.gratings.keys():
+        self.grating_grooves_field.addItem(f&#34;{groove_num}&#34;, ple.shamrock.gratings[groove_num])
+    self.grating_grooves_field.setCurrentText(str(ple.shamrock.get_grating_grooves()))
+    form_layout.addRow(&#39;Grating grooves: &#39;, self.grating_grooves_field)
+
+    line = QFrame()
+    line.setFrameShape(QFrame.HLine)
+    line.setFrameShadow(QFrame.Sunken)
+    form_layout.addRow(line)
+
+    self.plot_analysis_field = QCheckBox()
+    form_layout.addRow(&#39;Plot analysis in real time? &#39;, self.plot_analysis_field)
+    self.integration_start_field = QDoubleSpinBox()
+    self.integration_start_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+    self.integration_start_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+    self.integration_start_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+    self.integration_start_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+    self.integration_start_field.setEnabled(False)
+    form_layout.addRow(&#39;Integration start (nm): &#39;, self.integration_start_field)
+    self.integration_end_field = QDoubleSpinBox()
+    self.integration_end_field.setMinimum(cfg.get(cfg.WAVELENGTH_LOWER_LIMIT))
+    self.integration_end_field.setMaximum(cfg.get(cfg.WAVELENGTH_UPPER_LIMIT))
+    self.integration_end_field.setDecimals(cfg.get(cfg.WAVEMETER_PRECISION))
+    self.integration_end_field.setSingleStep(10 ** -cfg.get(cfg.WAVEMETER_PRECISION))
+    self.integration_end_field.setEnabled(False)
+    form_layout.addRow(&#39;Integration end (nm): &#39;, self.integration_end_field)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.setup_slots"><code class="name flex">
+<span>def <span class="ident">setup_slots</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def setup_slots(self):
+    self.scan_location_button.clicked.connect(self.select_scan_location)
+    self.plot_analysis_field.stateChanged.connect(self.toggle_integration_fields)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.toggle_integration_fields"><code class="name flex">
+<span>def <span class="ident">toggle_integration_fields</span></span>(<span>self, state)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@pyqtSlot(int)
+def toggle_integration_fields(self, state):
+    self.integration_start_field.setEnabled(state == Qt.Checked)
+    self.integration_end_field.setEnabled(state == Qt.Checked)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="matisse_controller.gui.dialogs" href="index.html">matisse_controller.gui.dialogs</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="matisse_controller.gui.dialogs.ple_scan_dialog.main" href="#matisse_controller.gui.dialogs.ple_scan_dialog.main">main</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog" href="#matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog">PLEScanDialog</a></code></h4>
+<ul class="">
+<li><code><a title="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.add_buttons" href="#matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.add_buttons">add_buttons</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.get_form_data" href="#matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.get_form_data">get_form_data</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.select_scan_location" href="#matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.select_scan_location">select_scan_location</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.setup_form" href="#matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.setup_form">setup_form</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.setup_slots" href="#matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.setup_slots">setup_slots</a></code></li>
+<li><code><a title="matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.toggle_integration_fields" href="#matisse_controller.gui.dialogs.ple_scan_dialog.PLEScanDialog.toggle_integration_fields">toggle_integration_fields</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

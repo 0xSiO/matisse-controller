@@ -24,9 +24,9 @@
 <summary>Source code</summary>
 <pre><code class="python">import copy
 import json
-import operator
-from functools import reduce
 from os import path
+
+import glom
 
 CONFIGURATION = {}
 DEFAULTS = {
@@ -37,16 +37,16 @@ DEFAULTS = {
             &#39;thin_etalon&#39;: 12_000
         },
         &#39;wavelength&#39;: {
-            &#39;lower_limit&#39;: 700,
-            &#39;upper_limit&#39;: 800
+            &#39;lower_limit&#39;: 720,
+            &#39;upper_limit&#39;: 900
         },
         &#39;report_events&#39;: False,
-        &#39;component_limit_offset&#39;: 0.05,
+        &#39;component_limit_offset&#39;: 0.055,
         &#39;scanning&#39;: {
             &#39;limit&#39;: 15,
             &#39;birefringent_filter&#39;: {
                 &#39;range&#39;: 400,
-                &#39;range_small&#39;: 200,  # TODO: Check the &#39;small&#39; scan ranges
+                &#39;range_small&#39;: 200,
                 &#39;step&#39;: 4,
                 &#39;show_plots&#39;: True,
                 &#39;smoothing_filter&#39;: {
@@ -57,21 +57,21 @@ DEFAULTS = {
             &#39;thin_etalon&#39;: {
                 &#39;range&#39;: 2000,
                 &#39;range_small&#39;: 1000,
+                &#39;randomization_range&#39;: 500,
                 &#39;step&#39;: 20,
-                &#39;nudge&#39;: 50,  # TODO: Confirm this parameter is ok to use, flank seems to default to &#39;left&#39;?
+                &#39;nudge&#39;: -50,
                 &#39;show_plots&#39;: True,
                 &#39;smoothing_filter&#39;: {
                     &#39;window&#39;: 21,
                     &#39;polyorder&#39;: 3
                 },
-                &#39;max_std_dev_allowed&#39;: 2.25
+                &#39;max_std_dev_allowed&#39;: 6.25
             },
             &#39;refcell&#39;: {
                 &#39;rising_speed&#39;: 0.005,
                 &#39;falling_speed&#39;: 0.005
             },
             &#39;wavelength_drift&#39;: {
-                # TODO: Tweak these defaults
                 &#39;large&#39;: 0.4,
                 &#39;medium&#39;: 0.2,
                 &#39;small&#39;: 0.02
@@ -95,13 +95,13 @@ DEFAULTS = {
         &#39;correction&#39;: {
             &#39;limit&#39;: 10,
             &#39;piezo_etalon_pos_upper&#39;: 0.8,
-            &#39;slow_piezo_pos_upper&#39;: 0.5,  # TODO: Not used yet
+            &#39;slow_piezo_pos_upper&#39;: 0.5,  # Not used yet
             &#39;refcell_pos_upper&#39;: 0.5,
             &#39;piezo_etalon_pos_mid&#39;: 0.0,
             &#39;slow_piezo_pos_mid&#39;: 0.35,
             &#39;refcell_pos_mid&#39;: 0.35,
             &#39;piezo_etalon_pos_lower&#39;: -0.8,
-            &#39;slow_piezo_pos_lower&#39;: 0.2,  # TODO: Not used yet
+            &#39;slow_piezo_pos_lower&#39;: 0.2,  # Not used yet
             &#39;refcell_pos_lower&#39;: 0.2
         }
     },
@@ -109,6 +109,10 @@ DEFAULTS = {
         &#39;port&#39;: &#39;COM5&#39;,
         &#39;precision&#39;: 3,
         &#39;measurement_delay&#39;: 0.5
+    },
+    &#39;ple&#39;: {
+        &#39;target_temperature&#39;: -70,
+        &#39;temperature_tolerance&#39;: 3.25
     },
     &#39;gui&#39;: {
         &#39;status_monitor&#39;: {
@@ -121,17 +125,12 @@ DEFAULTS = {
 
 def get(name: str):
     &#34;&#34;&#34;Fetch the global configuration value represented by the specified name.&#34;&#34;&#34;
-    keys = name.split(&#39;.&#39;)
-    return reduce(operator.getitem, keys, CONFIGURATION)
+    return glom.glom(CONFIGURATION, name)
 
 
 def set(name: str, value):
     &#34;&#34;&#34;Set the global configuration value represented by the specified name.&#34;&#34;&#34;
-    keys = name.split(&#39;.&#39;)
-    cfg = CONFIGURATION
-    for key in keys[:-1]:
-        cfg = cfg.get(key)
-    cfg[keys[-1]] = value
+    glom.assign(CONFIGURATION, name, value, missing=dict)
 
 
 def load(filename: str):
@@ -175,8 +174,7 @@ else:
 <summary>Source code</summary>
 <pre><code class="python">def get(name: str):
     &#34;&#34;&#34;Fetch the global configuration value represented by the specified name.&#34;&#34;&#34;
-    keys = name.split(&#39;.&#39;)
-    return reduce(operator.getitem, keys, CONFIGURATION)</code></pre>
+    return glom.glom(CONFIGURATION, name)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.config.configuration.load"><code class="name flex">
@@ -228,11 +226,7 @@ else:
 <summary>Source code</summary>
 <pre><code class="python">def set(name: str, value):
     &#34;&#34;&#34;Set the global configuration value represented by the specified name.&#34;&#34;&#34;
-    keys = name.split(&#39;.&#39;)
-    cfg = CONFIGURATION
-    for key in keys[:-1]:
-        cfg = cfg.get(key)
-    cfg[keys[-1]] = value</code></pre>
+    glom.assign(CONFIGURATION, name, value, missing=dict)</code></pre>
 </details>
 </dd>
 </dl>

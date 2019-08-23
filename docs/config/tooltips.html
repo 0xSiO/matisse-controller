@@ -32,6 +32,7 @@ STATUS_MONITOR_FONT_SIZE = &#39;The font size of the status monitor at the botto
 
 BIFI_RESET_POS = &#39;The position at which to set the birefringent motor during a reset operation.&#39;
 THIN_ETA_RESET_POS = &#39;The position at which to set the thin etalon motor during a reset operation, or before a large scan.&#39;
+THIN_ETA_RAND_RANGE = &#39;Limit for range of thin etalon randomization away from the reset position when starting the wavelength-setting process.&#39;
 
 REPORT_EVENTS = &#39;Should we log important events (like an automatic correction while stabilizing) to a CSV file?&#39;
 
@@ -76,7 +77,10 @@ STABILIZATION_FALLING_SPEED = &#39;The speed at which the RefCell decreases when
 STABILIZATION_DELAY = &#39;How long to wait, in seconds, between each auto-stabilization loop.&#39;
 STABILIZATION_TOLERANCE = &#39;How much drift is tolerated, in nanometers, when auto-stabilizing.&#39;
 
-CORRECTION_LIMIT = &#39;Number of auto-corrections allowed during stabilization before restarting the wavelength-setting process.&#39;</code></pre>
+CORRECTION_LIMIT = &#39;Number of auto-corrections allowed during stabilization before restarting the wavelength-setting process.&#39;
+
+PLE_TARGET_TEMPERATURE = &#39;Default target temperature at which to cool down the CCD camera.&#39;
+PLE_TEMPERATURE_TOLERANCE = &#39;How close to the target temperature should we get, in degrees, before continuing with a CCD-related task?&#39;</code></pre>
 </details>
 </section>
 <section>
