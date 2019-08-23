@@ -25,7 +25,9 @@
 <summary>Source code</summary>
 <pre><code class="python">&#34;&#34;&#34;Utility functions and decorators for use in the GUI.&#34;&#34;&#34;
 
+import traceback
 import types
+from concurrent.futures import Future
 from functools import wraps
 
 from PyQt5.QtCore import pyqtSlot
@@ -83,6 +85,19 @@ def handled_slot(*args):
         return handled_function(func)
 
     return slot_wrapper
+
+
+def raise_error_from_future(future: Future):
+    &#34;&#34;&#34;
+    If you&#39;d lke to log errors that occur in thread pools, call `add_done_callback` on the future returned from
+    `ThreadPoolExecutor.submit` and pass in this function.
+    &#34;&#34;&#34;
+    async_task_error: Exception = future.exception()
+    if async_task_error:
+        # Using the error_dialog method here seems to just hang the application forever.
+        # Workaround: log error, make a noise, alert the user, and hope for the best
+        message = f&#34;An error occurred while running an asynchronous task: &lt;pre&gt;{traceback.format_exc()}&lt;/pre&gt;&#34;
+        print(red_text(message))
 
 
 # Text formatting utilities
@@ -220,6 +235,27 @@ Type arguments to the slot are specified just like in pyqtSlot.</p>
     return f&#34;&lt;span style=&#39;color:orange&#39;&gt;{text}&lt;/span&gt;&#34;</code></pre>
 </details>
 </dd>
+<dt id="matisse_controller.gui.utils.raise_error_from_future"><code class="name flex">
+<span>def <span class="ident">raise_error_from_future</span></span>(<span>future)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>If you'd lke to log errors that occur in thread pools, call <code>add_done_callback</code> on the future returned from
+<code>ThreadPoolExecutor.submit</code> and pass in this function.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def raise_error_from_future(future: Future):
+    &#34;&#34;&#34;
+    If you&#39;d lke to log errors that occur in thread pools, call `add_done_callback` on the future returned from
+    `ThreadPoolExecutor.submit` and pass in this function.
+    &#34;&#34;&#34;
+    async_task_error: Exception = future.exception()
+    if async_task_error:
+        # Using the error_dialog method here seems to just hang the application forever.
+        # Workaround: log error, make a noise, alert the user, and hope for the best
+        message = f&#34;An error occurred while running an asynchronous task: &lt;pre&gt;{traceback.format_exc()}&lt;/pre&gt;&#34;
+        print(red_text(message))</code></pre>
+</details>
+</dd>
 <dt id="matisse_controller.gui.utils.red_text"><code class="name flex">
 <span>def <span class="ident">red_text</span></span>(<span>text)</span>
 </code></dt>
@@ -253,6 +289,7 @@ Type arguments to the slot are specified just like in pyqtSlot.</p>
 <li><code><a title="matisse_controller.gui.utils.handled_function" href="#matisse_controller.gui.utils.handled_function">handled_function</a></code></li>
 <li><code><a title="matisse_controller.gui.utils.handled_slot" href="#matisse_controller.gui.utils.handled_slot">handled_slot</a></code></li>
 <li><code><a title="matisse_controller.gui.utils.orange_text" href="#matisse_controller.gui.utils.orange_text">orange_text</a></code></li>
+<li><code><a title="matisse_controller.gui.utils.raise_error_from_future" href="#matisse_controller.gui.utils.raise_error_from_future">raise_error_from_future</a></code></li>
 <li><code><a title="matisse_controller.gui.utils.red_text" href="#matisse_controller.gui.utils.red_text">red_text</a></code></li>
 </ul>
 </li>

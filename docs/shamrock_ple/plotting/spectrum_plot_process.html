@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.6.3" />
-<title>matisse_controller.gui.logging_stream API documentation</title>
+<title>matisse_controller.shamrock_ple.plotting.spectrum_plot_process API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,25 +17,53 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>matisse_controller.gui.logging_stream</code></h1>
+<h1 class="title">Module <code>matisse_controller.shamrock_ple.plotting.spectrum_plot_process</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">from queue import Queue
+<pre><code class="python">from multiprocessing import Process
+from multiprocessing.connection import Connection
+
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 
-class LoggingStream:
-    &#34;&#34;&#34;A basic stream-like class with a message queue, meant to replace sys.stdout for logging purposes.&#34;&#34;&#34;
+class SpectrumPlotProcess(Process):
+    def __init__(self, wavelengths=None, counts=None, pipe: Connection = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.wavelengths = wavelengths
+        self.counts = counts
+        self.pipe = pipe
+        self.figure: Figure = plt.figure(&#39;CCD Acquisition&#39;)
+        self.axes: Axes = plt.gca()
+        self.axes.set_title(&#39;Counts vs. Wavelength&#39;)
+        self.axes.set_xlabel(&#39;Wavelength (nm)&#39;)
+        self.axes.set_ylabel(&#39;Counts&#39;)
 
-    def __init__(self, queue: Queue):
-        self.queue = queue
+    def run(self):
+        if self.pipe:
+            try:
+                while self.pipe.poll(timeout=None):
+                    data = self.pipe.recv()
+                    if not data:
+                        break
+                    else:
+                        self.plot_data(*data)
+            except BrokenPipeError:
+                pass
+            except EOFError:
+                pass
+        else:
+            self.plot_data(self.wavelengths, self.counts)
+        plt.show()
 
-    def write(self, message):
-        self.queue.put(message)
-
-    def flush(self):
-        pass</code></pre>
+    def plot_data(self, wavelengths, counts):
+        self.axes.set_xlim(wavelengths[0], wavelengths[-1])
+        self.axes.plot(wavelengths, counts)
+        plt.draw()
+        plt.pause(0.001)</code></pre>
 </details>
 </section>
 <section>
@@ -47,48 +75,94 @@ class LoggingStream:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="matisse_controller.gui.logging_stream.LoggingStream"><code class="flex name class">
-<span>class <span class="ident">LoggingStream</span></span>
-<span>(</span><span>queue)</span>
+<dt id="matisse_controller.shamrock_ple.plotting.spectrum_plot_process.SpectrumPlotProcess"><code class="flex name class">
+<span>class <span class="ident">SpectrumPlotProcess</span></span>
+<span>(</span><span>wavelengths=None, counts=None, pipe=None, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>A basic stream-like class with a message queue, meant to replace sys.stdout for logging purposes.</p></section>
+<section class="desc"><p>Process objects represent activity that is run in a separate process</p>
+<p>The class is analogous to <code>threading.Thread</code></p></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">class LoggingStream:
-    &#34;&#34;&#34;A basic stream-like class with a message queue, meant to replace sys.stdout for logging purposes.&#34;&#34;&#34;
+<pre><code class="python">class SpectrumPlotProcess(Process):
+    def __init__(self, wavelengths=None, counts=None, pipe: Connection = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.wavelengths = wavelengths
+        self.counts = counts
+        self.pipe = pipe
+        self.figure: Figure = plt.figure(&#39;CCD Acquisition&#39;)
+        self.axes: Axes = plt.gca()
+        self.axes.set_title(&#39;Counts vs. Wavelength&#39;)
+        self.axes.set_xlabel(&#39;Wavelength (nm)&#39;)
+        self.axes.set_ylabel(&#39;Counts&#39;)
 
-    def __init__(self, queue: Queue):
-        self.queue = queue
+    def run(self):
+        if self.pipe:
+            try:
+                while self.pipe.poll(timeout=None):
+                    data = self.pipe.recv()
+                    if not data:
+                        break
+                    else:
+                        self.plot_data(*data)
+            except BrokenPipeError:
+                pass
+            except EOFError:
+                pass
+        else:
+            self.plot_data(self.wavelengths, self.counts)
+        plt.show()
 
-    def write(self, message):
-        self.queue.put(message)
-
-    def flush(self):
-        pass</code></pre>
+    def plot_data(self, wavelengths, counts):
+        self.axes.set_xlim(wavelengths[0], wavelengths[-1])
+        self.axes.plot(wavelengths, counts)
+        plt.draw()
+        plt.pause(0.001)</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>multiprocessing.context.Process</li>
+<li>multiprocessing.process.BaseProcess</li>
+</ul>
 <h3>Methods</h3>
 <dl>
-<dt id="matisse_controller.gui.logging_stream.LoggingStream.flush"><code class="name flex">
-<span>def <span class="ident">flush</span></span>(<span>self)</span>
+<dt id="matisse_controller.shamrock_ple.plotting.spectrum_plot_process.SpectrumPlotProcess.plot_data"><code class="name flex">
+<span>def <span class="ident">plot_data</span></span>(<span>self, wavelengths, counts)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def flush(self):
-    pass</code></pre>
+<pre><code class="python">def plot_data(self, wavelengths, counts):
+    self.axes.set_xlim(wavelengths[0], wavelengths[-1])
+    self.axes.plot(wavelengths, counts)
+    plt.draw()
+    plt.pause(0.001)</code></pre>
 </details>
 </dd>
-<dt id="matisse_controller.gui.logging_stream.LoggingStream.write"><code class="name flex">
-<span>def <span class="ident">write</span></span>(<span>self, message)</span>
+<dt id="matisse_controller.shamrock_ple.plotting.spectrum_plot_process.SpectrumPlotProcess.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Method to be run in sub-process; can be overridden in sub-class</p></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def write(self, message):
-    self.queue.put(message)</code></pre>
+<pre><code class="python">def run(self):
+    if self.pipe:
+        try:
+            while self.pipe.poll(timeout=None):
+                data = self.pipe.recv()
+                if not data:
+                    break
+                else:
+                    self.plot_data(*data)
+        except BrokenPipeError:
+            pass
+        except EOFError:
+            pass
+    else:
+        self.plot_data(self.wavelengths, self.counts)
+    plt.show()</code></pre>
 </details>
 </dd>
 </dl>
@@ -104,16 +178,16 @@ class LoggingStream:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="matisse_controller.gui" href="index.html">matisse_controller.gui</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.plotting" href="index.html">matisse_controller.shamrock_ple.plotting</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="matisse_controller.gui.logging_stream.LoggingStream" href="#matisse_controller.gui.logging_stream.LoggingStream">LoggingStream</a></code></h4>
+<h4><code><a title="matisse_controller.shamrock_ple.plotting.spectrum_plot_process.SpectrumPlotProcess" href="#matisse_controller.shamrock_ple.plotting.spectrum_plot_process.SpectrumPlotProcess">SpectrumPlotProcess</a></code></h4>
 <ul class="">
-<li><code><a title="matisse_controller.gui.logging_stream.LoggingStream.flush" href="#matisse_controller.gui.logging_stream.LoggingStream.flush">flush</a></code></li>
-<li><code><a title="matisse_controller.gui.logging_stream.LoggingStream.write" href="#matisse_controller.gui.logging_stream.LoggingStream.write">write</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.plotting.spectrum_plot_process.SpectrumPlotProcess.plot_data" href="#matisse_controller.shamrock_ple.plotting.spectrum_plot_process.SpectrumPlotProcess.plot_data">plot_data</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.plotting.spectrum_plot_process.SpectrumPlotProcess.run" href="#matisse_controller.shamrock_ple.plotting.spectrum_plot_process.SpectrumPlotProcess.run">run</a></code></li>
 </ul>
 </li>
 </ul>

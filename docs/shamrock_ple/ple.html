@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>matisse_controller.shamrock_ple.ple API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>matisse_controller.shamrock_ple.ple</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">import os
+import pickle
+import time
+from multiprocessing import Pipe
+
+import numpy as np
+
+import matisse_controller.config as cfg
+from matisse_controller.shamrock_ple.ccd import CCD
+from matisse_controller.shamrock_ple.plotting import *
+from matisse_controller.shamrock_ple.shamrock import Shamrock
+
+ccd: CCD = None
+shamrock: Shamrock = None
+
+
+# TODO: Method to gracefully close all plots
+class PLE:
+    &#34;&#34;&#34;PLE scanning functionality with the Andor Shamrock and Newton CCD.&#34;&#34;&#34;
+
+    def __init__(self, matisse):
+        self.matisse = matisse
+        self.ple_exit_flag = False
+        self.analysis_plot_processes = []
+        self.spectrum_plot_processes = []
+
+    @staticmethod
+    def load_andor_libs():
+        &#34;&#34;&#34;
+        Initialize the interfaces to the Andor Shamrock and Newton CCD. This only needs to be run once, since the two
+        devices are global variables.
+        &#34;&#34;&#34;
+        global ccd
+        global shamrock
+        if ccd is None:
+            ccd = CCD()
+            print(&#39;CCD initialized.&#39;)
+        if shamrock is None:
+            shamrock = Shamrock()
+            print(&#39;Shamrock initialized.&#39;)
+
+    @staticmethod
+    def clean_up_globals():
+        &#34;&#34;&#34;
+        Remove references to the Shamrock and Newton, allowing us to re-initialize them again later.
+        &#34;&#34;&#34;
+        global ccd
+        global shamrock
+        ccd = None
+        shamrock = None
+
+    def start_ple_scan(self, scan_name: str, scan_location: str, initial_wavelength: float, final_wavelength: float,
+                       step: float, center_wavelength: float, grating_grooves: int, *ccd_args, plot_analysis=False,
+                       integration_start=None, integration_end=None, **ccd_kwargs):
+        &#34;&#34;&#34;
+        Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
+
+        Generates text files with data from each spectrum taken during the scan, and pickles the Python dictionary of
+        all data into {scan_name}.pickle.
+
+        Parameters
+        ----------
+        scan_name
+            a unique name to give the PLE measurement, which will be included in the name of all the data files
+        scan_location
+            the name of a folder to contain all relevant scan data
+        initial_wavelength
+            starting wavelength for the PLE scan
+        final_wavelength
+            ending wavelength for the PLE scan
+        step
+            the desired change in wavelength between each individual scan
+        center_wavelength
+            the wavelength at which to set the spectrometer
+        grating_grooves
+            the number of grooves to use for the spectrometer grating
+        plot_analysis
+            whether to plot the PLE analysis in real time
+        integration_start : float
+            the wavelength at which to start integration for real-time analysis plotting
+        integration_end : float
+            the wavelength at which to stop integration for real-time analysis plotting
+        *ccd_args
+            args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        **ccd_kwargs
+            kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        &#34;&#34;&#34;
+        self.ple_exit_flag = False
+
+        if not scan_name:
+            print(&#39;WARNING: Name of PLE scan is required.&#39;)
+            return
+        if not scan_location:
+            print(&#39;WARNING: Location of PLE scan is required.&#39;)
+            return
+
+        data_file_name = os.path.join(scan_location, f&#34;{scan_name}.pickle&#34;)
+
+        if os.path.exists(data_file_name):
+            print(f&#34;WARNING: A PLE scan has already been run for &#39;{scan_name}&#39;. Choose a new name and try again.&#34;)
+            return
+
+        PLE.load_andor_libs()
+        print(f&#34;Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...&#34;)
+        shamrock.set_grating_grooves(grating_grooves)
+        shamrock.set_center_wavelength(center_wavelength)
+        if self.ple_exit_flag:
+            return
+        ccd.setup(*ccd_args, **ccd_kwargs)
+        wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
+        wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
+        counter = 1
+        file_name = &#39;&#39;
+
+        pl_pipe_in, pl_pipe_out = Pipe()
+        pl_plot_process = SpectrumPlotProcess(pipe=pl_pipe_out, daemon=True)
+        self.spectrum_plot_processes.append(pl_plot_process)
+        pl_plot_process.start()
+
+        if plot_analysis:
+            analysis_pipe_in, analysis_pipe_out = Pipe()
+            analysis_plot_process = PLEAnalysisPlotProcess(pipe=analysis_pipe_out, daemon=True)
+            self.analysis_plot_processes.append(analysis_plot_process)
+            analysis_plot_process.start()
+
+        data = {
+            &#39;grating_grooves&#39;: grating_grooves,
+            &#39;center_wavelength&#39;: center_wavelength
+        }
+        for wavelength in wavelengths:
+            print(f&#34;Starting acquisition {counter}/{len(wavelengths)}.&#34;)
+            wavelength = round(float(wavelength), cfg.get(cfg.WAVEMETER_PRECISION))
+            self.lock_at_wavelength(wavelength)
+            if self.ple_exit_flag:
+                print(&#39;Received exit signal, saving PLE data.&#39;)
+                break
+            acquisition_data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
+            file_name = os.path.join(scan_location, f&#34;{str(counter).zfill(3)}_{scan_name}_{wavelength}nm&#34;
+                                                    f&#34;_StepSize_{step}nm_Range_{wavelength_range}nm.txt&#34;)
+            np.savetxt(file_name, acquisition_data)
+
+            acq_wavelengths = self.pixels_to_wavelengths(range(len(acquisition_data)), center_wavelength, grating_grooves)
+            pl_pipe_in.send((acq_wavelengths, acquisition_data))
+
+            if plot_analysis:
+                start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
+                                                                         center_wavelength, grating_grooves)
+                analysis_pipe_in.send((wavelength, sum(acquisition_data[start_pixel:end_pixel])))
+
+            data[wavelength] = acquisition_data
+            counter += 1
+
+        pl_pipe_in.send(None)
+        if file_name:
+            self.plot_single_acquisition(center_wavelength, grating_grooves, data_file=file_name)
+
+        with open(data_file_name, &#39;wb&#39;) as data_file:
+            pickle.dump(data, data_file, pickle.HIGHEST_PROTOCOL)
+        print(&#39;Finished PLE scan.&#39;)
+
+    def lock_at_wavelength(self, wavelength: float):
+        &#34;&#34;&#34;Try to lock the Matisse at a given wavelength, waiting to return until we&#39;re within a small tolerance.&#34;&#34;&#34;
+        tolerance = 10 ** -cfg.get(cfg.WAVEMETER_PRECISION)
+        self.matisse.set_wavelength(wavelength)
+        while abs(wavelength - self.matisse.wavemeter_wavelength()) &gt;= tolerance or \
+                (self.matisse.is_setting_wavelength or self.matisse.is_scanning_bifi or self.matisse.is_scanning_thin_etalon):
+            if self.ple_exit_flag:
+                break
+            time.sleep(3)
+
+    def stop_ple_tasks(self):
+        &#34;&#34;&#34;Trigger the exit flags to stop running scans and PLE measurements.&#34;&#34;&#34;
+        self.ple_exit_flag = True
+        if ccd:
+            ccd.exit_flag = True
+
+    def analyze_ple_data(self, analysis_name: str, data_file_path: str, integration_start: float, integration_end: float,
+                         background_file_path=&#39;&#39;):
+        &#34;&#34;&#34;
+        Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength.
+
+        Loads PLE data from a .pickle file and pickles integrated counts for each wavelength into another .pickle file.
+        Optionally subtract background from given file name. The background file should be loadable with numpy.loadtxt.
+
+        Parameters
+        ----------
+        data_file_path
+            the path to the .pickle file containing the PLE measurement data
+        integration_start
+            start of integration region (nm) for tallying the counts
+        integration_end
+            end of integration region (nm) for tallying the counts
+        background_file_path
+            the name of a file to use for subtracting background, should be loadable with numpy.loadtxt
+        &#34;&#34;&#34;
+        self.ple_exit_flag = False
+
+        if not data_file_path:
+            print(&#39;WARNING: No data file provided to analyze.&#39;)
+            return
+        if not analysis_name:
+            print(&#39;WARNING: Name of analysis is required.&#39;)
+            return
+
+        data_dir = os.path.abspath(os.path.dirname(data_file_path))
+        analysis_file_path = os.path.join(data_dir, f&#34;{analysis_name}.pickle&#34;)
+
+        if os.path.exists(analysis_file_path):
+            print(f&#34;WARNING: An analysis called &#39;{analysis_name}&#39; already exists. Choose a new name and try again.&#34;)
+            return
+
+        with open(data_file_path, &#39;rb&#39;) as full_data_file:
+            scans = pickle.load(full_data_file)
+
+        if background_file_path:
+            background_data = np.loadtxt(background_file_path)
+        else:
+            background_data = None
+
+        center_wavelength = scans.pop(&#39;center_wavelength&#39;)
+        grating_grooves = scans.pop(&#39;grating_grooves&#39;)
+        start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
+                                                                 center_wavelength, grating_grooves)
+        total_counts = {}
+        for wavelength in scans.keys():
+            if self.ple_exit_flag:
+                print(&#39;Received exit signal, saving PLE data.&#39;)
+                break
+            if background_data and background_data.any():
+                scans[wavelength] = scans[wavelength].astype(np.double)
+                scans[wavelength] -= background_data
+            total_counts[wavelength] = sum(scans[wavelength][start_pixel:end_pixel])
+
+        with open(analysis_file_path, &#39;wb&#39;) as analysis_file:
+            pickle.dump(total_counts, analysis_file, pickle.HIGHEST_PROTOCOL)
+
+        plot_process = PLEAnalysisPlotProcess(total_counts, daemon=True)
+        self.analysis_plot_processes.append(plot_process)
+        plot_process.start()
+
+    def plot_ple_analysis_file(self, analysis_file_path: str):
+        &#34;&#34;&#34;Plot the PLE analysis data from the given .pickle file.&#34;&#34;&#34;
+        with open(analysis_file_path, &#39;rb&#39;) as analysis_file:
+            data = pickle.load(analysis_file)
+        plot_process = PLEAnalysisPlotProcess(data, daemon=True)
+        self.analysis_plot_processes.append(plot_process)
+        plot_process.start()
+
+    def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, data_file=None,
+                                **ccd_kwargs):
+        &#34;&#34;&#34;
+        Plot a single acquisition from the CCD at the given center wavelength and using the grating with the given
+        number of grooves. If a data file name is specified, this will skip reading the CCD and just plot the data
+        in that file.
+
+        Parameters
+        ----------
+        center_wavelength
+            the wavelength at which to set the spectrometer
+        grating_grooves
+            the number of grooves to use for the spectrometer grating
+        data_file
+            file name containing data to plot - if None, will grab data from the CCD
+        *ccd_args
+            args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        **ccd_kwargs
+            kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        &#34;&#34;&#34;
+        self.ple_exit_flag = False
+        if data_file:
+            data = np.loadtxt(data_file)
+        else:
+            PLE.load_andor_libs()
+            print(f&#34;Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...&#34;)
+            shamrock.set_grating_grooves(grating_grooves)
+            shamrock.set_center_wavelength(center_wavelength)
+            if self.ple_exit_flag:
+                return
+            ccd.setup(*ccd_args, **ccd_kwargs)
+            data = ccd.take_acquisition()
+
+        wavelengths = self.pixels_to_wavelengths(range(len(data)), center_wavelength, grating_grooves)
+
+        plot_process = SpectrumPlotProcess(wavelengths, data, daemon=True)
+        self.spectrum_plot_processes.append(plot_process)
+        plot_process.start()
+
+    def pixels_to_wavelengths(self, pixels, center_wavelength: float, grating_grooves: int):
+        &#34;&#34;&#34;
+        Convert pixels to nanometers using given spectrometer settings.
+
+        Parameters
+        ----------
+        pixels
+            an iterable of pixel indices to be converted to wavelengths
+        center_wavelength
+            the center wavelength used to take the CCD data
+        grating_grooves
+            the number of grooves for the grating used to take the CCD data
+
+        Returns
+        -------
+        ndarray
+            an array of wavelengths that each correspond to a pixel on the CCD screen
+        &#34;&#34;&#34;
+        nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
+        offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
+        # Point-slope formula for calculating wavelengths from pixels
+        # Use pixel + 1 because indexes range from 0 to 1023, CCD center is at 512 but zero-indexing would put it at 511
+        wavelengths = [nm_per_pixel * (pixel + 1 - CCD.WIDTH / 2) + center_wavelength + offset for pixel in pixels]
+        return np.array(wavelengths)
+
+    def find_integration_endpoints(self, start_wavelength: float, end_wavelength: float, center_wavelength: float,
+                                   grating_grooves: int):
+        &#34;&#34;&#34;
+        Convert a starting and ending wavelength to CCD pixels.
+
+        Parameters
+        ----------
+        start_wavelength
+            starting point of integration, in nanometers
+        end_wavelength
+            ending point of integration, in nanometers
+        center_wavelength
+            the wavelength at which the spectrometer was set
+        grating_grooves
+            the number of grooves used for the spectrometer grating
+
+        Returns
+        -------
+        (int, int)
+            the start and end pixels corresponding to the given start and end wavelengths
+        &#34;&#34;&#34;
+        nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
+        offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
+        # Invert pixel -&gt; wavelength conversion
+        start_pixel = int(CCD.WIDTH / 2 - 1 + (start_wavelength - center_wavelength - offset) / nm_per_pixel)
+        end_pixel = int(CCD.WIDTH / 2 - 1 + (end_wavelength - center_wavelength - offset) / nm_per_pixel)
+        return start_pixel, end_pixel</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="matisse_controller.shamrock_ple.ple.PLE"><code class="flex name class">
+<span>class <span class="ident">PLE</span></span>
+<span>(</span><span>matisse)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>PLE scanning functionality with the Andor Shamrock and Newton CCD.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class PLE:
+    &#34;&#34;&#34;PLE scanning functionality with the Andor Shamrock and Newton CCD.&#34;&#34;&#34;
+
+    def __init__(self, matisse):
+        self.matisse = matisse
+        self.ple_exit_flag = False
+        self.analysis_plot_processes = []
+        self.spectrum_plot_processes = []
+
+    @staticmethod
+    def load_andor_libs():
+        &#34;&#34;&#34;
+        Initialize the interfaces to the Andor Shamrock and Newton CCD. This only needs to be run once, since the two
+        devices are global variables.
+        &#34;&#34;&#34;
+        global ccd
+        global shamrock
+        if ccd is None:
+            ccd = CCD()
+            print(&#39;CCD initialized.&#39;)
+        if shamrock is None:
+            shamrock = Shamrock()
+            print(&#39;Shamrock initialized.&#39;)
+
+    @staticmethod
+    def clean_up_globals():
+        &#34;&#34;&#34;
+        Remove references to the Shamrock and Newton, allowing us to re-initialize them again later.
+        &#34;&#34;&#34;
+        global ccd
+        global shamrock
+        ccd = None
+        shamrock = None
+
+    def start_ple_scan(self, scan_name: str, scan_location: str, initial_wavelength: float, final_wavelength: float,
+                       step: float, center_wavelength: float, grating_grooves: int, *ccd_args, plot_analysis=False,
+                       integration_start=None, integration_end=None, **ccd_kwargs):
+        &#34;&#34;&#34;
+        Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
+
+        Generates text files with data from each spectrum taken during the scan, and pickles the Python dictionary of
+        all data into {scan_name}.pickle.
+
+        Parameters
+        ----------
+        scan_name
+            a unique name to give the PLE measurement, which will be included in the name of all the data files
+        scan_location
+            the name of a folder to contain all relevant scan data
+        initial_wavelength
+            starting wavelength for the PLE scan
+        final_wavelength
+            ending wavelength for the PLE scan
+        step
+            the desired change in wavelength between each individual scan
+        center_wavelength
+            the wavelength at which to set the spectrometer
+        grating_grooves
+            the number of grooves to use for the spectrometer grating
+        plot_analysis
+            whether to plot the PLE analysis in real time
+        integration_start : float
+            the wavelength at which to start integration for real-time analysis plotting
+        integration_end : float
+            the wavelength at which to stop integration for real-time analysis plotting
+        *ccd_args
+            args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        **ccd_kwargs
+            kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        &#34;&#34;&#34;
+        self.ple_exit_flag = False
+
+        if not scan_name:
+            print(&#39;WARNING: Name of PLE scan is required.&#39;)
+            return
+        if not scan_location:
+            print(&#39;WARNING: Location of PLE scan is required.&#39;)
+            return
+
+        data_file_name = os.path.join(scan_location, f&#34;{scan_name}.pickle&#34;)
+
+        if os.path.exists(data_file_name):
+            print(f&#34;WARNING: A PLE scan has already been run for &#39;{scan_name}&#39;. Choose a new name and try again.&#34;)
+            return
+
+        PLE.load_andor_libs()
+        print(f&#34;Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...&#34;)
+        shamrock.set_grating_grooves(grating_grooves)
+        shamrock.set_center_wavelength(center_wavelength)
+        if self.ple_exit_flag:
+            return
+        ccd.setup(*ccd_args, **ccd_kwargs)
+        wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
+        wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
+        counter = 1
+        file_name = &#39;&#39;
+
+        pl_pipe_in, pl_pipe_out = Pipe()
+        pl_plot_process = SpectrumPlotProcess(pipe=pl_pipe_out, daemon=True)
+        self.spectrum_plot_processes.append(pl_plot_process)
+        pl_plot_process.start()
+
+        if plot_analysis:
+            analysis_pipe_in, analysis_pipe_out = Pipe()
+            analysis_plot_process = PLEAnalysisPlotProcess(pipe=analysis_pipe_out, daemon=True)
+            self.analysis_plot_processes.append(analysis_plot_process)
+            analysis_plot_process.start()
+
+        data = {
+            &#39;grating_grooves&#39;: grating_grooves,
+            &#39;center_wavelength&#39;: center_wavelength
+        }
+        for wavelength in wavelengths:
+            print(f&#34;Starting acquisition {counter}/{len(wavelengths)}.&#34;)
+            wavelength = round(float(wavelength), cfg.get(cfg.WAVEMETER_PRECISION))
+            self.lock_at_wavelength(wavelength)
+            if self.ple_exit_flag:
+                print(&#39;Received exit signal, saving PLE data.&#39;)
+                break
+            acquisition_data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
+            file_name = os.path.join(scan_location, f&#34;{str(counter).zfill(3)}_{scan_name}_{wavelength}nm&#34;
+                                                    f&#34;_StepSize_{step}nm_Range_{wavelength_range}nm.txt&#34;)
+            np.savetxt(file_name, acquisition_data)
+
+            acq_wavelengths = self.pixels_to_wavelengths(range(len(acquisition_data)), center_wavelength, grating_grooves)
+            pl_pipe_in.send((acq_wavelengths, acquisition_data))
+
+            if plot_analysis:
+                start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
+                                                                         center_wavelength, grating_grooves)
+                analysis_pipe_in.send((wavelength, sum(acquisition_data[start_pixel:end_pixel])))
+
+            data[wavelength] = acquisition_data
+            counter += 1
+
+        pl_pipe_in.send(None)
+        if file_name:
+            self.plot_single_acquisition(center_wavelength, grating_grooves, data_file=file_name)
+
+        with open(data_file_name, &#39;wb&#39;) as data_file:
+            pickle.dump(data, data_file, pickle.HIGHEST_PROTOCOL)
+        print(&#39;Finished PLE scan.&#39;)
+
+    def lock_at_wavelength(self, wavelength: float):
+        &#34;&#34;&#34;Try to lock the Matisse at a given wavelength, waiting to return until we&#39;re within a small tolerance.&#34;&#34;&#34;
+        tolerance = 10 ** -cfg.get(cfg.WAVEMETER_PRECISION)
+        self.matisse.set_wavelength(wavelength)
+        while abs(wavelength - self.matisse.wavemeter_wavelength()) &gt;= tolerance or \
+                (self.matisse.is_setting_wavelength or self.matisse.is_scanning_bifi or self.matisse.is_scanning_thin_etalon):
+            if self.ple_exit_flag:
+                break
+            time.sleep(3)
+
+    def stop_ple_tasks(self):
+        &#34;&#34;&#34;Trigger the exit flags to stop running scans and PLE measurements.&#34;&#34;&#34;
+        self.ple_exit_flag = True
+        if ccd:
+            ccd.exit_flag = True
+
+    def analyze_ple_data(self, analysis_name: str, data_file_path: str, integration_start: float, integration_end: float,
+                         background_file_path=&#39;&#39;):
+        &#34;&#34;&#34;
+        Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength.
+
+        Loads PLE data from a .pickle file and pickles integrated counts for each wavelength into another .pickle file.
+        Optionally subtract background from given file name. The background file should be loadable with numpy.loadtxt.
+
+        Parameters
+        ----------
+        data_file_path
+            the path to the .pickle file containing the PLE measurement data
+        integration_start
+            start of integration region (nm) for tallying the counts
+        integration_end
+            end of integration region (nm) for tallying the counts
+        background_file_path
+            the name of a file to use for subtracting background, should be loadable with numpy.loadtxt
+        &#34;&#34;&#34;
+        self.ple_exit_flag = False
+
+        if not data_file_path:
+            print(&#39;WARNING: No data file provided to analyze.&#39;)
+            return
+        if not analysis_name:
+            print(&#39;WARNING: Name of analysis is required.&#39;)
+            return
+
+        data_dir = os.path.abspath(os.path.dirname(data_file_path))
+        analysis_file_path = os.path.join(data_dir, f&#34;{analysis_name}.pickle&#34;)
+
+        if os.path.exists(analysis_file_path):
+            print(f&#34;WARNING: An analysis called &#39;{analysis_name}&#39; already exists. Choose a new name and try again.&#34;)
+            return
+
+        with open(data_file_path, &#39;rb&#39;) as full_data_file:
+            scans = pickle.load(full_data_file)
+
+        if background_file_path:
+            background_data = np.loadtxt(background_file_path)
+        else:
+            background_data = None
+
+        center_wavelength = scans.pop(&#39;center_wavelength&#39;)
+        grating_grooves = scans.pop(&#39;grating_grooves&#39;)
+        start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
+                                                                 center_wavelength, grating_grooves)
+        total_counts = {}
+        for wavelength in scans.keys():
+            if self.ple_exit_flag:
+                print(&#39;Received exit signal, saving PLE data.&#39;)
+                break
+            if background_data and background_data.any():
+                scans[wavelength] = scans[wavelength].astype(np.double)
+                scans[wavelength] -= background_data
+            total_counts[wavelength] = sum(scans[wavelength][start_pixel:end_pixel])
+
+        with open(analysis_file_path, &#39;wb&#39;) as analysis_file:
+            pickle.dump(total_counts, analysis_file, pickle.HIGHEST_PROTOCOL)
+
+        plot_process = PLEAnalysisPlotProcess(total_counts, daemon=True)
+        self.analysis_plot_processes.append(plot_process)
+        plot_process.start()
+
+    def plot_ple_analysis_file(self, analysis_file_path: str):
+        &#34;&#34;&#34;Plot the PLE analysis data from the given .pickle file.&#34;&#34;&#34;
+        with open(analysis_file_path, &#39;rb&#39;) as analysis_file:
+            data = pickle.load(analysis_file)
+        plot_process = PLEAnalysisPlotProcess(data, daemon=True)
+        self.analysis_plot_processes.append(plot_process)
+        plot_process.start()
+
+    def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, data_file=None,
+                                **ccd_kwargs):
+        &#34;&#34;&#34;
+        Plot a single acquisition from the CCD at the given center wavelength and using the grating with the given
+        number of grooves. If a data file name is specified, this will skip reading the CCD and just plot the data
+        in that file.
+
+        Parameters
+        ----------
+        center_wavelength
+            the wavelength at which to set the spectrometer
+        grating_grooves
+            the number of grooves to use for the spectrometer grating
+        data_file
+            file name containing data to plot - if None, will grab data from the CCD
+        *ccd_args
+            args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        **ccd_kwargs
+            kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+        &#34;&#34;&#34;
+        self.ple_exit_flag = False
+        if data_file:
+            data = np.loadtxt(data_file)
+        else:
+            PLE.load_andor_libs()
+            print(f&#34;Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...&#34;)
+            shamrock.set_grating_grooves(grating_grooves)
+            shamrock.set_center_wavelength(center_wavelength)
+            if self.ple_exit_flag:
+                return
+            ccd.setup(*ccd_args, **ccd_kwargs)
+            data = ccd.take_acquisition()
+
+        wavelengths = self.pixels_to_wavelengths(range(len(data)), center_wavelength, grating_grooves)
+
+        plot_process = SpectrumPlotProcess(wavelengths, data, daemon=True)
+        self.spectrum_plot_processes.append(plot_process)
+        plot_process.start()
+
+    def pixels_to_wavelengths(self, pixels, center_wavelength: float, grating_grooves: int):
+        &#34;&#34;&#34;
+        Convert pixels to nanometers using given spectrometer settings.
+
+        Parameters
+        ----------
+        pixels
+            an iterable of pixel indices to be converted to wavelengths
+        center_wavelength
+            the center wavelength used to take the CCD data
+        grating_grooves
+            the number of grooves for the grating used to take the CCD data
+
+        Returns
+        -------
+        ndarray
+            an array of wavelengths that each correspond to a pixel on the CCD screen
+        &#34;&#34;&#34;
+        nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
+        offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
+        # Point-slope formula for calculating wavelengths from pixels
+        # Use pixel + 1 because indexes range from 0 to 1023, CCD center is at 512 but zero-indexing would put it at 511
+        wavelengths = [nm_per_pixel * (pixel + 1 - CCD.WIDTH / 2) + center_wavelength + offset for pixel in pixels]
+        return np.array(wavelengths)
+
+    def find_integration_endpoints(self, start_wavelength: float, end_wavelength: float, center_wavelength: float,
+                                   grating_grooves: int):
+        &#34;&#34;&#34;
+        Convert a starting and ending wavelength to CCD pixels.
+
+        Parameters
+        ----------
+        start_wavelength
+            starting point of integration, in nanometers
+        end_wavelength
+            ending point of integration, in nanometers
+        center_wavelength
+            the wavelength at which the spectrometer was set
+        grating_grooves
+            the number of grooves used for the spectrometer grating
+
+        Returns
+        -------
+        (int, int)
+            the start and end pixels corresponding to the given start and end wavelengths
+        &#34;&#34;&#34;
+        nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
+        offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
+        # Invert pixel -&gt; wavelength conversion
+        start_pixel = int(CCD.WIDTH / 2 - 1 + (start_wavelength - center_wavelength - offset) / nm_per_pixel)
+        end_pixel = int(CCD.WIDTH / 2 - 1 + (end_wavelength - center_wavelength - offset) / nm_per_pixel)
+        return start_pixel, end_pixel</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.clean_up_globals"><code class="name flex">
+<span>def <span class="ident">clean_up_globals</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Remove references to the Shamrock and Newton, allowing us to re-initialize them again later.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@staticmethod
+def clean_up_globals():
+    &#34;&#34;&#34;
+    Remove references to the Shamrock and Newton, allowing us to re-initialize them again later.
+    &#34;&#34;&#34;
+    global ccd
+    global shamrock
+    ccd = None
+    shamrock = None</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.load_andor_libs"><code class="name flex">
+<span>def <span class="ident">load_andor_libs</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Initialize the interfaces to the Andor Shamrock and Newton CCD. This only needs to be run once, since the two
+devices are global variables.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@staticmethod
+def load_andor_libs():
+    &#34;&#34;&#34;
+    Initialize the interfaces to the Andor Shamrock and Newton CCD. This only needs to be run once, since the two
+    devices are global variables.
+    &#34;&#34;&#34;
+    global ccd
+    global shamrock
+    if ccd is None:
+        ccd = CCD()
+        print(&#39;CCD initialized.&#39;)
+    if shamrock is None:
+        shamrock = Shamrock()
+        print(&#39;Shamrock initialized.&#39;)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.analyze_ple_data"><code class="name flex">
+<span>def <span class="ident">analyze_ple_data</span></span>(<span>self, analysis_name, data_file_path, integration_start, integration_end, background_file_path='')</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength.</p>
+<p>Loads PLE data from a .pickle file and pickles integrated counts for each wavelength into another .pickle file.
+Optionally subtract background from given file name. The background file should be loadable with numpy.loadtxt.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_file_path</code></strong></dt>
+<dd>the path to the .pickle file containing the PLE measurement data</dd>
+<dt><strong><code>integration_start</code></strong></dt>
+<dd>start of integration region (nm) for tallying the counts</dd>
+<dt><strong><code>integration_end</code></strong></dt>
+<dd>end of integration region (nm) for tallying the counts</dd>
+<dt><strong><code>background_file_path</code></strong></dt>
+<dd>the name of a file to use for subtracting background, should be loadable with numpy.loadtxt</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def analyze_ple_data(self, analysis_name: str, data_file_path: str, integration_start: float, integration_end: float,
+                     background_file_path=&#39;&#39;):
+    &#34;&#34;&#34;
+    Sum the counts of all spectra for a set of PLE measurements and plot them against wavelength.
+
+    Loads PLE data from a .pickle file and pickles integrated counts for each wavelength into another .pickle file.
+    Optionally subtract background from given file name. The background file should be loadable with numpy.loadtxt.
+
+    Parameters
+    ----------
+    data_file_path
+        the path to the .pickle file containing the PLE measurement data
+    integration_start
+        start of integration region (nm) for tallying the counts
+    integration_end
+        end of integration region (nm) for tallying the counts
+    background_file_path
+        the name of a file to use for subtracting background, should be loadable with numpy.loadtxt
+    &#34;&#34;&#34;
+    self.ple_exit_flag = False
+
+    if not data_file_path:
+        print(&#39;WARNING: No data file provided to analyze.&#39;)
+        return
+    if not analysis_name:
+        print(&#39;WARNING: Name of analysis is required.&#39;)
+        return
+
+    data_dir = os.path.abspath(os.path.dirname(data_file_path))
+    analysis_file_path = os.path.join(data_dir, f&#34;{analysis_name}.pickle&#34;)
+
+    if os.path.exists(analysis_file_path):
+        print(f&#34;WARNING: An analysis called &#39;{analysis_name}&#39; already exists. Choose a new name and try again.&#34;)
+        return
+
+    with open(data_file_path, &#39;rb&#39;) as full_data_file:
+        scans = pickle.load(full_data_file)
+
+    if background_file_path:
+        background_data = np.loadtxt(background_file_path)
+    else:
+        background_data = None
+
+    center_wavelength = scans.pop(&#39;center_wavelength&#39;)
+    grating_grooves = scans.pop(&#39;grating_grooves&#39;)
+    start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
+                                                             center_wavelength, grating_grooves)
+    total_counts = {}
+    for wavelength in scans.keys():
+        if self.ple_exit_flag:
+            print(&#39;Received exit signal, saving PLE data.&#39;)
+            break
+        if background_data and background_data.any():
+            scans[wavelength] = scans[wavelength].astype(np.double)
+            scans[wavelength] -= background_data
+        total_counts[wavelength] = sum(scans[wavelength][start_pixel:end_pixel])
+
+    with open(analysis_file_path, &#39;wb&#39;) as analysis_file:
+        pickle.dump(total_counts, analysis_file, pickle.HIGHEST_PROTOCOL)
+
+    plot_process = PLEAnalysisPlotProcess(total_counts, daemon=True)
+    self.analysis_plot_processes.append(plot_process)
+    plot_process.start()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.find_integration_endpoints"><code class="name flex">
+<span>def <span class="ident">find_integration_endpoints</span></span>(<span>self, start_wavelength, end_wavelength, center_wavelength, grating_grooves)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Convert a starting and ending wavelength to CCD pixels.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>start_wavelength</code></strong></dt>
+<dd>starting point of integration, in nanometers</dd>
+<dt><strong><code>end_wavelength</code></strong></dt>
+<dd>ending point of integration, in nanometers</dd>
+<dt><strong><code>center_wavelength</code></strong></dt>
+<dd>the wavelength at which the spectrometer was set</dd>
+<dt><strong><code>grating_grooves</code></strong></dt>
+<dd>the number of grooves used for the spectrometer grating</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>(int, int)
+the start and end pixels corresponding to the given start and end wavelengths</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def find_integration_endpoints(self, start_wavelength: float, end_wavelength: float, center_wavelength: float,
+                               grating_grooves: int):
+    &#34;&#34;&#34;
+    Convert a starting and ending wavelength to CCD pixels.
+
+    Parameters
+    ----------
+    start_wavelength
+        starting point of integration, in nanometers
+    end_wavelength
+        ending point of integration, in nanometers
+    center_wavelength
+        the wavelength at which the spectrometer was set
+    grating_grooves
+        the number of grooves used for the spectrometer grating
+
+    Returns
+    -------
+    (int, int)
+        the start and end pixels corresponding to the given start and end wavelengths
+    &#34;&#34;&#34;
+    nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
+    offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
+    # Invert pixel -&gt; wavelength conversion
+    start_pixel = int(CCD.WIDTH / 2 - 1 + (start_wavelength - center_wavelength - offset) / nm_per_pixel)
+    end_pixel = int(CCD.WIDTH / 2 - 1 + (end_wavelength - center_wavelength - offset) / nm_per_pixel)
+    return start_pixel, end_pixel</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.lock_at_wavelength"><code class="name flex">
+<span>def <span class="ident">lock_at_wavelength</span></span>(<span>self, wavelength)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Try to lock the Matisse at a given wavelength, waiting to return until we're within a small tolerance.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def lock_at_wavelength(self, wavelength: float):
+    &#34;&#34;&#34;Try to lock the Matisse at a given wavelength, waiting to return until we&#39;re within a small tolerance.&#34;&#34;&#34;
+    tolerance = 10 ** -cfg.get(cfg.WAVEMETER_PRECISION)
+    self.matisse.set_wavelength(wavelength)
+    while abs(wavelength - self.matisse.wavemeter_wavelength()) &gt;= tolerance or \
+            (self.matisse.is_setting_wavelength or self.matisse.is_scanning_bifi or self.matisse.is_scanning_thin_etalon):
+        if self.ple_exit_flag:
+            break
+        time.sleep(3)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.pixels_to_wavelengths"><code class="name flex">
+<span>def <span class="ident">pixels_to_wavelengths</span></span>(<span>self, pixels, center_wavelength, grating_grooves)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Convert pixels to nanometers using given spectrometer settings.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>pixels</code></strong></dt>
+<dd>an iterable of pixel indices to be converted to wavelengths</dd>
+<dt><strong><code>center_wavelength</code></strong></dt>
+<dd>the center wavelength used to take the CCD data</dd>
+<dt><strong><code>grating_grooves</code></strong></dt>
+<dd>the number of grooves for the grating used to take the CCD data</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>ndarray</code></dt>
+<dd>an array of wavelengths that each correspond to a pixel on the CCD screen</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def pixels_to_wavelengths(self, pixels, center_wavelength: float, grating_grooves: int):
+    &#34;&#34;&#34;
+    Convert pixels to nanometers using given spectrometer settings.
+
+    Parameters
+    ----------
+    pixels
+        an iterable of pixel indices to be converted to wavelengths
+    center_wavelength
+        the center wavelength used to take the CCD data
+    grating_grooves
+        the number of grooves for the grating used to take the CCD data
+
+    Returns
+    -------
+    ndarray
+        an array of wavelengths that each correspond to a pixel on the CCD screen
+    &#34;&#34;&#34;
+    nm_per_pixel = Shamrock.GRATINGS_NM_PER_PIXEL[grating_grooves]
+    offset = Shamrock.GRATINGS_OFFSET_NM[grating_grooves]
+    # Point-slope formula for calculating wavelengths from pixels
+    # Use pixel + 1 because indexes range from 0 to 1023, CCD center is at 512 but zero-indexing would put it at 511
+    wavelengths = [nm_per_pixel * (pixel + 1 - CCD.WIDTH / 2) + center_wavelength + offset for pixel in pixels]
+    return np.array(wavelengths)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.plot_ple_analysis_file"><code class="name flex">
+<span>def <span class="ident">plot_ple_analysis_file</span></span>(<span>self, analysis_file_path)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot the PLE analysis data from the given .pickle file.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def plot_ple_analysis_file(self, analysis_file_path: str):
+    &#34;&#34;&#34;Plot the PLE analysis data from the given .pickle file.&#34;&#34;&#34;
+    with open(analysis_file_path, &#39;rb&#39;) as analysis_file:
+        data = pickle.load(analysis_file)
+    plot_process = PLEAnalysisPlotProcess(data, daemon=True)
+    self.analysis_plot_processes.append(plot_process)
+    plot_process.start()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.plot_single_acquisition"><code class="name flex">
+<span>def <span class="ident">plot_single_acquisition</span></span>(<span>self, center_wavelength, grating_grooves, *ccd_args, data_file=None, **ccd_kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Plot a single acquisition from the CCD at the given center wavelength and using the grating with the given
+number of grooves. If a data file name is specified, this will skip reading the CCD and just plot the data
+in that file.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>center_wavelength</code></strong></dt>
+<dd>the wavelength at which to set the spectrometer</dd>
+<dt><strong><code>grating_grooves</code></strong></dt>
+<dd>the number of grooves to use for the spectrometer grating</dd>
+<dt><strong><code>data_file</code></strong></dt>
+<dd>file name containing data to plot - if None, will grab data from the CCD</dd>
+<dt><strong><code>*ccd_args</code></strong></dt>
+<dd>args to pass to <a title="matisse_controller.shamrock_ple.ccd.CCD.setup" href="ccd.html#matisse_controller.shamrock_ple.ccd.CCD.setup"><code>CCD.setup()</code></a></dd>
+<dt><strong><code>**ccd_kwargs</code></strong></dt>
+<dd>kwargs to pass to <a title="matisse_controller.shamrock_ple.ccd.CCD.setup" href="ccd.html#matisse_controller.shamrock_ple.ccd.CCD.setup"><code>CCD.setup()</code></a></dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def plot_single_acquisition(self, center_wavelength: float, grating_grooves: int, *ccd_args, data_file=None,
+                            **ccd_kwargs):
+    &#34;&#34;&#34;
+    Plot a single acquisition from the CCD at the given center wavelength and using the grating with the given
+    number of grooves. If a data file name is specified, this will skip reading the CCD and just plot the data
+    in that file.
+
+    Parameters
+    ----------
+    center_wavelength
+        the wavelength at which to set the spectrometer
+    grating_grooves
+        the number of grooves to use for the spectrometer grating
+    data_file
+        file name containing data to plot - if None, will grab data from the CCD
+    *ccd_args
+        args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+    **ccd_kwargs
+        kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+    &#34;&#34;&#34;
+    self.ple_exit_flag = False
+    if data_file:
+        data = np.loadtxt(data_file)
+    else:
+        PLE.load_andor_libs()
+        print(f&#34;Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...&#34;)
+        shamrock.set_grating_grooves(grating_grooves)
+        shamrock.set_center_wavelength(center_wavelength)
+        if self.ple_exit_flag:
+            return
+        ccd.setup(*ccd_args, **ccd_kwargs)
+        data = ccd.take_acquisition()
+
+    wavelengths = self.pixels_to_wavelengths(range(len(data)), center_wavelength, grating_grooves)
+
+    plot_process = SpectrumPlotProcess(wavelengths, data, daemon=True)
+    self.spectrum_plot_processes.append(plot_process)
+    plot_process.start()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.start_ple_scan"><code class="name flex">
+<span>def <span class="ident">start_ple_scan</span></span>(<span>self, scan_name, scan_location, initial_wavelength, final_wavelength, step, center_wavelength, grating_grooves, *ccd_args, plot_analysis=False, integration_start=None, integration_end=None, **ccd_kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.</p>
+<p>Generates text files with data from each spectrum taken during the scan, and pickles the Python dictionary of
+all data into {scan_name}.pickle.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>scan_name</code></strong></dt>
+<dd>a unique name to give the PLE measurement, which will be included in the name of all the data files</dd>
+<dt><strong><code>scan_location</code></strong></dt>
+<dd>the name of a folder to contain all relevant scan data</dd>
+<dt><strong><code>initial_wavelength</code></strong></dt>
+<dd>starting wavelength for the PLE scan</dd>
+<dt><strong><code>final_wavelength</code></strong></dt>
+<dd>ending wavelength for the PLE scan</dd>
+<dt><strong><code>step</code></strong></dt>
+<dd>the desired change in wavelength between each individual scan</dd>
+<dt><strong><code>center_wavelength</code></strong></dt>
+<dd>the wavelength at which to set the spectrometer</dd>
+<dt><strong><code>grating_grooves</code></strong></dt>
+<dd>the number of grooves to use for the spectrometer grating</dd>
+<dt><strong><code>plot_analysis</code></strong></dt>
+<dd>whether to plot the PLE analysis in real time</dd>
+<dt><strong><code>integration_start</code></strong> :&ensp;<code>float</code></dt>
+<dd>the wavelength at which to start integration for real-time analysis plotting</dd>
+<dt><strong><code>integration_end</code></strong> :&ensp;<code>float</code></dt>
+<dd>the wavelength at which to stop integration for real-time analysis plotting</dd>
+<dt><strong><code>*ccd_args</code></strong></dt>
+<dd>args to pass to <a title="matisse_controller.shamrock_ple.ccd.CCD.setup" href="ccd.html#matisse_controller.shamrock_ple.ccd.CCD.setup"><code>CCD.setup()</code></a></dd>
+<dt><strong><code>**ccd_kwargs</code></strong></dt>
+<dd>kwargs to pass to <a title="matisse_controller.shamrock_ple.ccd.CCD.setup" href="ccd.html#matisse_controller.shamrock_ple.ccd.CCD.setup"><code>CCD.setup()</code></a></dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def start_ple_scan(self, scan_name: str, scan_location: str, initial_wavelength: float, final_wavelength: float,
+                   step: float, center_wavelength: float, grating_grooves: int, *ccd_args, plot_analysis=False,
+                   integration_start=None, integration_end=None, **ccd_kwargs):
+    &#34;&#34;&#34;
+    Perform a PLE scan using the Andor Shamrock spectrometer and Newton CCD.
+
+    Generates text files with data from each spectrum taken during the scan, and pickles the Python dictionary of
+    all data into {scan_name}.pickle.
+
+    Parameters
+    ----------
+    scan_name
+        a unique name to give the PLE measurement, which will be included in the name of all the data files
+    scan_location
+        the name of a folder to contain all relevant scan data
+    initial_wavelength
+        starting wavelength for the PLE scan
+    final_wavelength
+        ending wavelength for the PLE scan
+    step
+        the desired change in wavelength between each individual scan
+    center_wavelength
+        the wavelength at which to set the spectrometer
+    grating_grooves
+        the number of grooves to use for the spectrometer grating
+    plot_analysis
+        whether to plot the PLE analysis in real time
+    integration_start : float
+        the wavelength at which to start integration for real-time analysis plotting
+    integration_end : float
+        the wavelength at which to stop integration for real-time analysis plotting
+    *ccd_args
+        args to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+    **ccd_kwargs
+        kwargs to pass to `matisse_controller.shamrock_ple.ccd.CCD.setup`
+    &#34;&#34;&#34;
+    self.ple_exit_flag = False
+
+    if not scan_name:
+        print(&#39;WARNING: Name of PLE scan is required.&#39;)
+        return
+    if not scan_location:
+        print(&#39;WARNING: Location of PLE scan is required.&#39;)
+        return
+
+    data_file_name = os.path.join(scan_location, f&#34;{scan_name}.pickle&#34;)
+
+    if os.path.exists(data_file_name):
+        print(f&#34;WARNING: A PLE scan has already been run for &#39;{scan_name}&#39;. Choose a new name and try again.&#34;)
+        return
+
+    PLE.load_andor_libs()
+    print(f&#34;Setting spectrometer grating to {grating_grooves} grvs and center wavelength to {center_wavelength}...&#34;)
+    shamrock.set_grating_grooves(grating_grooves)
+    shamrock.set_center_wavelength(center_wavelength)
+    if self.ple_exit_flag:
+        return
+    ccd.setup(*ccd_args, **ccd_kwargs)
+    wavelengths = np.append(np.arange(initial_wavelength, final_wavelength, step), final_wavelength)
+    wavelength_range = abs(round(final_wavelength - initial_wavelength, cfg.get(cfg.WAVEMETER_PRECISION)))
+    counter = 1
+    file_name = &#39;&#39;
+
+    pl_pipe_in, pl_pipe_out = Pipe()
+    pl_plot_process = SpectrumPlotProcess(pipe=pl_pipe_out, daemon=True)
+    self.spectrum_plot_processes.append(pl_plot_process)
+    pl_plot_process.start()
+
+    if plot_analysis:
+        analysis_pipe_in, analysis_pipe_out = Pipe()
+        analysis_plot_process = PLEAnalysisPlotProcess(pipe=analysis_pipe_out, daemon=True)
+        self.analysis_plot_processes.append(analysis_plot_process)
+        analysis_plot_process.start()
+
+    data = {
+        &#39;grating_grooves&#39;: grating_grooves,
+        &#39;center_wavelength&#39;: center_wavelength
+    }
+    for wavelength in wavelengths:
+        print(f&#34;Starting acquisition {counter}/{len(wavelengths)}.&#34;)
+        wavelength = round(float(wavelength), cfg.get(cfg.WAVEMETER_PRECISION))
+        self.lock_at_wavelength(wavelength)
+        if self.ple_exit_flag:
+            print(&#39;Received exit signal, saving PLE data.&#39;)
+            break
+        acquisition_data = ccd.take_acquisition()  # FVB mode bins into each column, so this only grabs points along width
+        file_name = os.path.join(scan_location, f&#34;{str(counter).zfill(3)}_{scan_name}_{wavelength}nm&#34;
+                                                f&#34;_StepSize_{step}nm_Range_{wavelength_range}nm.txt&#34;)
+        np.savetxt(file_name, acquisition_data)
+
+        acq_wavelengths = self.pixels_to_wavelengths(range(len(acquisition_data)), center_wavelength, grating_grooves)
+        pl_pipe_in.send((acq_wavelengths, acquisition_data))
+
+        if plot_analysis:
+            start_pixel, end_pixel = self.find_integration_endpoints(integration_start, integration_end,
+                                                                     center_wavelength, grating_grooves)
+            analysis_pipe_in.send((wavelength, sum(acquisition_data[start_pixel:end_pixel])))
+
+        data[wavelength] = acquisition_data
+        counter += 1
+
+    pl_pipe_in.send(None)
+    if file_name:
+        self.plot_single_acquisition(center_wavelength, grating_grooves, data_file=file_name)
+
+    with open(data_file_name, &#39;wb&#39;) as data_file:
+        pickle.dump(data, data_file, pickle.HIGHEST_PROTOCOL)
+    print(&#39;Finished PLE scan.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.shamrock_ple.ple.PLE.stop_ple_tasks"><code class="name flex">
+<span>def <span class="ident">stop_ple_tasks</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Trigger the exit flags to stop running scans and PLE measurements.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def stop_ple_tasks(self):
+    &#34;&#34;&#34;Trigger the exit flags to stop running scans and PLE measurements.&#34;&#34;&#34;
+    self.ple_exit_flag = True
+    if ccd:
+        ccd.exit_flag = True</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="matisse_controller.shamrock_ple" href="index.html">matisse_controller.shamrock_ple</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="matisse_controller.shamrock_ple.ple.PLE" href="#matisse_controller.shamrock_ple.ple.PLE">PLE</a></code></h4>
+<ul class="">
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.analyze_ple_data" href="#matisse_controller.shamrock_ple.ple.PLE.analyze_ple_data">analyze_ple_data</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.clean_up_globals" href="#matisse_controller.shamrock_ple.ple.PLE.clean_up_globals">clean_up_globals</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.find_integration_endpoints" href="#matisse_controller.shamrock_ple.ple.PLE.find_integration_endpoints">find_integration_endpoints</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.load_andor_libs" href="#matisse_controller.shamrock_ple.ple.PLE.load_andor_libs">load_andor_libs</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.lock_at_wavelength" href="#matisse_controller.shamrock_ple.ple.PLE.lock_at_wavelength">lock_at_wavelength</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.pixels_to_wavelengths" href="#matisse_controller.shamrock_ple.ple.PLE.pixels_to_wavelengths">pixels_to_wavelengths</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.plot_ple_analysis_file" href="#matisse_controller.shamrock_ple.ple.PLE.plot_ple_analysis_file">plot_ple_analysis_file</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.plot_single_acquisition" href="#matisse_controller.shamrock_ple.ple.PLE.plot_single_acquisition">plot_single_acquisition</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.start_ple_scan" href="#matisse_controller.shamrock_ple.ple.PLE.start_ple_scan">start_ple_scan</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple.ple.PLE.stop_ple_tasks" href="#matisse_controller.shamrock_ple.ple.PLE.stop_ple_tasks">stop_ple_tasks</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

@@ -30,15 +30,21 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from contextlib import redirect_stdout
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication
+from PyQt5.QtWidgets import QVBoxLayout, QMainWindow, QWidget, QInputDialog, QMessageBox, QApplication, QDialog, \
+    QFileDialog
 
 import matisse_controller.config as cfg
+import matisse_controller.matisse as matisse
 from matisse_controller.gui import utils
 from matisse_controller.gui.dialogs import ConfigurationDialog
+from matisse_controller.gui.dialogs.ple_analysis_dialog import PLEAnalysisDialog
+from matisse_controller.gui.dialogs.ple_scan_dialog import PLEScanDialog
+from matisse_controller.gui.dialogs.single_acquisition_dialog import SingleAcquisitionDialog
 from matisse_controller.gui.logging_stream import LoggingStream
 from matisse_controller.gui.utils import handled_function, handled_slot
 from matisse_controller.gui.widgets import LoggingArea, StatusMonitor
 from matisse_controller.matisse import Matisse
+from matisse_controller.shamrock_ple import PLE
 
 
 class ControlApplication(QApplication):
@@ -65,6 +71,10 @@ class ControlApplication(QApplication):
         self.aboutToQuit.connect(self.clean_up)
         self.work_executor = ThreadPoolExecutor()
         self.matisse_worker: Future = None
+        self.ple: PLE = PLE(self.matisse)
+        self.ple_scan_worker: Future = None
+        self.ple_analysis_worker: Future = None
+        self.single_acquisition_worker: Future = None
 
         container = QWidget()
         container.setLayout(self.layout)
@@ -94,8 +104,14 @@ class ControlApplication(QApplication):
 
         console_menu = menu_bar.addMenu(&#39;Console&#39;)
         self.clear_log_area_action = console_menu.addAction(&#39;Clear Log&#39;)
+        self.close_plots_action = console_menu.addAction(&#39;Close All Plots&#39;)
         self.configuration_action = console_menu.addAction(&#39;Configuration&#39;)
-        self.reset_action = console_menu.addAction(&#39;Reset&#39;)
+        reset_menu = console_menu.addMenu(&#39;Reset&#39;)
+        self.reset_all_action = reset_menu.addAction(&#39;All&#39;)
+        self.reset_matisse_motors_action = reset_menu.addAction(&#39;Matisse Motors&#39;)
+        self.reset_matisse_piezos_action = reset_menu.addAction(&#39;Stabilization Piezos&#39;)
+        self.reset_matisse_tasks_action = reset_menu.addAction(&#39;Matisse Tasks&#39;)
+        self.reset_ple_tasks_action = reset_menu.addAction(&#39;PLE Tasks&#39;)
         self.restart_action = console_menu.addAction(&#39;Restart&#39;)
 
         set_menu = menu_bar.addMenu(&#39;Set&#39;)
@@ -130,6 +146,9 @@ class ControlApplication(QApplication):
 
         ple_menu = menu_bar.addMenu(&#39;Shamrock&#39;)
         self.start_ple_scan_action = ple_menu.addAction(&#39;Start PLE Scan&#39;)
+        self.analyze_ple_action = ple_menu.addAction(&#39;Start PLE Analysis&#39;)
+        self.view_existing_analysis_action = ple_menu.addAction(&#39;View PLE Analysis&#39;)
+        self.single_acquisition_action = ple_menu.addAction(&#39;View Single Acquisition&#39;)
 
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
                                      self.piezo_eta_control_action, self.fast_pz_control_action]
@@ -142,8 +161,13 @@ class ControlApplication(QApplication):
         &#34;&#34;&#34;
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
+        self.close_plots_action.triggered.connect(self.close_plots)
         self.configuration_action.triggered.connect(self.open_configuration)
-        self.reset_action.triggered.connect(self.reset_matisse)
+        self.reset_all_action.triggered.connect(self.reset)
+        self.reset_matisse_motors_action.triggered.connect(self.reset_motors_only)
+        self.reset_matisse_piezos_action.triggered.connect(self.reset_piezos_only)
+        self.reset_matisse_tasks_action.triggered.connect(self.reset_matisse_tasks_only)
+        self.reset_ple_tasks_action.triggered.connect(self.reset_ple_tasks_only)
         self.restart_action.triggered.connect(self.restart)
 
         # Set
@@ -175,6 +199,9 @@ class ControlApplication(QApplication):
 
         # Shamrock
         self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
+        self.analyze_ple_action.triggered.connect(self.analyze_ple_data)
+        self.view_existing_analysis_action.triggered.connect(self.view_existing_analysis)
+        self.single_acquisition_action.triggered.connect(self.take_single_acquisition)
 
     @handled_function
     def setup_widgets(self):
@@ -187,6 +214,8 @@ class ControlApplication(QApplication):
     def setup_matisse(self):
         try:
             self.matisse: Matisse = Matisse()
+            if self.matisse.all_control_loops_on() and not self.matisse.is_lock_correction_on():
+                self.matisse.start_laser_lock_correction()
         except Exception as err:
             self.matisse: Matisse = None
             raise err
@@ -198,11 +227,14 @@ class ControlApplication(QApplication):
 
         Don&#39;t call this elsewhere unless you know what you&#39;re doing.
         &#34;&#34;&#34;
-        self.reset_matisse()
+        self.reset(reset_motors=False, reset_piezos=False)
+        del self.matisse
 
         # Clean up widgets with running threads.
         self.status_monitor.clean_up()
         self.log_area.clean_up()
+
+        PLE.clean_up_globals()
 
         self.log_redirector.__exit__(None, None, None)
 
@@ -227,26 +259,89 @@ class ControlApplication(QApplication):
         self.log_area.clear()
 
     @handled_slot(bool)
+    def close_plots(self, checked):
+        self.matisse.close_all_plots()
+
+    @handled_slot(bool)
     def open_configuration(self, checked):
         dialog = ConfigurationDialog()
         dialog.exec()
 
     @handled_slot(bool)
-    def reset_matisse(self, checked=False):
-        &#34;&#34;&#34;Reset Matisse to a &#39;good&#39; default state: not locked or stabilizing, motors reset, all tasks finished, etc.&#34;&#34;&#34;
-        print(&#39;Starting reset.&#39;)
-        if self.matisse is not None:
-            self.matisse.exit_flag = True
-            if self.matisse_worker is not None and self.matisse_worker.running():
-                print(&#39;Waiting for running tasks to complete.&#39;)
-                self.matisse_worker.result()
-            self.matisse_worker = None
-            self.matisse.stabilize_off()
-            self.matisse.stop_laser_lock_correction()
-            self.matisse.reset_motors()
-            self.matisse.reset_stabilization_piezos()
+    def reset(self, checked=False, reset_motors=True, reset_piezos=True, reset_matisse_tasks=True,
+              reset_ple_tasks=True):
+        &#34;&#34;&#34;
+        Reset Matisse to a &#39;good&#39; default state: not locked or stabilizing, motors reset, all tasks finished, etc.
+
+        Also stops any PLE analysis tasks.
+
+        Parameters
+        ----------
+        checked : bool
+            not used
+        reset_motors : bool
+            whether to reset the Matisse birefringent filter and thin etalon motors to their configured reset positions
+        reset_piezos : bool
+            whether to reset the Matisse stabilization piezos
+        reset_matisse_tasks : bool
+            whether to trigger the exit flag and quit any running tasks (like scans)
+        reset_ple_tasks : bool
+            whether to stop any running PLE-related tasks
+        &#34;&#34;&#34;
+        if self.matisse:
+            if reset_matisse_tasks:
+                self.matisse.exit_flag = True
+                if self.matisse_worker is not None and self.matisse_worker.running():
+                    print(&#39;Waiting for Matisse tasks to complete.&#39;)
+                    self.matisse_worker.result()
+                self.matisse_worker = None
+            if self.matisse.is_stabilizing():
+                self.matisse.stabilize_off()
+            if self.matisse.is_lock_correction_on():
+                self.matisse.stop_laser_lock_correction()
+            if reset_motors:
+                self.matisse.reset_motors()
+            if reset_piezos:
+                self.matisse.reset_stabilization_piezos()
+
+        if reset_ple_tasks:
+            self.ple.stop_ple_tasks()
+
+            if self.ple_scan_worker and self.ple_scan_worker.running():
+                print(&#39;Waiting for PLE scan to complete.&#39;)
+                self.ple_scan_worker.result()
+            self.ple_scan_worker = None
+
+            if self.ple_analysis_worker and self.ple_analysis_worker.running():
+                print(&#39;Waiting for PLE analysis to complete.&#39;)
+                self.ple_analysis_worker.result()
+            self.ple_analysis_worker = None
+
+            if self.single_acquisition_worker and self.single_acquisition_worker.running():
+                print(&#39;Waiting for acquisition to complete.&#39;)
+                self.single_acquisition_worker.result()
+            self.single_acquisition_worker = None
+
+        if self.matisse:
             self.matisse.exit_flag = False
-        print(&#39;Reset complete.&#39;)
+
+        print(&#39;Done.&#39;)
+
+    @handled_slot(bool)
+    def reset_motors_only(self, checked):
+        self.reset(reset_piezos=False, reset_matisse_tasks=False, reset_ple_tasks=False)
+
+    @handled_slot(bool)
+    def reset_piezos_only(self, checked):
+        self.reset(reset_motors=False, reset_matisse_tasks=False, reset_ple_tasks=False)
+
+    @handled_slot(bool)
+    def reset_matisse_tasks_only(self, checked):
+        self.reset(reset_motors=False, reset_piezos=False, reset_ple_tasks=False)
+
+    @handled_slot(bool)
+    def reset_ple_tasks_only(self, checked):
+        self.reset(reset_motors=False, reset_piezos=False, reset_matisse_tasks=False)
 
     @handled_slot(bool)
     def restart(self, checked):
@@ -338,7 +433,7 @@ class ControlApplication(QApplication):
         else:
             self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
             self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
-            self.matisse.start_scan(Matisse.SCAN_MODE_UP)
+            self.matisse.start_scan(matisse.SCAN_MODE_UP)
 
     @handled_slot(bool)
     def scan_device_down(self, checked):
@@ -347,7 +442,7 @@ class ControlApplication(QApplication):
         else:
             self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
             self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
-            self.matisse.start_scan(Matisse.SCAN_MODE_DOWN)
+            self.matisse.start_scan(matisse.SCAN_MODE_DOWN)
 
     @handled_slot(bool)
     def stop_scanning_device(self, checked):
@@ -360,12 +455,8 @@ class ControlApplication(QApplication):
     def toggle_lock_laser(self, checked):
         if self.matisse.is_lock_correction_on():
             self.matisse.stop_laser_lock_correction()
-            [action.setEnabled(True) for action in self.control_loop_actions]
-            [action.setChecked(False) for action in self.control_loop_actions]
         else:
             self.matisse.start_laser_lock_correction()
-            [action.setEnabled(False) for action in self.control_loop_actions]
-            [action.setChecked(True) for action in self.control_loop_actions]
 
     @handled_slot(bool)
     def set_recommended_fast_pz_setpoint(self, checked):
@@ -408,7 +499,53 @@ class ControlApplication(QApplication):
 
     @handled_slot(bool)
     def start_ple_scan(self, checked):
-        raise NotImplementedError(&#39;PLE scan logic currently in development.&#39;)
+        if self.ple_scan_worker and self.ple_scan_worker.running():
+            print(&#39;WARNING: A PLE scan is currently in progress.&#39;)
+            return
+
+        dialog = PLEScanDialog(parent=self.window)
+        if dialog.exec() == QDialog.Accepted:
+            ple_options = dialog.get_form_data()
+            print(&#39;Starting PLE scan.&#39;)
+            self.ple_scan_worker = self.work_executor.submit(self.ple.start_ple_scan, **ple_options)
+            self.ple_scan_worker.add_done_callback(utils.raise_error_from_future)
+
+    @handled_slot(bool)
+    def analyze_ple_data(self, checked):
+        if self.ple_analysis_worker and self.ple_analysis_worker.running():
+            print(&#39;WARNING: A PLE analysis is currently in progress.&#39;)
+            return
+
+        dialog = PLEAnalysisDialog(parent=self.window)
+        if dialog.exec() == QDialog.Accepted:
+            analysis_options = dialog.get_form_data()
+            self.ple_analysis_worker = self.work_executor.submit(self.ple.analyze_ple_data, **analysis_options)
+            self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)
+
+    @handled_slot(bool)
+    def view_existing_analysis(self, checked):
+        if self.ple_analysis_worker and self.ple_analysis_worker.running():
+            print(&#39;WARNING: A PLE analysis is currently in progress.&#39;)
+            return
+
+        file_path, success = QFileDialog.getOpenFileName(caption=&#39;Select Analysis File&#39;,
+                                                         filter=&#39;Pickle file (*.pickle)&#39;)
+        if success:
+            self.ple_analysis_worker = self.work_executor.submit(self.ple.plot_ple_analysis_file, file_path)
+            self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)
+
+    @handled_slot(bool)
+    def take_single_acquisition(self, checked):
+        if self.single_acquisition_worker and self.single_acquisition_worker.running():
+            print(&#39;WARNING: An acquisition is currently in progress.&#39;)
+            return
+
+        dialog = SingleAcquisitionDialog(parent=self.window)
+        if dialog.exec() == QDialog.Accepted:
+            acquisition_options = dialog.get_form_data()
+            self.single_acquisition_worker = self.work_executor.submit(self.ple.plot_single_acquisition,
+                                                                       **acquisition_options)
+            self.single_acquisition_worker.add_done_callback(utils.raise_error_from_future)
 
     def run_matisse_task(self, function, *args, **kwargs) -&gt; bool:
         &#34;&#34;&#34;
@@ -429,27 +566,13 @@ class ControlApplication(QApplication):
         bool
             whether the task was successfully started
         &#34;&#34;&#34;
-        if self.matisse_worker is not None and self.matisse_worker.running():
+        if self.matisse_worker and self.matisse_worker.running():
             print(&#34;WARNING: Cannot perform requested action. A Matisse-related task is currently running.&#34;)
             return False
         else:
             self.matisse_worker = self.work_executor.submit(function, *args, **kwargs)
-            self.matisse_worker.add_done_callback(self.raise_error_from_future)
+            self.matisse_worker.add_done_callback(utils.raise_error_from_future)
             return True
-
-    def raise_error_from_future(self, future: Future):
-        &#34;&#34;&#34;
-        If you&#39;d lke to log errors that occur in worker threads, call `add_done_callback` on the future returned from
-        the work executor and pass in this function.
-        &#34;&#34;&#34;
-        async_task_error: Exception = future.exception()
-        if async_task_error is not None:
-            # Using the error_dialog method here seems to just hang the application forever.
-            # Workaround: log error, make a noise, alert the user, and hope for the best
-            message = f&#34;An error occurred while running an asynchronous task: &lt;pre&gt;{traceback.format_exc()}&lt;/pre&gt;&#34;
-            self.alert(self.window)
-            self.beep()
-            print(utils.red_text(message))
 
 
 def main():
@@ -523,6 +646,10 @@ if __name__ == &#39;__main__&#39;:
         self.aboutToQuit.connect(self.clean_up)
         self.work_executor = ThreadPoolExecutor()
         self.matisse_worker: Future = None
+        self.ple: PLE = PLE(self.matisse)
+        self.ple_scan_worker: Future = None
+        self.ple_analysis_worker: Future = None
+        self.single_acquisition_worker: Future = None
 
         container = QWidget()
         container.setLayout(self.layout)
@@ -552,8 +679,14 @@ if __name__ == &#39;__main__&#39;:
 
         console_menu = menu_bar.addMenu(&#39;Console&#39;)
         self.clear_log_area_action = console_menu.addAction(&#39;Clear Log&#39;)
+        self.close_plots_action = console_menu.addAction(&#39;Close All Plots&#39;)
         self.configuration_action = console_menu.addAction(&#39;Configuration&#39;)
-        self.reset_action = console_menu.addAction(&#39;Reset&#39;)
+        reset_menu = console_menu.addMenu(&#39;Reset&#39;)
+        self.reset_all_action = reset_menu.addAction(&#39;All&#39;)
+        self.reset_matisse_motors_action = reset_menu.addAction(&#39;Matisse Motors&#39;)
+        self.reset_matisse_piezos_action = reset_menu.addAction(&#39;Stabilization Piezos&#39;)
+        self.reset_matisse_tasks_action = reset_menu.addAction(&#39;Matisse Tasks&#39;)
+        self.reset_ple_tasks_action = reset_menu.addAction(&#39;PLE Tasks&#39;)
         self.restart_action = console_menu.addAction(&#39;Restart&#39;)
 
         set_menu = menu_bar.addMenu(&#39;Set&#39;)
@@ -588,6 +721,9 @@ if __name__ == &#39;__main__&#39;:
 
         ple_menu = menu_bar.addMenu(&#39;Shamrock&#39;)
         self.start_ple_scan_action = ple_menu.addAction(&#39;Start PLE Scan&#39;)
+        self.analyze_ple_action = ple_menu.addAction(&#39;Start PLE Analysis&#39;)
+        self.view_existing_analysis_action = ple_menu.addAction(&#39;View PLE Analysis&#39;)
+        self.single_acquisition_action = ple_menu.addAction(&#39;View Single Acquisition&#39;)
 
         self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
                                      self.piezo_eta_control_action, self.fast_pz_control_action]
@@ -600,8 +736,13 @@ if __name__ == &#39;__main__&#39;:
         &#34;&#34;&#34;
         # Console
         self.clear_log_area_action.triggered.connect(self.clear_log_area)
+        self.close_plots_action.triggered.connect(self.close_plots)
         self.configuration_action.triggered.connect(self.open_configuration)
-        self.reset_action.triggered.connect(self.reset_matisse)
+        self.reset_all_action.triggered.connect(self.reset)
+        self.reset_matisse_motors_action.triggered.connect(self.reset_motors_only)
+        self.reset_matisse_piezos_action.triggered.connect(self.reset_piezos_only)
+        self.reset_matisse_tasks_action.triggered.connect(self.reset_matisse_tasks_only)
+        self.reset_ple_tasks_action.triggered.connect(self.reset_ple_tasks_only)
         self.restart_action.triggered.connect(self.restart)
 
         # Set
@@ -633,6 +774,9 @@ if __name__ == &#39;__main__&#39;:
 
         # Shamrock
         self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
+        self.analyze_ple_action.triggered.connect(self.analyze_ple_data)
+        self.view_existing_analysis_action.triggered.connect(self.view_existing_analysis)
+        self.single_acquisition_action.triggered.connect(self.take_single_acquisition)
 
     @handled_function
     def setup_widgets(self):
@@ -645,6 +789,8 @@ if __name__ == &#39;__main__&#39;:
     def setup_matisse(self):
         try:
             self.matisse: Matisse = Matisse()
+            if self.matisse.all_control_loops_on() and not self.matisse.is_lock_correction_on():
+                self.matisse.start_laser_lock_correction()
         except Exception as err:
             self.matisse: Matisse = None
             raise err
@@ -656,11 +802,14 @@ if __name__ == &#39;__main__&#39;:
 
         Don&#39;t call this elsewhere unless you know what you&#39;re doing.
         &#34;&#34;&#34;
-        self.reset_matisse()
+        self.reset(reset_motors=False, reset_piezos=False)
+        del self.matisse
 
         # Clean up widgets with running threads.
         self.status_monitor.clean_up()
         self.log_area.clean_up()
+
+        PLE.clean_up_globals()
 
         self.log_redirector.__exit__(None, None, None)
 
@@ -685,26 +834,89 @@ if __name__ == &#39;__main__&#39;:
         self.log_area.clear()
 
     @handled_slot(bool)
+    def close_plots(self, checked):
+        self.matisse.close_all_plots()
+
+    @handled_slot(bool)
     def open_configuration(self, checked):
         dialog = ConfigurationDialog()
         dialog.exec()
 
     @handled_slot(bool)
-    def reset_matisse(self, checked=False):
-        &#34;&#34;&#34;Reset Matisse to a &#39;good&#39; default state: not locked or stabilizing, motors reset, all tasks finished, etc.&#34;&#34;&#34;
-        print(&#39;Starting reset.&#39;)
-        if self.matisse is not None:
-            self.matisse.exit_flag = True
-            if self.matisse_worker is not None and self.matisse_worker.running():
-                print(&#39;Waiting for running tasks to complete.&#39;)
-                self.matisse_worker.result()
-            self.matisse_worker = None
-            self.matisse.stabilize_off()
-            self.matisse.stop_laser_lock_correction()
-            self.matisse.reset_motors()
-            self.matisse.reset_stabilization_piezos()
+    def reset(self, checked=False, reset_motors=True, reset_piezos=True, reset_matisse_tasks=True,
+              reset_ple_tasks=True):
+        &#34;&#34;&#34;
+        Reset Matisse to a &#39;good&#39; default state: not locked or stabilizing, motors reset, all tasks finished, etc.
+
+        Also stops any PLE analysis tasks.
+
+        Parameters
+        ----------
+        checked : bool
+            not used
+        reset_motors : bool
+            whether to reset the Matisse birefringent filter and thin etalon motors to their configured reset positions
+        reset_piezos : bool
+            whether to reset the Matisse stabilization piezos
+        reset_matisse_tasks : bool
+            whether to trigger the exit flag and quit any running tasks (like scans)
+        reset_ple_tasks : bool
+            whether to stop any running PLE-related tasks
+        &#34;&#34;&#34;
+        if self.matisse:
+            if reset_matisse_tasks:
+                self.matisse.exit_flag = True
+                if self.matisse_worker is not None and self.matisse_worker.running():
+                    print(&#39;Waiting for Matisse tasks to complete.&#39;)
+                    self.matisse_worker.result()
+                self.matisse_worker = None
+            if self.matisse.is_stabilizing():
+                self.matisse.stabilize_off()
+            if self.matisse.is_lock_correction_on():
+                self.matisse.stop_laser_lock_correction()
+            if reset_motors:
+                self.matisse.reset_motors()
+            if reset_piezos:
+                self.matisse.reset_stabilization_piezos()
+
+        if reset_ple_tasks:
+            self.ple.stop_ple_tasks()
+
+            if self.ple_scan_worker and self.ple_scan_worker.running():
+                print(&#39;Waiting for PLE scan to complete.&#39;)
+                self.ple_scan_worker.result()
+            self.ple_scan_worker = None
+
+            if self.ple_analysis_worker and self.ple_analysis_worker.running():
+                print(&#39;Waiting for PLE analysis to complete.&#39;)
+                self.ple_analysis_worker.result()
+            self.ple_analysis_worker = None
+
+            if self.single_acquisition_worker and self.single_acquisition_worker.running():
+                print(&#39;Waiting for acquisition to complete.&#39;)
+                self.single_acquisition_worker.result()
+            self.single_acquisition_worker = None
+
+        if self.matisse:
             self.matisse.exit_flag = False
-        print(&#39;Reset complete.&#39;)
+
+        print(&#39;Done.&#39;)
+
+    @handled_slot(bool)
+    def reset_motors_only(self, checked):
+        self.reset(reset_piezos=False, reset_matisse_tasks=False, reset_ple_tasks=False)
+
+    @handled_slot(bool)
+    def reset_piezos_only(self, checked):
+        self.reset(reset_motors=False, reset_matisse_tasks=False, reset_ple_tasks=False)
+
+    @handled_slot(bool)
+    def reset_matisse_tasks_only(self, checked):
+        self.reset(reset_motors=False, reset_piezos=False, reset_ple_tasks=False)
+
+    @handled_slot(bool)
+    def reset_ple_tasks_only(self, checked):
+        self.reset(reset_motors=False, reset_piezos=False, reset_matisse_tasks=False)
 
     @handled_slot(bool)
     def restart(self, checked):
@@ -796,7 +1008,7 @@ if __name__ == &#39;__main__&#39;:
         else:
             self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
             self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
-            self.matisse.start_scan(Matisse.SCAN_MODE_UP)
+            self.matisse.start_scan(matisse.SCAN_MODE_UP)
 
     @handled_slot(bool)
     def scan_device_down(self, checked):
@@ -805,7 +1017,7 @@ if __name__ == &#39;__main__&#39;:
         else:
             self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
             self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
-            self.matisse.start_scan(Matisse.SCAN_MODE_DOWN)
+            self.matisse.start_scan(matisse.SCAN_MODE_DOWN)
 
     @handled_slot(bool)
     def stop_scanning_device(self, checked):
@@ -818,12 +1030,8 @@ if __name__ == &#39;__main__&#39;:
     def toggle_lock_laser(self, checked):
         if self.matisse.is_lock_correction_on():
             self.matisse.stop_laser_lock_correction()
-            [action.setEnabled(True) for action in self.control_loop_actions]
-            [action.setChecked(False) for action in self.control_loop_actions]
         else:
             self.matisse.start_laser_lock_correction()
-            [action.setEnabled(False) for action in self.control_loop_actions]
-            [action.setChecked(True) for action in self.control_loop_actions]
 
     @handled_slot(bool)
     def set_recommended_fast_pz_setpoint(self, checked):
@@ -866,7 +1074,53 @@ if __name__ == &#39;__main__&#39;:
 
     @handled_slot(bool)
     def start_ple_scan(self, checked):
-        raise NotImplementedError(&#39;PLE scan logic currently in development.&#39;)
+        if self.ple_scan_worker and self.ple_scan_worker.running():
+            print(&#39;WARNING: A PLE scan is currently in progress.&#39;)
+            return
+
+        dialog = PLEScanDialog(parent=self.window)
+        if dialog.exec() == QDialog.Accepted:
+            ple_options = dialog.get_form_data()
+            print(&#39;Starting PLE scan.&#39;)
+            self.ple_scan_worker = self.work_executor.submit(self.ple.start_ple_scan, **ple_options)
+            self.ple_scan_worker.add_done_callback(utils.raise_error_from_future)
+
+    @handled_slot(bool)
+    def analyze_ple_data(self, checked):
+        if self.ple_analysis_worker and self.ple_analysis_worker.running():
+            print(&#39;WARNING: A PLE analysis is currently in progress.&#39;)
+            return
+
+        dialog = PLEAnalysisDialog(parent=self.window)
+        if dialog.exec() == QDialog.Accepted:
+            analysis_options = dialog.get_form_data()
+            self.ple_analysis_worker = self.work_executor.submit(self.ple.analyze_ple_data, **analysis_options)
+            self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)
+
+    @handled_slot(bool)
+    def view_existing_analysis(self, checked):
+        if self.ple_analysis_worker and self.ple_analysis_worker.running():
+            print(&#39;WARNING: A PLE analysis is currently in progress.&#39;)
+            return
+
+        file_path, success = QFileDialog.getOpenFileName(caption=&#39;Select Analysis File&#39;,
+                                                         filter=&#39;Pickle file (*.pickle)&#39;)
+        if success:
+            self.ple_analysis_worker = self.work_executor.submit(self.ple.plot_ple_analysis_file, file_path)
+            self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)
+
+    @handled_slot(bool)
+    def take_single_acquisition(self, checked):
+        if self.single_acquisition_worker and self.single_acquisition_worker.running():
+            print(&#39;WARNING: An acquisition is currently in progress.&#39;)
+            return
+
+        dialog = SingleAcquisitionDialog(parent=self.window)
+        if dialog.exec() == QDialog.Accepted:
+            acquisition_options = dialog.get_form_data()
+            self.single_acquisition_worker = self.work_executor.submit(self.ple.plot_single_acquisition,
+                                                                       **acquisition_options)
+            self.single_acquisition_worker.add_done_callback(utils.raise_error_from_future)
 
     def run_matisse_task(self, function, *args, **kwargs) -&gt; bool:
         &#34;&#34;&#34;
@@ -887,27 +1141,13 @@ if __name__ == &#39;__main__&#39;:
         bool
             whether the task was successfully started
         &#34;&#34;&#34;
-        if self.matisse_worker is not None and self.matisse_worker.running():
+        if self.matisse_worker and self.matisse_worker.running():
             print(&#34;WARNING: Cannot perform requested action. A Matisse-related task is currently running.&#34;)
             return False
         else:
             self.matisse_worker = self.work_executor.submit(function, *args, **kwargs)
-            self.matisse_worker.add_done_callback(self.raise_error_from_future)
-            return True
-
-    def raise_error_from_future(self, future: Future):
-        &#34;&#34;&#34;
-        If you&#39;d lke to log errors that occur in worker threads, call `add_done_callback` on the future returned from
-        the work executor and pass in this function.
-        &#34;&#34;&#34;
-        async_task_error: Exception = future.exception()
-        if async_task_error is not None:
-            # Using the error_dialog method here seems to just hang the application forever.
-            # Workaround: log error, make a noise, alert the user, and hope for the best
-            message = f&#34;An error occurred while running an asynchronous task: &lt;pre&gt;{traceback.format_exc()}&lt;/pre&gt;&#34;
-            self.alert(self.window)
-            self.beep()
-            print(utils.red_text(message))</code></pre>
+            self.matisse_worker.add_done_callback(utils.raise_error_from_future)
+            return True</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -931,6 +1171,26 @@ if __name__ == &#39;__main__&#39;:
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="matisse_controller.gui.control_application.ControlApplication.analyze_ple_data"><code class="name flex">
+<span>def <span class="ident">analyze_ple_data</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def analyze_ple_data(self, checked):
+    if self.ple_analysis_worker and self.ple_analysis_worker.running():
+        print(&#39;WARNING: A PLE analysis is currently in progress.&#39;)
+        return
+
+    dialog = PLEAnalysisDialog(parent=self.window)
+    if dialog.exec() == QDialog.Accepted:
+        analysis_options = dialog.get_form_data()
+        self.ple_analysis_worker = self.work_executor.submit(self.ple.analyze_ple_data, **analysis_options)
+        self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)</code></pre>
+</details>
+</dd>
 <dt id="matisse_controller.gui.control_application.ControlApplication.clean_up"><code class="name flex">
 <span>def <span class="ident">clean_up</span></span>(<span>self)</span>
 </code></dt>
@@ -946,11 +1206,14 @@ def clean_up(self):
 
     Don&#39;t call this elsewhere unless you know what you&#39;re doing.
     &#34;&#34;&#34;
-    self.reset_matisse()
+    self.reset(reset_motors=False, reset_piezos=False)
+    del self.matisse
 
     # Clean up widgets with running threads.
     self.status_monitor.clean_up()
     self.log_area.clean_up()
+
+    PLE.clean_up_globals()
 
     self.log_redirector.__exit__(None, None, None)</code></pre>
 </details>
@@ -965,6 +1228,18 @@ def clean_up(self):
 <pre><code class="python">@handled_slot(bool)
 def clear_log_area(self, checked):
     self.log_area.clear()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.close_plots"><code class="name flex">
+<span>def <span class="ident">close_plots</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def close_plots(self, checked):
+    self.matisse.close_all_plots()</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.gui.control_application.ControlApplication.error_dialog"><code class="name flex">
@@ -1004,52 +1279,134 @@ def open_configuration(self, checked):
     dialog.exec()</code></pre>
 </details>
 </dd>
-<dt id="matisse_controller.gui.control_application.ControlApplication.raise_error_from_future"><code class="name flex">
-<span>def <span class="ident">raise_error_from_future</span></span>(<span>self, future)</span>
+<dt id="matisse_controller.gui.control_application.ControlApplication.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>self, checked=False, reset_motors=True, reset_piezos=True, reset_matisse_tasks=True, reset_ple_tasks=True)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>If you'd lke to log errors that occur in worker threads, call <code>add_done_callback</code> on the future returned from
-the work executor and pass in this function.</p></section>
-<details class="source">
-<summary>Source code</summary>
-<pre><code class="python">def raise_error_from_future(self, future: Future):
-    &#34;&#34;&#34;
-    If you&#39;d lke to log errors that occur in worker threads, call `add_done_callback` on the future returned from
-    the work executor and pass in this function.
-    &#34;&#34;&#34;
-    async_task_error: Exception = future.exception()
-    if async_task_error is not None:
-        # Using the error_dialog method here seems to just hang the application forever.
-        # Workaround: log error, make a noise, alert the user, and hope for the best
-        message = f&#34;An error occurred while running an asynchronous task: &lt;pre&gt;{traceback.format_exc()}&lt;/pre&gt;&#34;
-        self.alert(self.window)
-        self.beep()
-        print(utils.red_text(message))</code></pre>
-</details>
-</dd>
-<dt id="matisse_controller.gui.control_application.ControlApplication.reset_matisse"><code class="name flex">
-<span>def <span class="ident">reset_matisse</span></span>(<span>self, checked=False)</span>
-</code></dt>
-<dd>
-<section class="desc"><p>Reset Matisse to a 'good' default state: not locked or stabilizing, motors reset, all tasks finished, etc.</p></section>
+<section class="desc"><p>Reset Matisse to a 'good' default state: not locked or stabilizing, motors reset, all tasks finished, etc.</p>
+<p>Also stops any PLE analysis tasks.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>checked</code></strong> :&ensp;<code>bool</code></dt>
+<dd>not used</dd>
+<dt><strong><code>reset_motors</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to reset the Matisse birefringent filter and thin etalon motors to their configured reset positions</dd>
+<dt><strong><code>reset_piezos</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to reset the Matisse stabilization piezos</dd>
+<dt><strong><code>reset_matisse_tasks</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to trigger the exit flag and quit any running tasks (like scans)</dd>
+<dt><strong><code>reset_ple_tasks</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to stop any running PLE-related tasks</dd>
+</dl></section>
 <details class="source">
 <summary>Source code</summary>
 <pre><code class="python">@handled_slot(bool)
-def reset_matisse(self, checked=False):
-    &#34;&#34;&#34;Reset Matisse to a &#39;good&#39; default state: not locked or stabilizing, motors reset, all tasks finished, etc.&#34;&#34;&#34;
-    print(&#39;Starting reset.&#39;)
-    if self.matisse is not None:
-        self.matisse.exit_flag = True
-        if self.matisse_worker is not None and self.matisse_worker.running():
-            print(&#39;Waiting for running tasks to complete.&#39;)
-            self.matisse_worker.result()
-        self.matisse_worker = None
-        self.matisse.stabilize_off()
-        self.matisse.stop_laser_lock_correction()
-        self.matisse.reset_motors()
-        self.matisse.reset_stabilization_piezos()
+def reset(self, checked=False, reset_motors=True, reset_piezos=True, reset_matisse_tasks=True,
+          reset_ple_tasks=True):
+    &#34;&#34;&#34;
+    Reset Matisse to a &#39;good&#39; default state: not locked or stabilizing, motors reset, all tasks finished, etc.
+
+    Also stops any PLE analysis tasks.
+
+    Parameters
+    ----------
+    checked : bool
+        not used
+    reset_motors : bool
+        whether to reset the Matisse birefringent filter and thin etalon motors to their configured reset positions
+    reset_piezos : bool
+        whether to reset the Matisse stabilization piezos
+    reset_matisse_tasks : bool
+        whether to trigger the exit flag and quit any running tasks (like scans)
+    reset_ple_tasks : bool
+        whether to stop any running PLE-related tasks
+    &#34;&#34;&#34;
+    if self.matisse:
+        if reset_matisse_tasks:
+            self.matisse.exit_flag = True
+            if self.matisse_worker is not None and self.matisse_worker.running():
+                print(&#39;Waiting for Matisse tasks to complete.&#39;)
+                self.matisse_worker.result()
+            self.matisse_worker = None
+        if self.matisse.is_stabilizing():
+            self.matisse.stabilize_off()
+        if self.matisse.is_lock_correction_on():
+            self.matisse.stop_laser_lock_correction()
+        if reset_motors:
+            self.matisse.reset_motors()
+        if reset_piezos:
+            self.matisse.reset_stabilization_piezos()
+
+    if reset_ple_tasks:
+        self.ple.stop_ple_tasks()
+
+        if self.ple_scan_worker and self.ple_scan_worker.running():
+            print(&#39;Waiting for PLE scan to complete.&#39;)
+            self.ple_scan_worker.result()
+        self.ple_scan_worker = None
+
+        if self.ple_analysis_worker and self.ple_analysis_worker.running():
+            print(&#39;Waiting for PLE analysis to complete.&#39;)
+            self.ple_analysis_worker.result()
+        self.ple_analysis_worker = None
+
+        if self.single_acquisition_worker and self.single_acquisition_worker.running():
+            print(&#39;Waiting for acquisition to complete.&#39;)
+            self.single_acquisition_worker.result()
+        self.single_acquisition_worker = None
+
+    if self.matisse:
         self.matisse.exit_flag = False
-    print(&#39;Reset complete.&#39;)</code></pre>
+
+    print(&#39;Done.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.reset_matisse_tasks_only"><code class="name flex">
+<span>def <span class="ident">reset_matisse_tasks_only</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def reset_matisse_tasks_only(self, checked):
+    self.reset(reset_motors=False, reset_piezos=False, reset_ple_tasks=False)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.reset_motors_only"><code class="name flex">
+<span>def <span class="ident">reset_motors_only</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def reset_motors_only(self, checked):
+    self.reset(reset_piezos=False, reset_matisse_tasks=False, reset_ple_tasks=False)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.reset_piezos_only"><code class="name flex">
+<span>def <span class="ident">reset_piezos_only</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def reset_piezos_only(self, checked):
+    self.reset(reset_motors=False, reset_matisse_tasks=False, reset_ple_tasks=False)</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.reset_ple_tasks_only"><code class="name flex">
+<span>def <span class="ident">reset_ple_tasks_only</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def reset_ple_tasks_only(self, checked):
+    self.reset(reset_motors=False, reset_piezos=False, reset_matisse_tasks=False)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.gui.control_application.ControlApplication.restart"><code class="name flex">
@@ -1105,12 +1462,12 @@ Any task run using this method MUST exit gracefully at some point by checking th
     bool
         whether the task was successfully started
     &#34;&#34;&#34;
-    if self.matisse_worker is not None and self.matisse_worker.running():
+    if self.matisse_worker and self.matisse_worker.running():
         print(&#34;WARNING: Cannot perform requested action. A Matisse-related task is currently running.&#34;)
         return False
     else:
         self.matisse_worker = self.work_executor.submit(function, *args, **kwargs)
-        self.matisse_worker.add_done_callback(self.raise_error_from_future)
+        self.matisse_worker.add_done_callback(utils.raise_error_from_future)
         return True</code></pre>
 </details>
 </dd>
@@ -1128,7 +1485,7 @@ def scan_device_down(self, checked):
     else:
         self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
         self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
-        self.matisse.start_scan(Matisse.SCAN_MODE_DOWN)</code></pre>
+        self.matisse.start_scan(matisse.SCAN_MODE_DOWN)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.gui.control_application.ControlApplication.scan_device_up"><code class="name flex">
@@ -1145,7 +1502,7 @@ def scan_device_up(self, checked):
     else:
         self.matisse.query(f&#34;SCAN:RISINGSPEED {cfg.get(cfg.REFCELL_SCAN_RISING_SPEED)}&#34;)
         self.matisse.query(f&#34;SCAN:FALLINGSPEED {cfg.get(cfg.REFCELL_SCAN_FALLING_SPEED)}&#34;)
-        self.matisse.start_scan(Matisse.SCAN_MODE_UP)</code></pre>
+        self.matisse.start_scan(matisse.SCAN_MODE_UP)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.gui.control_application.ControlApplication.set_bifi_approx_wavelength_dialog"><code class="name flex">
@@ -1318,6 +1675,8 @@ def set_wavelength_dialog(self, checked):
 def setup_matisse(self):
     try:
         self.matisse: Matisse = Matisse()
+        if self.matisse.all_control_loops_on() and not self.matisse.is_lock_correction_on():
+            self.matisse.start_laser_lock_correction()
     except Exception as err:
         self.matisse: Matisse = None
         raise err</code></pre>
@@ -1336,8 +1695,14 @@ def setup_matisse(self):
 
     console_menu = menu_bar.addMenu(&#39;Console&#39;)
     self.clear_log_area_action = console_menu.addAction(&#39;Clear Log&#39;)
+    self.close_plots_action = console_menu.addAction(&#39;Close All Plots&#39;)
     self.configuration_action = console_menu.addAction(&#39;Configuration&#39;)
-    self.reset_action = console_menu.addAction(&#39;Reset&#39;)
+    reset_menu = console_menu.addMenu(&#39;Reset&#39;)
+    self.reset_all_action = reset_menu.addAction(&#39;All&#39;)
+    self.reset_matisse_motors_action = reset_menu.addAction(&#39;Matisse Motors&#39;)
+    self.reset_matisse_piezos_action = reset_menu.addAction(&#39;Stabilization Piezos&#39;)
+    self.reset_matisse_tasks_action = reset_menu.addAction(&#39;Matisse Tasks&#39;)
+    self.reset_ple_tasks_action = reset_menu.addAction(&#39;PLE Tasks&#39;)
     self.restart_action = console_menu.addAction(&#39;Restart&#39;)
 
     set_menu = menu_bar.addMenu(&#39;Set&#39;)
@@ -1372,6 +1737,9 @@ def setup_matisse(self):
 
     ple_menu = menu_bar.addMenu(&#39;Shamrock&#39;)
     self.start_ple_scan_action = ple_menu.addAction(&#39;Start PLE Scan&#39;)
+    self.analyze_ple_action = ple_menu.addAction(&#39;Start PLE Analysis&#39;)
+    self.view_existing_analysis_action = ple_menu.addAction(&#39;View PLE Analysis&#39;)
+    self.single_acquisition_action = ple_menu.addAction(&#39;View Single Acquisition&#39;)
 
     self.control_loop_actions = [self.slow_pz_control_action, self.thin_eta_control_action,
                                  self.piezo_eta_control_action, self.fast_pz_control_action]</code></pre>
@@ -1393,8 +1761,13 @@ def setup_matisse(self):
     &#34;&#34;&#34;
     # Console
     self.clear_log_area_action.triggered.connect(self.clear_log_area)
+    self.close_plots_action.triggered.connect(self.close_plots)
     self.configuration_action.triggered.connect(self.open_configuration)
-    self.reset_action.triggered.connect(self.reset_matisse)
+    self.reset_all_action.triggered.connect(self.reset)
+    self.reset_matisse_motors_action.triggered.connect(self.reset_motors_only)
+    self.reset_matisse_piezos_action.triggered.connect(self.reset_piezos_only)
+    self.reset_matisse_tasks_action.triggered.connect(self.reset_matisse_tasks_only)
+    self.reset_ple_tasks_action.triggered.connect(self.reset_ple_tasks_only)
     self.restart_action.triggered.connect(self.restart)
 
     # Set
@@ -1425,7 +1798,10 @@ def setup_matisse(self):
     self.auto_stabilize_action.triggered.connect(self.toggle_auto_stabilization)
 
     # Shamrock
-    self.start_ple_scan_action.triggered.connect(self.start_ple_scan)</code></pre>
+    self.start_ple_scan_action.triggered.connect(self.start_ple_scan)
+    self.analyze_ple_action.triggered.connect(self.analyze_ple_data)
+    self.view_existing_analysis_action.triggered.connect(self.view_existing_analysis)
+    self.single_acquisition_action.triggered.connect(self.take_single_acquisition)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.gui.control_application.ControlApplication.setup_widgets"><code class="name flex">
@@ -1478,7 +1854,16 @@ def start_bifi_scan(self, checked):
 <summary>Source code</summary>
 <pre><code class="python">@handled_slot(bool)
 def start_ple_scan(self, checked):
-    raise NotImplementedError(&#39;PLE scan logic currently in development.&#39;)</code></pre>
+    if self.ple_scan_worker and self.ple_scan_worker.running():
+        print(&#39;WARNING: A PLE scan is currently in progress.&#39;)
+        return
+
+    dialog = PLEScanDialog(parent=self.window)
+    if dialog.exec() == QDialog.Accepted:
+        ple_options = dialog.get_form_data()
+        print(&#39;Starting PLE scan.&#39;)
+        self.ple_scan_worker = self.work_executor.submit(self.ple.start_ple_scan, **ple_options)
+        self.ple_scan_worker.add_done_callback(utils.raise_error_from_future)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.gui.control_application.ControlApplication.start_thin_etalon_scan"><code class="name flex">
@@ -1506,6 +1891,27 @@ def stop_scanning_device(self, checked):
         print(&#39;WARNING: Auto-stabilize is on. Disable it and try again.&#39;)
     else:
         self.matisse.stop_scan()</code></pre>
+</details>
+</dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.take_single_acquisition"><code class="name flex">
+<span>def <span class="ident">take_single_acquisition</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def take_single_acquisition(self, checked):
+    if self.single_acquisition_worker and self.single_acquisition_worker.running():
+        print(&#39;WARNING: An acquisition is currently in progress.&#39;)
+        return
+
+    dialog = SingleAcquisitionDialog(parent=self.window)
+    if dialog.exec() == QDialog.Accepted:
+        acquisition_options = dialog.get_form_data()
+        self.single_acquisition_worker = self.work_executor.submit(self.ple.plot_single_acquisition,
+                                                                   **acquisition_options)
+        self.single_acquisition_worker.add_done_callback(utils.raise_error_from_future)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.gui.control_application.ControlApplication.toggle_auto_stabilization"><code class="name flex">
@@ -1549,12 +1955,8 @@ def toggle_fast_piezo_control(self, checked):
 def toggle_lock_laser(self, checked):
     if self.matisse.is_lock_correction_on():
         self.matisse.stop_laser_lock_correction()
-        [action.setEnabled(True) for action in self.control_loop_actions]
-        [action.setChecked(False) for action in self.control_loop_actions]
     else:
-        self.matisse.start_laser_lock_correction()
-        [action.setEnabled(False) for action in self.control_loop_actions]
-        [action.setChecked(True) for action in self.control_loop_actions]</code></pre>
+        self.matisse.start_laser_lock_correction()</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.gui.control_application.ControlApplication.toggle_piezo_etalon_control"><code class="name flex">
@@ -1602,6 +2004,26 @@ def toggle_thin_etalon_control(self, checked):
     self.thin_eta_control_action.setChecked(checked)</code></pre>
 </details>
 </dd>
+<dt id="matisse_controller.gui.control_application.ControlApplication.view_existing_analysis"><code class="name flex">
+<span>def <span class="ident">view_existing_analysis</span></span>(<span>self, checked)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">@handled_slot(bool)
+def view_existing_analysis(self, checked):
+    if self.ple_analysis_worker and self.ple_analysis_worker.running():
+        print(&#39;WARNING: A PLE analysis is currently in progress.&#39;)
+        return
+
+    file_path, success = QFileDialog.getOpenFileName(caption=&#39;Select Analysis File&#39;,
+                                                     filter=&#39;Pickle file (*.pickle)&#39;)
+    if success:
+        self.ple_analysis_worker = self.work_executor.submit(self.ple.plot_ple_analysis_file, file_path)
+        self.ple_analysis_worker.add_done_callback(utils.raise_error_from_future)</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -1630,12 +2052,17 @@ def toggle_thin_etalon_control(self, checked):
 <ul class="">
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD" href="#matisse_controller.gui.control_application.ControlApplication.CONFIRM_WAVELENGTH_CHANGE_THRESHOLD">CONFIRM_WAVELENGTH_CHANGE_THRESHOLD</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.EXIT_CODE_RESTART" href="#matisse_controller.gui.control_application.ControlApplication.EXIT_CODE_RESTART">EXIT_CODE_RESTART</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.analyze_ple_data" href="#matisse_controller.gui.control_application.ControlApplication.analyze_ple_data">analyze_ple_data</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.clean_up" href="#matisse_controller.gui.control_application.ControlApplication.clean_up">clean_up</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.clear_log_area" href="#matisse_controller.gui.control_application.ControlApplication.clear_log_area">clear_log_area</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.close_plots" href="#matisse_controller.gui.control_application.ControlApplication.close_plots">close_plots</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.error_dialog" href="#matisse_controller.gui.control_application.ControlApplication.error_dialog">error_dialog</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.open_configuration" href="#matisse_controller.gui.control_application.ControlApplication.open_configuration">open_configuration</a></code></li>
-<li><code><a title="matisse_controller.gui.control_application.ControlApplication.raise_error_from_future" href="#matisse_controller.gui.control_application.ControlApplication.raise_error_from_future">raise_error_from_future</a></code></li>
-<li><code><a title="matisse_controller.gui.control_application.ControlApplication.reset_matisse" href="#matisse_controller.gui.control_application.ControlApplication.reset_matisse">reset_matisse</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.reset" href="#matisse_controller.gui.control_application.ControlApplication.reset">reset</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.reset_matisse_tasks_only" href="#matisse_controller.gui.control_application.ControlApplication.reset_matisse_tasks_only">reset_matisse_tasks_only</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.reset_motors_only" href="#matisse_controller.gui.control_application.ControlApplication.reset_motors_only">reset_motors_only</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.reset_piezos_only" href="#matisse_controller.gui.control_application.ControlApplication.reset_piezos_only">reset_piezos_only</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.reset_ple_tasks_only" href="#matisse_controller.gui.control_application.ControlApplication.reset_ple_tasks_only">reset_ple_tasks_only</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.restart" href="#matisse_controller.gui.control_application.ControlApplication.restart">restart</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.run_matisse_task" href="#matisse_controller.gui.control_application.ControlApplication.run_matisse_task">run_matisse_task</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.scan_device_down" href="#matisse_controller.gui.control_application.ControlApplication.scan_device_down">scan_device_down</a></code></li>
@@ -1658,12 +2085,14 @@ def toggle_thin_etalon_control(self, checked):
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.start_ple_scan" href="#matisse_controller.gui.control_application.ControlApplication.start_ple_scan">start_ple_scan</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.start_thin_etalon_scan" href="#matisse_controller.gui.control_application.ControlApplication.start_thin_etalon_scan">start_thin_etalon_scan</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.stop_scanning_device" href="#matisse_controller.gui.control_application.ControlApplication.stop_scanning_device">stop_scanning_device</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.take_single_acquisition" href="#matisse_controller.gui.control_application.ControlApplication.take_single_acquisition">take_single_acquisition</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_auto_stabilization" href="#matisse_controller.gui.control_application.ControlApplication.toggle_auto_stabilization">toggle_auto_stabilization</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_fast_piezo_control" href="#matisse_controller.gui.control_application.ControlApplication.toggle_fast_piezo_control">toggle_fast_piezo_control</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_lock_laser" href="#matisse_controller.gui.control_application.ControlApplication.toggle_lock_laser">toggle_lock_laser</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_piezo_etalon_control" href="#matisse_controller.gui.control_application.ControlApplication.toggle_piezo_etalon_control">toggle_piezo_etalon_control</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_slow_piezo_control" href="#matisse_controller.gui.control_application.ControlApplication.toggle_slow_piezo_control">toggle_slow_piezo_control</a></code></li>
 <li><code><a title="matisse_controller.gui.control_application.ControlApplication.toggle_thin_etalon_control" href="#matisse_controller.gui.control_application.ControlApplication.toggle_thin_etalon_control">toggle_thin_etalon_control</a></code></li>
+<li><code><a title="matisse_controller.gui.control_application.ControlApplication.view_existing_analysis" href="#matisse_controller.gui.control_application.ControlApplication.view_existing_analysis">view_existing_analysis</a></code></li>
 </ul>
 </li>
 </ul>

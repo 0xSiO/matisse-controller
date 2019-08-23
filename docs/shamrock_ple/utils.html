@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.6.3" />
-<title>matisse_controller.gui.logging_stream API documentation</title>
+<title>matisse_controller.shamrock_ple.utils API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,25 +17,34 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>matisse_controller.gui.logging_stream</code></h1>
+<h1 class="title">Module <code>matisse_controller.shamrock_ple.utils</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">from queue import Queue
+<pre><code class="python">import os
+from ctypes import WinDLL, windll
+from os import path
 
 
-class LoggingStream:
-    &#34;&#34;&#34;A basic stream-like class with a message queue, meant to replace sys.stdout for logging purposes.&#34;&#34;&#34;
+def load_lib(name: str) -&gt; WinDLL:
+    &#34;&#34;&#34;
+    Load the specified dynamic link library using ctypes. Library functions may be called just like Python functions,
+    but any data passed to these functions must be C-compatible types from the ctypes module.
 
-    def __init__(self, queue: Queue):
-        self.queue = queue
+    Only loads libraries located inside the &#39;lib&#39; folder.
 
-    def write(self, message):
-        self.queue.put(message)
-
-    def flush(self):
-        pass</code></pre>
+    Returns
+    -------
+    WinDLL
+        an instance of WinDLL representing access to the library
+    &#34;&#34;&#34;
+    old_dir = os.getcwd()
+    lib_dir = path.join(path.abspath(path.dirname(__file__)), &#39;lib&#39;)
+    os.chdir(lib_dir)
+    lib = windll.LoadLibrary(name)
+    os.chdir(old_dir)
+    return lib</code></pre>
 </details>
 </section>
 <section>
@@ -43,57 +52,45 @@ class LoggingStream:
 <section>
 </section>
 <section>
-</section>
-<section>
-<h2 class="section-title" id="header-classes">Classes</h2>
+<h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="matisse_controller.gui.logging_stream.LoggingStream"><code class="flex name class">
-<span>class <span class="ident">LoggingStream</span></span>
-<span>(</span><span>queue)</span>
+<dt id="matisse_controller.shamrock_ple.utils.load_lib"><code class="name flex">
+<span>def <span class="ident">load_lib</span></span>(<span>name)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>A basic stream-like class with a message queue, meant to replace sys.stdout for logging purposes.</p></section>
-<details class="source">
-<summary>Source code</summary>
-<pre><code class="python">class LoggingStream:
-    &#34;&#34;&#34;A basic stream-like class with a message queue, meant to replace sys.stdout for logging purposes.&#34;&#34;&#34;
-
-    def __init__(self, queue: Queue):
-        self.queue = queue
-
-    def write(self, message):
-        self.queue.put(message)
-
-    def flush(self):
-        pass</code></pre>
-</details>
-<h3>Methods</h3>
+<section class="desc"><p>Load the specified dynamic link library using ctypes. Library functions may be called just like Python functions,
+but any data passed to these functions must be C-compatible types from the ctypes module.</p>
+<p>Only loads libraries located inside the 'lib' folder.</p>
+<h2 id="returns">Returns</h2>
 <dl>
-<dt id="matisse_controller.gui.logging_stream.LoggingStream.flush"><code class="name flex">
-<span>def <span class="ident">flush</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<section class="desc"></section>
+<dt><code>WinDLL</code></dt>
+<dd>an instance of WinDLL representing access to the library</dd>
+</dl></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def flush(self):
-    pass</code></pre>
-</details>
-</dd>
-<dt id="matisse_controller.gui.logging_stream.LoggingStream.write"><code class="name flex">
-<span>def <span class="ident">write</span></span>(<span>self, message)</span>
-</code></dt>
-<dd>
-<section class="desc"></section>
-<details class="source">
-<summary>Source code</summary>
-<pre><code class="python">def write(self, message):
-    self.queue.put(message)</code></pre>
+<pre><code class="python">def load_lib(name: str) -&gt; WinDLL:
+    &#34;&#34;&#34;
+    Load the specified dynamic link library using ctypes. Library functions may be called just like Python functions,
+    but any data passed to these functions must be C-compatible types from the ctypes module.
+
+    Only loads libraries located inside the &#39;lib&#39; folder.
+
+    Returns
+    -------
+    WinDLL
+        an instance of WinDLL representing access to the library
+    &#34;&#34;&#34;
+    old_dir = os.getcwd()
+    lib_dir = path.join(path.abspath(path.dirname(__file__)), &#39;lib&#39;)
+    os.chdir(lib_dir)
+    lib = windll.LoadLibrary(name)
+    os.chdir(old_dir)
+    return lib</code></pre>
 </details>
 </dd>
 </dl>
-</dd>
-</dl>
+</section>
+<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -104,18 +101,12 @@ class LoggingStream:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="matisse_controller.gui" href="index.html">matisse_controller.gui</a></code></li>
+<li><code><a title="matisse_controller.shamrock_ple" href="index.html">matisse_controller.shamrock_ple</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="matisse_controller.gui.logging_stream.LoggingStream" href="#matisse_controller.gui.logging_stream.LoggingStream">LoggingStream</a></code></h4>
+<li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="matisse_controller.gui.logging_stream.LoggingStream.flush" href="#matisse_controller.gui.logging_stream.LoggingStream.flush">flush</a></code></li>
-<li><code><a title="matisse_controller.gui.logging_stream.LoggingStream.write" href="#matisse_controller.gui.logging_stream.LoggingStream.write">write</a></code></li>
-</ul>
-</li>
+<li><code><a title="matisse_controller.shamrock_ple.utils.load_lib" href="#matisse_controller.shamrock_ple.utils.load_lib">load_lib</a></code></li>
 </ul>
 </li>
 </ul>

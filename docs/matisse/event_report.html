@@ -28,20 +28,30 @@
 import csv
 import os.path
 from datetime import datetime
+from enum import Enum
 
 FILE_NAME = &#39;matisse_event_report.csv&#39;
 FIELDS = [&#39;timestamp&#39;, &#39;event_type&#39;, &#39;current_wavelength&#39;, &#39;bifi_pos&#39;, &#39;thin_etalon_pos&#39;, &#39;refcell_pos&#39;,
           &#39;piezo_etalon_pos&#39;, &#39;slow_piezo_pos&#39;, &#39;is_stabilizing&#39;, &#39;is_locked&#39;, &#39;other_comments&#39;]
 
 
-def log_event(event_type: str, matisse, current_wavelength: float, other_comments=&#39;&#39;):
+class EventType(Enum):
+    &#34;&#34;&#34;An enumeration of different event types. The assigned value goes in each row of the CSV report.&#34;&#34;&#34;
+    SCAN_LIMIT_EXCEEDED = &#39;scan_limit_exceeded&#39;
+    LOCK_CORRECTION = &#39;lock_correction&#39;
+    STABILIZATION_CORRECTION = &#39;stabilization_correction&#39;
+    STABILIZATION_LIMIT_EXCEEDED = &#39;stabilization_correction_limit_exceeded&#39;
+    WAVELENGTH_DRIFT = &#39;wavelength_drift&#39;
+
+
+def log_event(event_type: EventType, matisse, current_wavelength: float, other_comments=&#39;&#39;):
     &#34;&#34;&#34;
     Write an event to the Matisse event report CSV file.
 
     Parameters
     ----------
-    event_type : str
-        a string describing the type of event that occurred
+    event_type : EventType
+        a member of `EventType` describing the type of event that occurred
     matisse : matisse_controller.matisse.matisse.Matisse
     current_wavelength : float
         the wavelength at which this event occurred
@@ -57,7 +67,7 @@ def log_event(event_type: str, matisse, current_wavelength: float, other_comment
         refcell_pos, pz_eta_pos, slow_pz_pos = matisse.get_stabilizing_piezo_positions()
         event_details = {
             &#39;timestamp&#39;: datetime.now().strftime(&#34;%Y-%m-%d %H:%M:%S&#34;),
-            &#39;event_type&#39;: event_type,
+            &#39;event_type&#39;: event_type.value,
             &#39;current_wavelength&#39;: current_wavelength,
             &#39;bifi_pos&#39;: bifi_pos,
             &#39;thin_etalon_pos&#39;: thin_eta_pos,
@@ -85,8 +95,8 @@ def log_event(event_type: str, matisse, current_wavelength: float, other_comment
 <section class="desc"><p>Write an event to the Matisse event report CSV file.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>event_type</code></strong> :&ensp;<code>str</code></dt>
-<dd>a string describing the type of event that occurred</dd>
+<dt><strong><code>event_type</code></strong> :&ensp;<a title="matisse_controller.matisse.event_report.EventType" href="#matisse_controller.matisse.event_report.EventType"><code>EventType</code></a></dt>
+<dd>a member of <a title="matisse_controller.matisse.event_report.EventType" href="#matisse_controller.matisse.event_report.EventType"><code>EventType</code></a> describing the type of event that occurred</dd>
 <dt><strong><code>matisse</code></strong> :&ensp;<a title="matisse_controller.matisse.matisse.Matisse" href="matisse.html#matisse_controller.matisse.matisse.Matisse"><code>Matisse</code></a></dt>
 <dd>&nbsp;</dd>
 <dt><strong><code>current_wavelength</code></strong> :&ensp;<code>float</code></dt>
@@ -96,14 +106,14 @@ def log_event(event_type: str, matisse, current_wavelength: float, other_comment
 </dl></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def log_event(event_type: str, matisse, current_wavelength: float, other_comments=&#39;&#39;):
+<pre><code class="python">def log_event(event_type: EventType, matisse, current_wavelength: float, other_comments=&#39;&#39;):
     &#34;&#34;&#34;
     Write an event to the Matisse event report CSV file.
 
     Parameters
     ----------
-    event_type : str
-        a string describing the type of event that occurred
+    event_type : EventType
+        a member of `EventType` describing the type of event that occurred
     matisse : matisse_controller.matisse.matisse.Matisse
     current_wavelength : float
         the wavelength at which this event occurred
@@ -119,7 +129,7 @@ def log_event(event_type: str, matisse, current_wavelength: float, other_comment
         refcell_pos, pz_eta_pos, slow_pz_pos = matisse.get_stabilizing_piezo_positions()
         event_details = {
             &#39;timestamp&#39;: datetime.now().strftime(&#34;%Y-%m-%d %H:%M:%S&#34;),
-            &#39;event_type&#39;: event_type,
+            &#39;event_type&#39;: event_type.value,
             &#39;current_wavelength&#39;: current_wavelength,
             &#39;bifi_pos&#39;: bifi_pos,
             &#39;thin_etalon_pos&#39;: thin_eta_pos,
@@ -136,6 +146,53 @@ def log_event(event_type: str, matisse, current_wavelength: float, other_comment
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="matisse_controller.matisse.event_report.EventType"><code class="flex name class">
+<span>class <span class="ident">EventType</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>An enumeration of different event types. The assigned value goes in each row of the CSV report.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class EventType(Enum):
+    &#34;&#34;&#34;An enumeration of different event types. The assigned value goes in each row of the CSV report.&#34;&#34;&#34;
+    SCAN_LIMIT_EXCEEDED = &#39;scan_limit_exceeded&#39;
+    LOCK_CORRECTION = &#39;lock_correction&#39;
+    STABILIZATION_CORRECTION = &#39;stabilization_correction&#39;
+    STABILIZATION_LIMIT_EXCEEDED = &#39;stabilization_correction_limit_exceeded&#39;
+    WAVELENGTH_DRIFT = &#39;wavelength_drift&#39;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="matisse_controller.matisse.event_report.EventType.LOCK_CORRECTION"><code class="name">var <span class="ident">LOCK_CORRECTION</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.matisse.event_report.EventType.SCAN_LIMIT_EXCEEDED"><code class="name">var <span class="ident">SCAN_LIMIT_EXCEEDED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.matisse.event_report.EventType.STABILIZATION_CORRECTION"><code class="name">var <span class="ident">STABILIZATION_CORRECTION</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.matisse.event_report.EventType.STABILIZATION_LIMIT_EXCEEDED"><code class="name">var <span class="ident">STABILIZATION_LIMIT_EXCEEDED</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="matisse_controller.matisse.event_report.EventType.WAVELENGTH_DRIFT"><code class="name">var <span class="ident">WAVELENGTH_DRIFT</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -152,6 +209,20 @@ def log_event(event_type: str, matisse, current_wavelength: float, other_comment
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="matisse_controller.matisse.event_report.log_event" href="#matisse_controller.matisse.event_report.log_event">log_event</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="matisse_controller.matisse.event_report.EventType" href="#matisse_controller.matisse.event_report.EventType">EventType</a></code></h4>
+<ul class="">
+<li><code><a title="matisse_controller.matisse.event_report.EventType.LOCK_CORRECTION" href="#matisse_controller.matisse.event_report.EventType.LOCK_CORRECTION">LOCK_CORRECTION</a></code></li>
+<li><code><a title="matisse_controller.matisse.event_report.EventType.SCAN_LIMIT_EXCEEDED" href="#matisse_controller.matisse.event_report.EventType.SCAN_LIMIT_EXCEEDED">SCAN_LIMIT_EXCEEDED</a></code></li>
+<li><code><a title="matisse_controller.matisse.event_report.EventType.STABILIZATION_CORRECTION" href="#matisse_controller.matisse.event_report.EventType.STABILIZATION_CORRECTION">STABILIZATION_CORRECTION</a></code></li>
+<li><code><a title="matisse_controller.matisse.event_report.EventType.STABILIZATION_LIMIT_EXCEEDED" href="#matisse_controller.matisse.event_report.EventType.STABILIZATION_LIMIT_EXCEEDED">STABILIZATION_LIMIT_EXCEEDED</a></code></li>
+<li><code><a title="matisse_controller.matisse.event_report.EventType.WAVELENGTH_DRIFT" href="#matisse_controller.matisse.event_report.EventType.WAVELENGTH_DRIFT">WAVELENGTH_DRIFT</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -8,7 +8,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as readme:
     long_description = readme.read()
 
 setup(name='matisse-controller',
-      version='0.3.0',
+      version='0.4.0',
       description="A Python package to control the Matisse 2 TS.",
       long_description=long_description,
       long_description_content_type='text/markdown',

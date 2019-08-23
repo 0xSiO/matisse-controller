@@ -25,31 +25,29 @@
 <summary>Source code</summary>
 <pre><code class="python">&#34;&#34;&#34;Important Matisse-related non-configurable constants.&#34;&#34;&#34;
 
+# Scanning ################################################################
 
-class Constants:
-    # Scanning ################################################################
+SCAN_MODE_UP = 0
+SCAN_MODE_DOWN = 1
 
-    SCAN_MODE_UP = 0
-    SCAN_MODE_DOWN = 1
+# Approximate change in wavelength per thin etalon mode
+THIN_ETALON_NM_PER_MODE = 0.033
 
-    # Approximate change in wavelength per thin etalon mode
-    THIN_ETALON_NM_PER_MODE = 0.033
+# Internal Matisse constant. Encoded in the result of a motor&#39;s STATUS? command
+MOTOR_STATUS_IDLE = 0x02
 
-    # Internal Matisse constant. Encoded in the result of a motor&#39;s STATUS? command
-    MOTOR_STATUS_IDLE = 0x02
+# Limits ##################################################################
 
-    # Limits ##################################################################
-
-    BIREFRINGENT_FILTER_LOWER_LIMIT = 0
-    BIREFRINGENT_FILTER_UPPER_LIMIT = 188096
-    THIN_ETALON_LOWER_LIMIT = 0
-    THIN_ETALON_UPPER_LIMIT = 45797
-    PIEZO_ETALON_LOWER_LIMIT = -1
-    PIEZO_ETALON_UPPER_LIMIT = 1
-    REFERENCE_CELL_LOWER_LIMIT = 0
-    REFERENCE_CELL_UPPER_LIMIT = 0.7
-    SLOW_PIEZO_LOWER_LIMIT = 0
-    SLOW_PIEZO_UPPER_LIMIT = 0.7</code></pre>
+BIREFRINGENT_FILTER_LOWER_LIMIT = 0
+BIREFRINGENT_FILTER_UPPER_LIMIT = 188096
+THIN_ETALON_LOWER_LIMIT = 0
+THIN_ETALON_UPPER_LIMIT = 45797
+PIEZO_ETALON_LOWER_LIMIT = -1
+PIEZO_ETALON_UPPER_LIMIT = 1
+REFERENCE_CELL_LOWER_LIMIT = 0
+REFERENCE_CELL_UPPER_LIMIT = 0.7
+SLOW_PIEZO_LOWER_LIMIT = 0
+SLOW_PIEZO_UPPER_LIMIT = 0.7</code></pre>
 </details>
 </section>
 <section>
@@ -59,106 +57,6 @@ class Constants:
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="matisse_controller.matisse.constants.Constants"><code class="flex name class">
-<span>class <span class="ident">Constants</span></span>
-<span>(</span><span>*args, **kwargs)</span>
-</code></dt>
-<dd>
-<section class="desc"></section>
-<details class="source">
-<summary>Source code</summary>
-<pre><code class="python">class Constants:
-    # Scanning ################################################################
-
-    SCAN_MODE_UP = 0
-    SCAN_MODE_DOWN = 1
-
-    # Approximate change in wavelength per thin etalon mode
-    THIN_ETALON_NM_PER_MODE = 0.033
-
-    # Internal Matisse constant. Encoded in the result of a motor&#39;s STATUS? command
-    MOTOR_STATUS_IDLE = 0x02
-
-    # Limits ##################################################################
-
-    BIREFRINGENT_FILTER_LOWER_LIMIT = 0
-    BIREFRINGENT_FILTER_UPPER_LIMIT = 188096
-    THIN_ETALON_LOWER_LIMIT = 0
-    THIN_ETALON_UPPER_LIMIT = 45797
-    PIEZO_ETALON_LOWER_LIMIT = -1
-    PIEZO_ETALON_UPPER_LIMIT = 1
-    REFERENCE_CELL_LOWER_LIMIT = 0
-    REFERENCE_CELL_UPPER_LIMIT = 0.7
-    SLOW_PIEZO_LOWER_LIMIT = 0
-    SLOW_PIEZO_UPPER_LIMIT = 0.7</code></pre>
-</details>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="matisse_controller.matisse.matisse.Matisse" href="matisse.html#matisse_controller.matisse.matisse.Matisse">Matisse</a></li>
-</ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="matisse_controller.matisse.constants.Constants.BIREFRINGENT_FILTER_LOWER_LIMIT"><code class="name">var <span class="ident">BIREFRINGENT_FILTER_LOWER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.BIREFRINGENT_FILTER_UPPER_LIMIT"><code class="name">var <span class="ident">BIREFRINGENT_FILTER_UPPER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.MOTOR_STATUS_IDLE"><code class="name">var <span class="ident">MOTOR_STATUS_IDLE</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.PIEZO_ETALON_LOWER_LIMIT"><code class="name">var <span class="ident">PIEZO_ETALON_LOWER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.PIEZO_ETALON_UPPER_LIMIT"><code class="name">var <span class="ident">PIEZO_ETALON_UPPER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.REFERENCE_CELL_LOWER_LIMIT"><code class="name">var <span class="ident">REFERENCE_CELL_LOWER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.REFERENCE_CELL_UPPER_LIMIT"><code class="name">var <span class="ident">REFERENCE_CELL_UPPER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.SCAN_MODE_DOWN"><code class="name">var <span class="ident">SCAN_MODE_DOWN</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.SCAN_MODE_UP"><code class="name">var <span class="ident">SCAN_MODE_UP</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.SLOW_PIEZO_LOWER_LIMIT"><code class="name">var <span class="ident">SLOW_PIEZO_LOWER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.SLOW_PIEZO_UPPER_LIMIT"><code class="name">var <span class="ident">SLOW_PIEZO_UPPER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.THIN_ETALON_LOWER_LIMIT"><code class="name">var <span class="ident">THIN_ETALON_LOWER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.THIN_ETALON_NM_PER_MODE"><code class="name">var <span class="ident">THIN_ETALON_NM_PER_MODE</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-<dt id="matisse_controller.matisse.constants.Constants.THIN_ETALON_UPPER_LIMIT"><code class="name">var <span class="ident">THIN_ETALON_UPPER_LIMIT</span></code></dt>
-<dd>
-<section class="desc"></section>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -170,29 +68,6 @@ class Constants:
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="matisse_controller.matisse" href="index.html">matisse_controller.matisse</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="matisse_controller.matisse.constants.Constants" href="#matisse_controller.matisse.constants.Constants">Constants</a></code></h4>
-<ul class="">
-<li><code><a title="matisse_controller.matisse.constants.Constants.BIREFRINGENT_FILTER_LOWER_LIMIT" href="#matisse_controller.matisse.constants.Constants.BIREFRINGENT_FILTER_LOWER_LIMIT">BIREFRINGENT_FILTER_LOWER_LIMIT</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.BIREFRINGENT_FILTER_UPPER_LIMIT" href="#matisse_controller.matisse.constants.Constants.BIREFRINGENT_FILTER_UPPER_LIMIT">BIREFRINGENT_FILTER_UPPER_LIMIT</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.MOTOR_STATUS_IDLE" href="#matisse_controller.matisse.constants.Constants.MOTOR_STATUS_IDLE">MOTOR_STATUS_IDLE</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.PIEZO_ETALON_LOWER_LIMIT" href="#matisse_controller.matisse.constants.Constants.PIEZO_ETALON_LOWER_LIMIT">PIEZO_ETALON_LOWER_LIMIT</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.PIEZO_ETALON_UPPER_LIMIT" href="#matisse_controller.matisse.constants.Constants.PIEZO_ETALON_UPPER_LIMIT">PIEZO_ETALON_UPPER_LIMIT</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.REFERENCE_CELL_LOWER_LIMIT" href="#matisse_controller.matisse.constants.Constants.REFERENCE_CELL_LOWER_LIMIT">REFERENCE_CELL_LOWER_LIMIT</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.REFERENCE_CELL_UPPER_LIMIT" href="#matisse_controller.matisse.constants.Constants.REFERENCE_CELL_UPPER_LIMIT">REFERENCE_CELL_UPPER_LIMIT</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.SCAN_MODE_DOWN" href="#matisse_controller.matisse.constants.Constants.SCAN_MODE_DOWN">SCAN_MODE_DOWN</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.SCAN_MODE_UP" href="#matisse_controller.matisse.constants.Constants.SCAN_MODE_UP">SCAN_MODE_UP</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.SLOW_PIEZO_LOWER_LIMIT" href="#matisse_controller.matisse.constants.Constants.SLOW_PIEZO_LOWER_LIMIT">SLOW_PIEZO_LOWER_LIMIT</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.SLOW_PIEZO_UPPER_LIMIT" href="#matisse_controller.matisse.constants.Constants.SLOW_PIEZO_UPPER_LIMIT">SLOW_PIEZO_UPPER_LIMIT</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.THIN_ETALON_LOWER_LIMIT" href="#matisse_controller.matisse.constants.Constants.THIN_ETALON_LOWER_LIMIT">THIN_ETALON_LOWER_LIMIT</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.THIN_ETALON_NM_PER_MODE" href="#matisse_controller.matisse.constants.Constants.THIN_ETALON_NM_PER_MODE">THIN_ETALON_NM_PER_MODE</a></code></li>
-<li><code><a title="matisse_controller.matisse.constants.Constants.THIN_ETALON_UPPER_LIMIT" href="#matisse_controller.matisse.constants.Constants.THIN_ETALON_UPPER_LIMIT">THIN_ETALON_UPPER_LIMIT</a></code></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

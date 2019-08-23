@@ -42,29 +42,29 @@ class BirefringentFilterScanPlotProcess(multiprocessing.Process):
         self.using_new_pos = using_new_pos
 
     def run(self):
-        self.plot_birefringent_scan(self.positions, self.voltages, self.smoothed_data)
-        self.plot_birefringent_selection(self.old_pos, self.best_pos)
-        self.plot_birefringent_maxima(self.positions[self.maxima], self.smoothed_data[self.maxima])
+        self.plot_birefringent_scan()
+        self.plot_birefringent_selection()
+        self.plot_birefringent_maxima()
         self.add_bifi_scan_legend()
         plt.show()
 
-    def plot_birefringent_scan(self, positions, voltages, smoothed_voltages):
-        plt.figure()
+    def plot_birefringent_scan(self):
+        plt.figure(f&#34;Birefringent Filter Scan: {self.positions[0]} to {self.positions[-1]}&#34;)
         plt.cla()
         plt.title(&#39;Power Diode Voltage vs. BiFi Motor Position&#39;)
-        plt.xlim(positions[0], positions[-1])
+        plt.xlim(self.positions[0], self.positions[-1])
         plt.xlabel(&#39;Position&#39;)
         plt.ylabel(&#39;Voltage (V)&#39;)
-        plt.plot(positions, voltages)
-        plt.plot(positions, smoothed_voltages)
+        plt.plot(self.positions, self.voltages)
+        plt.plot(self.positions, self.smoothed_data)
 
-    def plot_birefringent_maxima(self, positions, voltages):
-        plt.plot(positions, voltages, &#39;r*&#39;)
+    def plot_birefringent_maxima(self):
+        plt.plot(self.positions[self.maxima], self.smoothed_data[self.maxima], &#39;r*&#39;)
 
-    def plot_birefringent_selection(self, old_pos, new_pos):
-        plt.axvline(old_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;--&#39;)
+    def plot_birefringent_selection(self):
+        plt.axvline(self.old_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;--&#39;)
         if self.using_new_pos:
-            plt.axvline(new_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;-&#39;)
+            plt.axvline(self.best_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;-&#39;)
 
     def add_bifi_scan_legend(self):
         names = [&#39;Raw&#39;, &#39;Smoothed&#39;, &#39;Old Pos&#39;]
@@ -103,29 +103,29 @@ class BirefringentFilterScanPlotProcess(multiprocessing.Process):
         self.using_new_pos = using_new_pos
 
     def run(self):
-        self.plot_birefringent_scan(self.positions, self.voltages, self.smoothed_data)
-        self.plot_birefringent_selection(self.old_pos, self.best_pos)
-        self.plot_birefringent_maxima(self.positions[self.maxima], self.smoothed_data[self.maxima])
+        self.plot_birefringent_scan()
+        self.plot_birefringent_selection()
+        self.plot_birefringent_maxima()
         self.add_bifi_scan_legend()
         plt.show()
 
-    def plot_birefringent_scan(self, positions, voltages, smoothed_voltages):
-        plt.figure()
+    def plot_birefringent_scan(self):
+        plt.figure(f&#34;Birefringent Filter Scan: {self.positions[0]} to {self.positions[-1]}&#34;)
         plt.cla()
         plt.title(&#39;Power Diode Voltage vs. BiFi Motor Position&#39;)
-        plt.xlim(positions[0], positions[-1])
+        plt.xlim(self.positions[0], self.positions[-1])
         plt.xlabel(&#39;Position&#39;)
         plt.ylabel(&#39;Voltage (V)&#39;)
-        plt.plot(positions, voltages)
-        plt.plot(positions, smoothed_voltages)
+        plt.plot(self.positions, self.voltages)
+        plt.plot(self.positions, self.smoothed_data)
 
-    def plot_birefringent_maxima(self, positions, voltages):
-        plt.plot(positions, voltages, &#39;r*&#39;)
+    def plot_birefringent_maxima(self):
+        plt.plot(self.positions[self.maxima], self.smoothed_data[self.maxima], &#39;r*&#39;)
 
-    def plot_birefringent_selection(self, old_pos, new_pos):
-        plt.axvline(old_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;--&#39;)
+    def plot_birefringent_selection(self):
+        plt.axvline(self.old_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;--&#39;)
         if self.using_new_pos:
-            plt.axvline(new_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;-&#39;)
+            plt.axvline(self.best_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;-&#39;)
 
     def add_bifi_scan_legend(self):
         names = [&#39;Raw&#39;, &#39;Smoothed&#39;, &#39;Old Pos&#39;]
@@ -155,45 +155,45 @@ class BirefringentFilterScanPlotProcess(multiprocessing.Process):
 </details>
 </dd>
 <dt id="matisse_controller.matisse.plotting.birefringent_filter_scan_plot_process.BirefringentFilterScanPlotProcess.plot_birefringent_maxima"><code class="name flex">
-<span>def <span class="ident">plot_birefringent_maxima</span></span>(<span>self, positions, voltages)</span>
+<span>def <span class="ident">plot_birefringent_maxima</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def plot_birefringent_maxima(self, positions, voltages):
-    plt.plot(positions, voltages, &#39;r*&#39;)</code></pre>
+<pre><code class="python">def plot_birefringent_maxima(self):
+    plt.plot(self.positions[self.maxima], self.smoothed_data[self.maxima], &#39;r*&#39;)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.matisse.plotting.birefringent_filter_scan_plot_process.BirefringentFilterScanPlotProcess.plot_birefringent_scan"><code class="name flex">
-<span>def <span class="ident">plot_birefringent_scan</span></span>(<span>self, positions, voltages, smoothed_voltages)</span>
+<span>def <span class="ident">plot_birefringent_scan</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def plot_birefringent_scan(self, positions, voltages, smoothed_voltages):
-    plt.figure()
+<pre><code class="python">def plot_birefringent_scan(self):
+    plt.figure(f&#34;Birefringent Filter Scan: {self.positions[0]} to {self.positions[-1]}&#34;)
     plt.cla()
     plt.title(&#39;Power Diode Voltage vs. BiFi Motor Position&#39;)
-    plt.xlim(positions[0], positions[-1])
+    plt.xlim(self.positions[0], self.positions[-1])
     plt.xlabel(&#39;Position&#39;)
     plt.ylabel(&#39;Voltage (V)&#39;)
-    plt.plot(positions, voltages)
-    plt.plot(positions, smoothed_voltages)</code></pre>
+    plt.plot(self.positions, self.voltages)
+    plt.plot(self.positions, self.smoothed_data)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.matisse.plotting.birefringent_filter_scan_plot_process.BirefringentFilterScanPlotProcess.plot_birefringent_selection"><code class="name flex">
-<span>def <span class="ident">plot_birefringent_selection</span></span>(<span>self, old_pos, new_pos)</span>
+<span>def <span class="ident">plot_birefringent_selection</span></span>(<span>self)</span>
 </code></dt>
 <dd>
 <section class="desc"></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def plot_birefringent_selection(self, old_pos, new_pos):
-    plt.axvline(old_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;--&#39;)
+<pre><code class="python">def plot_birefringent_selection(self):
+    plt.axvline(self.old_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;--&#39;)
     if self.using_new_pos:
-        plt.axvline(new_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;-&#39;)</code></pre>
+        plt.axvline(self.best_pos, 0, 1, color=&#39;r&#39;, linestyle=&#39;-&#39;)</code></pre>
 </details>
 </dd>
 <dt id="matisse_controller.matisse.plotting.birefringent_filter_scan_plot_process.BirefringentFilterScanPlotProcess.run"><code class="name flex">
@@ -204,9 +204,9 @@ class BirefringentFilterScanPlotProcess(multiprocessing.Process):
 <details class="source">
 <summary>Source code</summary>
 <pre><code class="python">def run(self):
-    self.plot_birefringent_scan(self.positions, self.voltages, self.smoothed_data)
-    self.plot_birefringent_selection(self.old_pos, self.best_pos)
-    self.plot_birefringent_maxima(self.positions[self.maxima], self.smoothed_data[self.maxima])
+    self.plot_birefringent_scan()
+    self.plot_birefringent_selection()
+    self.plot_birefringent_maxima()
     self.add_bifi_scan_legend()
     plt.show()</code></pre>
 </details>

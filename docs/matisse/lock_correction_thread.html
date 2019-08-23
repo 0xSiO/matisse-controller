@@ -28,7 +28,7 @@ from queue import Queue
 
 import matisse_controller.config as cfg
 from matisse_controller.matisse.control_loops_on import ControlLoopsOn
-from matisse_controller.matisse.event_report import log_event
+from matisse_controller.matisse.event_report import log_event, EventType
 
 
 class LockCorrectionThread(threading.Thread):
@@ -73,7 +73,7 @@ class LockCorrectionThread(threading.Thread):
                                   &#39;Attempting automatic corrections.&#39;)
                             if cfg.get(cfg.REPORT_EVENTS):
                                 current_wavelength = self.matisse.wavemeter_wavelength()
-                                log_event(&#39;lock_correction&#39;, self.matisse, current_wavelength,
+                                log_event(EventType.LOCK_CORRECTION, self.matisse, current_wavelength,
                                           &#39;component hit a limit while laser was locked&#39;)
                             self.matisse.reset_stabilization_piezos()
                     else:
@@ -175,7 +175,7 @@ component has reached its limit, it makes an automatic correction to the slow pi
                                   &#39;Attempting automatic corrections.&#39;)
                             if cfg.get(cfg.REPORT_EVENTS):
                                 current_wavelength = self.matisse.wavemeter_wavelength()
-                                log_event(&#39;lock_correction&#39;, self.matisse, current_wavelength,
+                                log_event(EventType.LOCK_CORRECTION, self.matisse, current_wavelength,
                                           &#39;component hit a limit while laser was locked&#39;)
                             self.matisse.reset_stabilization_piezos()
                     else:
@@ -265,7 +265,7 @@ from the args and kwargs arguments, respectively.</p></section>
                               &#39;Attempting automatic corrections.&#39;)
                         if cfg.get(cfg.REPORT_EVENTS):
                             current_wavelength = self.matisse.wavemeter_wavelength()
-                            log_event(&#39;lock_correction&#39;, self.matisse, current_wavelength,
+                            log_event(EventType.LOCK_CORRECTION, self.matisse, current_wavelength,
                                       &#39;component hit a limit while laser was locked&#39;)
                         self.matisse.reset_stabilization_piezos()
                 else:

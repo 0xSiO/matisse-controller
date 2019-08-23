@@ -27,7 +27,8 @@ import time
 from queue import Queue
 
 import matisse_controller.config as cfg
-from matisse_controller.matisse.event_report import log_event
+import matisse_controller.matisse as matisse
+from matisse_controller.matisse.event_report import log_event, EventType
 
 
 class StabilizationThread(threading.Thread):
@@ -55,34 +56,47 @@ class StabilizationThread(threading.Thread):
         &#34;&#34;&#34;
         Try to keep the measured wavelength within the configured tolerance by scanning the reference cell.
 
+        If a larger drift in wavelength occurs, we might have fallen into a dip on the power diode curve. To correct
+        this, a small BiFi scan and a small thin etalon scan will be performed.
+
         Exit if anything is pushed to the message queue.
         &#34;&#34;&#34;
         while True:
             if self.messages.qsize() == 0:
                 current_wavelength = self._matisse.wavemeter_wavelength()
-                drift = self._matisse.target_wavelength - current_wavelength
-                drift = round(drift, cfg.get(cfg.WAVEMETER_PRECISION))
-                if abs(drift) &gt; cfg.get(cfg.STABILIZATION_TOLERANCE):
-                    if drift &lt; 0:
+                drift = round(current_wavelength - self._matisse.target_wavelength, cfg.get(cfg.WAVEMETER_PRECISION))
+                # TODO: This threshold is large, maybe add another config option for this condition
+                if abs(drift) &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+                    # TODO: Consider logging this event to the event report
+                    print(f&#34;WARNING: Wavelength drifted by {drift} nm during stabilization. Making corrections.&#34;)
+                    self._matisse.stop_scan()
+                    if self._matisse.is_lock_correction_on():
+                        self._matisse.stop_laser_lock_correction()
+                    # TODO: Skip BiFi scan if drift is small enough, kind of like in Matisse.set_wavelength
+                    self._matisse.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+                    self._matisse.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+                    self._matisse.start_laser_lock_correction()
+                elif abs(drift) &gt; cfg.get(cfg.STABILIZATION_TOLERANCE):
+                    if drift &gt; 0:
                         # measured wavelength is too high
-                        print(f&#34;Wavelength too high, decreasing. Drift is {drift} nm.&#34;)
+                        print(f&#34;Wavelength too high, decreasing. Drift is {drift} nm. Refcell is at {self._matisse.query(&#39;SCAN:NOW?&#39;, numeric_result=True)}&#34;)
                         if not self._matisse.is_any_limit_reached():
                             if cfg.get(cfg.REPORT_EVENTS):
-                                log_event(&#39;wavelength_drift&#39;, self._matisse, current_wavelength,
+                                log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,
                                           f&#34;wavelength drifted by {drift} nm&#34;)
-                            self._matisse.start_scan(self._matisse.SCAN_MODE_DOWN)
+                            self._matisse.start_scan(matisse.SCAN_MODE_DOWN)
                         else:
-                            self.do_stabilization_correction(current_wavelength, drift)
+                            self.do_stabilization_correction(current_wavelength)
                     else:
                         # measured wavelength is too low
-                        print(f&#34;Wavelength too low, increasing.  Drift is {drift} nm.&#34;)
+                        print(f&#34;Wavelength too low, increasing.  Drift is {drift} nm. Refcell is at {self._matisse.query(&#39;SCAN:NOW?&#39;, numeric_result=True)}&#34;)
                         if not self._matisse.is_any_limit_reached():
                             if cfg.get(cfg.REPORT_EVENTS):
-                                log_event(&#39;wavelength_drift&#39;, self._matisse, current_wavelength,
+                                log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,
                                           f&#34;wavelength drifted by {drift} nm&#34;)
-                            self._matisse.start_scan(self._matisse.SCAN_MODE_UP)
+                            self._matisse.start_scan(matisse.SCAN_MODE_UP)
                         else:
-                            self.do_stabilization_correction(current_wavelength, drift)
+                            self.do_stabilization_correction(current_wavelength)
                 else:
                     self._matisse.stop_scan()
                     # print(f&#34;Within tolerance. Drift is {drift}&#34;)
@@ -91,12 +105,12 @@ class StabilizationThread(threading.Thread):
                 self._matisse.stop_scan()
                 break
 
-    def do_stabilization_correction(self, wavelength, drift):
+    def do_stabilization_correction(self, wavelength):
         &#34;&#34;&#34;Reset the stabilization piezos and optionally log the correction event.&#34;&#34;&#34;
         print(&#39;WARNING: A component has hit a limit while adjusting the RefCell. Attempting automatic corrections.&#39;)
         self._matisse.stop_scan()
         if cfg.get(cfg.REPORT_EVENTS):
-            log_event(&#39;stabilization_correction&#39;, self._matisse, wavelength,
+            log_event(EventType.STABILIZATION_CORRECTION, self._matisse, wavelength,
                       &#39;component hit a limit while auto-stabilization was on&#39;)
         self._matisse.reset_stabilization_piezos()
         self._matisse.stabilization_auto_corrections += 1</code></pre>
@@ -158,34 +172,47 @@ by overriding the run() method in a subclass.</p>
         &#34;&#34;&#34;
         Try to keep the measured wavelength within the configured tolerance by scanning the reference cell.
 
+        If a larger drift in wavelength occurs, we might have fallen into a dip on the power diode curve. To correct
+        this, a small BiFi scan and a small thin etalon scan will be performed.
+
         Exit if anything is pushed to the message queue.
         &#34;&#34;&#34;
         while True:
             if self.messages.qsize() == 0:
                 current_wavelength = self._matisse.wavemeter_wavelength()
-                drift = self._matisse.target_wavelength - current_wavelength
-                drift = round(drift, cfg.get(cfg.WAVEMETER_PRECISION))
-                if abs(drift) &gt; cfg.get(cfg.STABILIZATION_TOLERANCE):
-                    if drift &lt; 0:
+                drift = round(current_wavelength - self._matisse.target_wavelength, cfg.get(cfg.WAVEMETER_PRECISION))
+                # TODO: This threshold is large, maybe add another config option for this condition
+                if abs(drift) &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+                    # TODO: Consider logging this event to the event report
+                    print(f&#34;WARNING: Wavelength drifted by {drift} nm during stabilization. Making corrections.&#34;)
+                    self._matisse.stop_scan()
+                    if self._matisse.is_lock_correction_on():
+                        self._matisse.stop_laser_lock_correction()
+                    # TODO: Skip BiFi scan if drift is small enough, kind of like in Matisse.set_wavelength
+                    self._matisse.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+                    self._matisse.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+                    self._matisse.start_laser_lock_correction()
+                elif abs(drift) &gt; cfg.get(cfg.STABILIZATION_TOLERANCE):
+                    if drift &gt; 0:
                         # measured wavelength is too high
-                        print(f&#34;Wavelength too high, decreasing. Drift is {drift} nm.&#34;)
+                        print(f&#34;Wavelength too high, decreasing. Drift is {drift} nm. Refcell is at {self._matisse.query(&#39;SCAN:NOW?&#39;, numeric_result=True)}&#34;)
                         if not self._matisse.is_any_limit_reached():
                             if cfg.get(cfg.REPORT_EVENTS):
-                                log_event(&#39;wavelength_drift&#39;, self._matisse, current_wavelength,
+                                log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,
                                           f&#34;wavelength drifted by {drift} nm&#34;)
-                            self._matisse.start_scan(self._matisse.SCAN_MODE_DOWN)
+                            self._matisse.start_scan(matisse.SCAN_MODE_DOWN)
                         else:
-                            self.do_stabilization_correction(current_wavelength, drift)
+                            self.do_stabilization_correction(current_wavelength)
                     else:
                         # measured wavelength is too low
-                        print(f&#34;Wavelength too low, increasing.  Drift is {drift} nm.&#34;)
+                        print(f&#34;Wavelength too low, increasing.  Drift is {drift} nm. Refcell is at {self._matisse.query(&#39;SCAN:NOW?&#39;, numeric_result=True)}&#34;)
                         if not self._matisse.is_any_limit_reached():
                             if cfg.get(cfg.REPORT_EVENTS):
-                                log_event(&#39;wavelength_drift&#39;, self._matisse, current_wavelength,
+                                log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,
                                           f&#34;wavelength drifted by {drift} nm&#34;)
-                            self._matisse.start_scan(self._matisse.SCAN_MODE_UP)
+                            self._matisse.start_scan(matisse.SCAN_MODE_UP)
                         else:
-                            self.do_stabilization_correction(current_wavelength, drift)
+                            self.do_stabilization_correction(current_wavelength)
                 else:
                     self._matisse.stop_scan()
                     # print(f&#34;Within tolerance. Drift is {drift}&#34;)
@@ -194,12 +221,12 @@ by overriding the run() method in a subclass.</p>
                 self._matisse.stop_scan()
                 break
 
-    def do_stabilization_correction(self, wavelength, drift):
+    def do_stabilization_correction(self, wavelength):
         &#34;&#34;&#34;Reset the stabilization piezos and optionally log the correction event.&#34;&#34;&#34;
         print(&#39;WARNING: A component has hit a limit while adjusting the RefCell. Attempting automatic corrections.&#39;)
         self._matisse.stop_scan()
         if cfg.get(cfg.REPORT_EVENTS):
-            log_event(&#39;stabilization_correction&#39;, self._matisse, wavelength,
+            log_event(EventType.STABILIZATION_CORRECTION, self._matisse, wavelength,
                       &#39;component hit a limit while auto-stabilization was on&#39;)
         self._matisse.reset_stabilization_piezos()
         self._matisse.stabilization_auto_corrections += 1</code></pre>
@@ -211,18 +238,18 @@ by overriding the run() method in a subclass.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="matisse_controller.matisse.stabilization_thread.StabilizationThread.do_stabilization_correction"><code class="name flex">
-<span>def <span class="ident">do_stabilization_correction</span></span>(<span>self, wavelength, drift)</span>
+<span>def <span class="ident">do_stabilization_correction</span></span>(<span>self, wavelength)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Reset the stabilization piezos and optionally log the correction event.</p></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def do_stabilization_correction(self, wavelength, drift):
+<pre><code class="python">def do_stabilization_correction(self, wavelength):
     &#34;&#34;&#34;Reset the stabilization piezos and optionally log the correction event.&#34;&#34;&#34;
     print(&#39;WARNING: A component has hit a limit while adjusting the RefCell. Attempting automatic corrections.&#39;)
     self._matisse.stop_scan()
     if cfg.get(cfg.REPORT_EVENTS):
-        log_event(&#39;stabilization_correction&#39;, self._matisse, wavelength,
+        log_event(EventType.STABILIZATION_CORRECTION, self._matisse, wavelength,
                   &#39;component hit a limit while auto-stabilization was on&#39;)
     self._matisse.reset_stabilization_piezos()
     self._matisse.stabilization_auto_corrections += 1</code></pre>
@@ -233,6 +260,8 @@ by overriding the run() method in a subclass.</p>
 </code></dt>
 <dd>
 <section class="desc"><p>Try to keep the measured wavelength within the configured tolerance by scanning the reference cell.</p>
+<p>If a larger drift in wavelength occurs, we might have fallen into a dip on the power diode curve. To correct
+this, a small BiFi scan and a small thin etalon scan will be performed.</p>
 <p>Exit if anything is pushed to the message queue.</p></section>
 <details class="source">
 <summary>Source code</summary>
@@ -240,34 +269,47 @@ by overriding the run() method in a subclass.</p>
     &#34;&#34;&#34;
     Try to keep the measured wavelength within the configured tolerance by scanning the reference cell.
 
+    If a larger drift in wavelength occurs, we might have fallen into a dip on the power diode curve. To correct
+    this, a small BiFi scan and a small thin etalon scan will be performed.
+
     Exit if anything is pushed to the message queue.
     &#34;&#34;&#34;
     while True:
         if self.messages.qsize() == 0:
             current_wavelength = self._matisse.wavemeter_wavelength()
-            drift = self._matisse.target_wavelength - current_wavelength
-            drift = round(drift, cfg.get(cfg.WAVEMETER_PRECISION))
-            if abs(drift) &gt; cfg.get(cfg.STABILIZATION_TOLERANCE):
-                if drift &lt; 0:
+            drift = round(current_wavelength - self._matisse.target_wavelength, cfg.get(cfg.WAVEMETER_PRECISION))
+            # TODO: This threshold is large, maybe add another config option for this condition
+            if abs(drift) &gt; cfg.get(cfg.LARGE_WAVELENGTH_DRIFT):
+                # TODO: Consider logging this event to the event report
+                print(f&#34;WARNING: Wavelength drifted by {drift} nm during stabilization. Making corrections.&#34;)
+                self._matisse.stop_scan()
+                if self._matisse.is_lock_correction_on():
+                    self._matisse.stop_laser_lock_correction()
+                # TODO: Skip BiFi scan if drift is small enough, kind of like in Matisse.set_wavelength
+                self._matisse.birefringent_filter_scan(scan_range=cfg.get(cfg.BIFI_SCAN_RANGE_SMALL))
+                self._matisse.thin_etalon_scan(scan_range=cfg.get(cfg.THIN_ETA_SCAN_RANGE_SMALL))
+                self._matisse.start_laser_lock_correction()
+            elif abs(drift) &gt; cfg.get(cfg.STABILIZATION_TOLERANCE):
+                if drift &gt; 0:
                     # measured wavelength is too high
-                    print(f&#34;Wavelength too high, decreasing. Drift is {drift} nm.&#34;)
+                    print(f&#34;Wavelength too high, decreasing. Drift is {drift} nm. Refcell is at {self._matisse.query(&#39;SCAN:NOW?&#39;, numeric_result=True)}&#34;)
                     if not self._matisse.is_any_limit_reached():
                         if cfg.get(cfg.REPORT_EVENTS):
-                            log_event(&#39;wavelength_drift&#39;, self._matisse, current_wavelength,
+                            log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,
                                       f&#34;wavelength drifted by {drift} nm&#34;)
-                        self._matisse.start_scan(self._matisse.SCAN_MODE_DOWN)
+                        self._matisse.start_scan(matisse.SCAN_MODE_DOWN)
                     else:
-                        self.do_stabilization_correction(current_wavelength, drift)
+                        self.do_stabilization_correction(current_wavelength)
                 else:
                     # measured wavelength is too low
-                    print(f&#34;Wavelength too low, increasing.  Drift is {drift} nm.&#34;)
+                    print(f&#34;Wavelength too low, increasing.  Drift is {drift} nm. Refcell is at {self._matisse.query(&#39;SCAN:NOW?&#39;, numeric_result=True)}&#34;)
                     if not self._matisse.is_any_limit_reached():
                         if cfg.get(cfg.REPORT_EVENTS):
-                            log_event(&#39;wavelength_drift&#39;, self._matisse, current_wavelength,
+                            log_event(EventType.WAVELENGTH_DRIFT, self._matisse, current_wavelength,
                                       f&#34;wavelength drifted by {drift} nm&#34;)
-                        self._matisse.start_scan(self._matisse.SCAN_MODE_UP)
+                        self._matisse.start_scan(matisse.SCAN_MODE_UP)
                     else:
-                        self.do_stabilization_correction(current_wavelength, drift)
+                        self.do_stabilization_correction(current_wavelength)
             else:
                 self._matisse.stop_scan()
                 # print(f&#34;Within tolerance. Drift is {drift}&#34;)
