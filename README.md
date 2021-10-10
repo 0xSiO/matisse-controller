@@ -42,10 +42,10 @@ To configure the behavior of the program using a GUI, click the 'Configuration' 
 Hovering over most fields in this configuration dialog will reveal tooltips with more information about what the options do. 
 
 ## API Documentation
-API documentation for this project can be found at <https://lucis-fluxum.github.io/matisse-controller/docs>.
+API documentation for this project can be found at <https://0xSiO.github.io/matisse-controller/docs/>.
 
 ## Changelog
-The changelog for this project can be found at <https://lucis-fluxum.github.io/matisse-controller/CHANGELOG>.
+The changelog for this project can be found at <https://0xSiO.github.io/matisse-controller/CHANGELOG>.
 
 ## Terminology
 There are a few important bits of terminology that may be confusing: 
@@ -158,7 +158,7 @@ Modify the Matisse class `__init__` method to use your chosen wavemeter and an i
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at <https://github.com/lucis-fluxum/matisse-controller>.
+Bug reports and pull requests are welcome on GitHub at <https://github.com/0xSiO/matisse-controller>.
 
 ## License
 
